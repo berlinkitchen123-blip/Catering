@@ -478,6 +478,56 @@ body {
 .btn-add-row:hover { border-color: var(--blue); color: var(--blue); }
 .custom-badge { background: #162540; color: var(--blue); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
 
+
+/* ── OMS BAR ── */
+.oms-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(240,192,64,.08);
+  border: 1px solid rgba(240,192,64,.25);
+  border-radius: 10px;
+}
+.oms-label { font-size: 12px; font-weight: 700; color: var(--accent); }
+.oms-input {
+  width: 72px;
+  background: var(--s2);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  padding: 6px 8px;
+  font-family: inherit;
+}
+.oms-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(240,192,64,.3); }
+.oms-hint { font-size: 11px; color: var(--sub); }
+/* ── PORTIONS DISPLAY ── */
+.portions-total { font-size: 20px; font-weight: 900; color: var(--accent); }
+.portions-breakdown { font-size: 11px; color: var(--sub); }
+.portions-oms { font-size: 13px; font-weight: 700; color: var(--orange); }
+/* ── MENU CARDS redesign ── */
+.menu-list { display: flex; flex-direction: column; gap: 8px; }
+.menu-item {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.menu-item-left { flex: 1; min-width: 0; }
+.menu-item-name { font-size: 14px; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu-item-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.menu-pkg-badge { font-size: 11px; color: var(--sub); background: var(--s3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; }
+.menu-item-right { text-align: right; flex-shrink: 0; }
+
 </style>
 </head>
 <body>
@@ -5360,6 +5410,7 @@ let currentScreen = 'home';
 let currentDay = 0;
 let currentEvent = null;
 let checklistState = {};
+let omsValues = {}; // eventId -> OMS base number
 let fbListeners = [];
 
 /* ── UTILS ── */
@@ -5388,6 +5439,45 @@ function checkedCount(ev){
   const total=ev.equipment.length;
   const done=ev.equipment.filter(function(_,i){ return checklistState[eid+'-eq-'+i]; }).length;
   return {done,total};
+}
+
+
+/* ── OMS PORTIONS ── */
+function parseOMSOffset(s){
+  if(!s) return null;
+  var m=String(s).match(/OMS[^+\-]*(\+|\-)(\d+)/i);
+  if(m) return {type:'oms', offset:(m[1]==='-'?-1:1)*parseInt(m[2])};
+  if(/OMS/i.test(s)) return {type:'oms', offset:0};
+  var n=parseFloat(s);
+  if(!isNaN(n)) return {type:'fixed', value:n};
+  return null;
+}
+function calcPortions(s, omsBase){
+  var p=parseOMSOffset(s);
+  if(!p) return null;
+  if(p.type==='oms') return (omsBase||0)+p.offset;
+  return p.value;
+}
+function formatPortionsDisplay(s, omsBase){
+  var p=parseOMSOffset(s);
+  if(!p) return esc(s||'—');
+  if(p.type==='oms'){
+    var total=(omsBase||0)+p.offset;
+    if(omsBase) return '<span class="portions-total">'+total+'</span> <span class="portions-breakdown">('+omsBase+(p.offset>=0?'+':'')+p.offset+')</span>';
+    return '<span class="portions-oms">OMS'+(p.offset>=0?'+':'')+p.offset+'</span>';
+  }
+  return '<span class="portions-total">'+p.value+'</span>';
+}
+function eventHasOMS(ev){
+  return (ev.menu||[]).some(function(m){ return /OMS/i.test(m.portions||''); });
+}
+function calcIngTotal(ing, newPortions){
+  var qty=parseFloat(ing.qty_per_portion);
+  if(!isNaN(qty) && newPortions){
+    var t=(qty*newPortions);
+    return t<1 ? t.toFixed(3) : t.toFixed(2).replace(/\.?0+$/,'');
+  }
+  return ing.total_or_notes||'';
 }
 
 /* ── NAV ── */
@@ -5557,6 +5647,16 @@ function openEvent(idx){
     infoItems.forEach(function(item){ hero+='<div class="edh-info-card"><div class="edh-info-label">'+esc(item.k)+':</div><div class="edh-info-value">'+esc(item.v)+'</div></div>'; });
     hero+='</div>';
   }
+  // OMS input (show if event uses OMS-based portions)
+  if(eventHasOMS(ev)){
+    const omsVal=omsValues[eid]||'';
+    hero+='<div class="oms-bar">';
+    hero+='<div class="oms-label">&#9202; OMS count at 7am</div>';
+    hero+='<div style="display:flex;align-items:center;gap:8px">';
+    hero+='<input class="oms-input" type="number" min="0" id="oms-input-'+eid+'" value="'+esc(String(omsVal))+'" placeholder="0" data-eid="'+eid+'" oninput="updateOMS(this)">';
+    hero+='<span class="oms-hint">portions base</span>';
+    hero+='</div></div>';
+  }
   hero+='</div>';
   document.getElementById('event-hero').innerHTML=hero;
 
@@ -5591,13 +5691,16 @@ function openEvent(idx){
   }
   // Menu
   panels+='<div class="sub-panel'+(hasEquip?'':' active')+'" id="sp-menu"><div class="menu-list">';
+  const omsBase=omsValues[eid]||0;
   (ev.menu||[]).forEach(function(item){
     panels+='<div class="menu-item">';
-    panels+='<div><div class="menu-item-name">'+esc(item.name)+'</div>';
-    panels+='<div style="margin-top:4px"><span class="diet '+dietClass(item.diet)+'">'+esc(item.diet||'—')+'</span>';
-    if(item.category) panels+=' <span class="pill pill-dim" style="font-size:10px">'+esc(item.category)+'</span>';
+    panels+='<div class="menu-item-left">';
+    panels+='<div class="menu-item-name">'+esc(item.name)+'</div>';
+    panels+='<div class="menu-item-badges">';
+    if(item.diet&&item.diet!=='—') panels+='<span class="diet '+dietClass(item.diet)+'">'+esc(item.diet)+'</span>';
+    if(item.packaging) panels+='<span class="menu-pkg-badge">'+esc(item.packaging)+'</span>';
     panels+='</div></div>';
-    panels+='<div class="menu-item-meta"><div class="menu-portions">'+esc(item.portions||'—')+'</div><div class="menu-pkg">'+esc(item.packaging||'')+'</div></div>';
+    panels+='<div class="menu-item-right">'+formatPortionsDisplay(item.portions, omsBase)+'<div style="font-size:10px;color:var(--dim);margin-top:2px">portions</div></div>';
     panels+='</div>';
   });
   panels+='</div></div>';
@@ -5628,7 +5731,12 @@ function openEvent(idx){
         panels+='<div>';
         panels+='<div class="recipe-section-title">Ingredients</div>';
         panels+='<table class="dt"><thead><tr><th>Ingredient</th><th>Qty/Portion</th><th>Unit</th><th>Total</th></tr></thead><tbody>';
-        rd.ingredients.forEach(function(ing){ panels+='<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="highlight">'+esc(ing.total_or_notes||'')+'</td></tr>'; });
+        const recipePortions=calcPortions(rd.portions, omsBase);
+        rd.ingredients.forEach(function(ing){
+          const tot=recipePortions?calcIngTotal(ing,recipePortions):(ing.total_or_notes||'');
+          const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
+          panels+='<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="'+(isNote?'sub':'highlight')+'">'+esc(tot)+'</td></tr>';
+        });
         panels+='</tbody></table></div>';
       }
       // Prep steps
@@ -5979,6 +6087,49 @@ function saveEditForm(){
 function closeEditModal(e){
   if(e && e.target !== document.getElementById('edit-modal')) return;
   document.getElementById('edit-modal').classList.remove('show');
+}
+
+function updateOMS(input){
+  const eid=input.dataset.eid;
+  const val=parseInt(input.value)||0;
+  omsValues[eid]=val;
+  // Re-render menu and recipes panels in place
+  if(currentEvent){
+    const ev=currentEvent;
+    const omsBase=val;
+    // Re-render menu panel
+    const menuPanel=document.getElementById('sp-menu');
+    if(menuPanel){
+      let h='<div class="menu-list">';
+      (ev.menu||[]).forEach(function(item){
+        h+='<div class="menu-item">';
+        h+='<div class="menu-item-left">';
+        h+='<div class="menu-item-name">'+esc(item.name)+'</div>';
+        h+='<div class="menu-item-badges">';
+        if(item.diet&&item.diet!=='—') h+='<span class="diet '+dietClass(item.diet)+'">'+esc(item.diet)+'</span>';
+        if(item.packaging) h+='<span class="menu-pkg-badge">'+esc(item.packaging)+'</span>';
+        h+='</div></div>';
+        h+='<div class="menu-item-right">'+formatPortionsDisplay(item.portions, omsBase)+'<div style="font-size:10px;color:var(--dim);margin-top:2px">portions</div></div>';
+        h+='</div>';
+      });
+      h+='</div>';
+      menuPanel.innerHTML=h;
+    }
+    // Re-render each recipe's ingredient table
+    if(ev.recipes) Object.keys(ev.recipes).forEach(function(rname){
+      const rd=ev.recipes[rname];
+      if(!rd.ingredients||!rd.ingredients.length) return;
+      const rid=safeId(eid+'-'+rname);
+      const tbody=document.querySelector('#rc-'+rid+' .dt tbody');
+      if(!tbody) return;
+      const recipePortions=calcPortions(rd.portions, omsBase);
+      tbody.innerHTML=rd.ingredients.map(function(ing){
+        const tot=recipePortions?calcIngTotal(ing,recipePortions):(ing.total_or_notes||'');
+        const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
+        return '<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="'+(isNote?'sub':'highlight')+'">'+esc(tot)+'</td></tr>';
+      }).join('');
+    });
+  }
 }
 
 /* ── INIT ── */
