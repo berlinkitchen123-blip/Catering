@@ -1,0 +1,65 @@
+name: Sync to Firebase
+
+on:
+  push:
+    paths:
+      - 'data.json'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write data to Firestore
+        run: |
+          node - << 'JSEOF'
+          const fs = require('fs');
+          const https = require('https');
+
+          const PROJECT = 'stock-count-d0abf';
+          const API_KEY = 'AIzaSyAAli1-_46ehgM7hzaLLNybkP4MIUw0XZQ';
+          const BASE    = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+
+          const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+
+          function toFs(val) {
+            if (val === null || val === undefined) return { nullValue: null };
+            if (typeof val === 'boolean') return { booleanValue: val };
+            if (typeof val === 'number') return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+            if (typeof val === 'string') return { stringValue: val };
+            if (Array.isArray(val))      return { arrayValue: { values: val.map(toFs) } };
+            if (typeof val === 'object') return { mapValue: { fields: Object.fromEntries(Object.entries(val).map(([k,v]) => [k, toFs(v)])) } };
+            return { stringValue: String(val) };
+          }
+
+          function patchDoc(path, obj) {
+            return new Promise((resolve, reject) => {
+              const fields = Object.fromEntries(Object.entries(obj).map(([k,v]) => [k, toFs(v)]));
+              const body = JSON.stringify({ fields });
+              const url = new URL(`${BASE}/${path}?key=${API_KEY}`);
+              const req = https.request({ hostname: url.hostname, path: url.pathname + url.search,
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+              }, res => {
+                let d = '';
+                res.on('data', c => d += c);
+                res.on('end', () => {
+                  if (res.statusCode >= 200 && res.statusCode < 300) { console.log(`  ✓ ${path}`); resolve(); }
+                  else reject(new Error(`${path} → ${res.statusCode}: ${d.slice(0,200)}`));
+                });
+              });
+              req.on('error', reject);
+              req.write(body); req.end();
+            });
+          }
+
+          (async () => {
+            const ts = new Date().toISOString();
+            await patchDoc('kitchen/meta',    { weekLabel: data.weekLabel, dayNames: data.dayNames, updatedAt: ts });
+            await patchDoc('kitchen/events',  { data: data.events,   updatedAt: ts });
+            await patchDoc('kitchen/recipes', { data: data.recipes,  updatedAt: ts });
+            await patchDoc('kitchen/bom',     { items: data.bom,     updatedAt: ts });
+            console.log(`✅ Firebase sync complete — ${ts}`);
+          })().catch(e => { console.error(e.message); process.exit(1); });
+          JSEOF

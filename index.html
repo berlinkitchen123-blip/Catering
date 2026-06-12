@@ -3,48 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍽 BB Kitchen</title>
+<title>🍽 BB Kitchen — 15 Jun–21 Jun 2026</title>
 <style>
-:root {
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#222638;--border:#2e3248;
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222638;--border:#2e3248;
   --accent:#f97316;--accent2:#fb923c;--text:#e2e8f0;--muted:#94a3b8;
-  --green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#3b82f6;
-}
+  --green:#22c55e;--yellow:#eab308;--blue:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-/* Loading */
-#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:999;gap:16px}
-#loading.hidden{display:none}
-.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);
-  border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{color:var(--muted);font-size:.9rem}
-#error-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;
-  color:#fca5a5;padding:12px 20px;font-size:.85rem;z-index:1000;text-align:center}
-
-/* Top bar */
 #topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 #topbar h1{font-size:1.1rem;font-weight:700;color:var(--accent)}
 .topbar-right{display:flex;align-items:center;gap:12px}
 #week-label{font-size:.85rem;color:var(--muted)}
-#sync-status{font-size:.75rem;color:var(--muted)}
-#sync-status.live{color:var(--green)}
+#sync-dot{font-size:.75rem;color:var(--green)}
 #btnMtg{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;
-  font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}
+  font-size:.85rem;font-weight:600;cursor:pointer}
 #btnMtg:hover{background:var(--accent2)}
-
-/* Day tabs */
 #daytabs{background:var(--surface);border-bottom:1px solid var(--border);
   display:flex;padding:0 16px;overflow-x:auto;gap:4px}
 .daytab{padding:10px 16px;font-size:.82rem;font-weight:600;color:var(--muted);
   border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.2s}
 .daytab.active{color:var(--accent);border-color:var(--accent)}
 .daytab.bom-tab.active{color:var(--blue);border-color:var(--blue)}
-
-/* Layout */
 #main{display:flex;height:calc(100vh - 96px)}
 #sidebar{width:280px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);
   overflow-y:auto;padding:12px 8px;display:flex;flex-direction:column;gap:6px}
@@ -57,17 +37,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .ev-card .ev-pct{font-size:.72rem;font-weight:600;margin-top:6px}
 .pct-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px}
 .pct-fill{height:100%;border-radius:2px;background:var(--green);transition:.4s}
-
-/* Content */
 #content{flex:1;overflow-y:auto;padding:24px}
 #content h2{font-size:1.3rem;font-weight:700;margin-bottom:4px}
-#content .sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
 .section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
   padding:18px;margin-bottom:16px}
 .section-card h3{font-size:.95rem;font-weight:700;margin-bottom:12px;color:var(--accent)}
 .equip-list{display:flex;flex-wrap:wrap;gap:8px}
 .equip-tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-  padding:4px 10px;font-size:.8rem;display:flex;align-items:center;gap:6px}
+  padding:4px 10px;font-size:.8rem;display:flex;align-items:center;gap:6px;cursor:pointer}
 .equip-tag input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
 .equip-tag.done{opacity:.5;text-decoration:line-through}
 .menu-table{width:100%;border-collapse:collapse;font-size:.85rem}
@@ -88,11 +66,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .bulk-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
   padding:5px 12px;font-size:.78rem;cursor:pointer;color:var(--text);transition:.2s}
 .bulk-btn:hover{border-color:var(--accent);color:var(--accent)}
-
-/* BOM */
 #bom-view{padding:24px;display:none}
 #bom-view h2{font-size:1.3rem;font-weight:700;margin-bottom:4px}
-#bom-view .sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
 #bom-search{background:var(--surface);border:1px solid var(--border);border-radius:8px;
   padding:8px 14px;color:var(--text);font-size:.9rem;width:100%;max-width:400px;margin-bottom:16px}
 #bom-search:focus{outline:none;border-color:var(--blue)}
@@ -102,9 +77,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   position:sticky;top:0;background:var(--bg)}
 .bom-table td{padding:8px 12px;border-bottom:1px solid var(--border)}
 .bom-table tr:hover td{background:var(--surface)}
-.bom-table .qty-val{font-weight:700;color:var(--accent)}
-
-/* Recipe modal */
+.qty-val{font-weight:700;color:var(--accent)}
 #modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
   z-index:200;align-items:center;justify-content:center}
 #modal-overlay.open{display:flex}
@@ -125,83 +98,64 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .ing-table th{text-align:left;padding:5px 8px;color:var(--muted);font-size:.75rem;font-weight:600}
 .ing-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
 .ing-table tr:last-child td{border-bottom:none}
-.ing-table .note{font-size:.75rem;color:var(--muted)}
+.note-cell{font-size:.75rem;color:var(--muted)}
 .step-list{list-style:none;counter-reset:steps}
 .step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;font-size:.85rem}
-.step-list li::before{content:counter(steps);background:var(--accent);color:#fff;
-  border-radius:50%;width:22px;height:22px;display:flex;align-items:center;
-  justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:1px}
-.cooking-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.cooking-table th{text-align:left;padding:5px 8px;color:var(--muted);font-size:.75rem;font-weight:600}
-.cooking-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
-.cooking-table tr:last-child td{border-bottom:none}
-.logistics-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.step-list li::before{content:counter(steps);background:var(--accent);color:#fff;border-radius:50%;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.cook-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.cook-table th{text-align:left;padding:5px 8px;color:var(--muted);font-size:.75rem;font-weight:600}
+.cook-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.cook-table tr:last-child td{border-bottom:none}
+.log-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .log-item{background:var(--surface2);border-radius:8px;padding:12px}
-.log-item .log-label{font-size:.72rem;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.log-item .log-val{font-size:.82rem;line-height:1.5}
+.log-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:6px}
+.log-val{font-size:.82rem;line-height:1.5}
 .empty-note{color:var(--muted);font-style:italic;font-size:.83rem}
-
-/* Meeting mode */
 #meeting{display:none;position:fixed;inset:0;background:#000;z-index:300;flex-direction:column}
 #meeting.open{display:flex}
-#mtg-header{padding:20px 32px;display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid #222}
+#mtg-header{padding:20px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222}
 #mtg-header h1{font-size:1.3rem;font-weight:800;color:var(--accent)}
-#mtg-header .nav{display:flex;gap:12px;align-items:center}
-#mtg-header .nav button{background:#111;border:1px solid #333;border-radius:8px;
-  padding:8px 18px;color:#fff;cursor:pointer;font-size:.9rem;transition:.2s}
-#mtg-header .nav button:hover{border-color:var(--accent);color:var(--accent)}
-#mtg-header .nav .counter{font-size:.85rem;color:var(--muted)}
+.mtg-nav{display:flex;gap:12px;align-items:center}
+.mtg-nav button{background:#111;border:1px solid #333;border-radius:8px;padding:8px 18px;
+  color:#fff;cursor:pointer;font-size:.9rem}
+.mtg-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.mtg-counter{font-size:.85rem;color:var(--muted)}
 #mtg-body{flex:1;overflow:hidden;display:flex}
 #mtg-main{flex:1;padding:40px;overflow-y:auto}
 #mtg-main h2{font-size:2.2rem;font-weight:800;margin-bottom:8px}
-#mtg-main .mtg-date{font-size:1rem;color:var(--muted);margin-bottom:28px}
+.mtg-date{font-size:1rem;color:var(--muted);margin-bottom:28px}
 .mtg-recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.mtg-recipe-card{background:#111;border:1px solid #222;border-radius:12px;padding:18px}
-.mtg-recipe-card .rc-name{font-size:1rem;font-weight:700;margin-bottom:6px}
-.mtg-recipe-card .rc-meta{font-size:.8rem;color:var(--muted)}
-.mtg-recipe-card .rc-portions{font-size:1.4rem;font-weight:800;color:var(--accent)}
+.mtg-card{background:#111;border:1px solid #222;border-radius:12px;padding:18px}
+.mtg-card .rc-portions{font-size:1.4rem;font-weight:800;color:var(--accent)}
+.mtg-card .rc-name{font-size:1rem;font-weight:700;margin-bottom:6px}
+.mtg-card .rc-meta{font-size:.8rem;color:var(--muted)}
 #mtg-sidebar{width:240px;background:#0a0a0a;border-left:1px solid #222;padding:20px;overflow-y:auto}
-#mtg-sidebar h3{font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:12px}
-.mtg-ev-item{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;
-  color:var(--muted);margin-bottom:4px;transition:.2s}
-.mtg-ev-item:hover{background:#111;color:var(--text)}
-.mtg-ev-item.active{background:#1e2235;color:var(--accent);font-weight:600}
+#mtg-sidebar h3{font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.mtg-ev{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.mtg-ev:hover{background:#111;color:var(--text)}
+.mtg-ev.active{background:#1e2235;color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
 
-<!-- Loading -->
-<div id="loading">
-  <div class="spinner"></div>
-  <div class="loading-text">Loading kitchen data…</div>
-</div>
-<div id="error-banner"></div>
-
-<!-- Top bar -->
 <div id="topbar">
   <h1>🍽 Bella &amp; Bona — Kitchen</h1>
   <div class="topbar-right">
-    <span id="sync-status">●</span>
+    <span id="sync-dot">● Live</span>
     <span id="week-label"></span>
     <button id="btnMtg" onclick="openMeeting()">📋 Meeting Mode</button>
   </div>
 </div>
-
-<!-- Day tabs -->
 <div id="daytabs"></div>
-
-<!-- Main layout -->
 <div id="main">
   <div id="sidebar"></div>
   <div id="content"></div>
 </div>
-
-<!-- BOM view -->
 <div id="bom-view">
-  <h2>📦 Bill of Materials — <span id="bom-week-label"></span></h2>
+  <h2>📦 Bill of Materials — <span id="bom-week"></span></h2>
   <p class="sub">Weekly aggregate ingredient quantities</p>
   <input id="bom-search" type="text" placeholder="🔍 Search ingredients…" oninput="filterBom(this.value)">
   <table class="bom-table">
@@ -209,410 +163,1510 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <tbody id="bom-tbody"></tbody>
   </table>
 </div>
-
-<!-- Recipe modal -->
 <div id="modal-overlay" onclick="closeModalOut(event)">
   <div id="modal">
     <button id="modal-close" onclick="closeModal()">✕ Close</button>
     <div id="modal-body"></div>
   </div>
 </div>
-
-<!-- Meeting mode -->
 <div id="meeting">
   <div id="mtg-header">
     <h1>🍽 Bella &amp; Bona — Kitchen Brief</h1>
-    <div class="nav">
-      <button onclick="prevEvent()">← Prev</button>
-      <span class="counter" id="mtg-counter"></span>
-      <button onclick="nextEvent()">Next →</button>
+    <div class="mtg-nav">
+      <button onclick="prevEv()">← Prev</button>
+      <span class="mtg-counter" id="mtg-ctr"></span>
+      <button onclick="nextEv()">Next →</button>
       <button onclick="closeMeeting()">✕ Exit</button>
     </div>
   </div>
   <div id="mtg-body">
     <div id="mtg-main"></div>
-    <div id="mtg-sidebar">
-      <h3>Events</h3>
-      <div id="mtg-ev-list"></div>
-    </div>
+    <div id="mtg-sidebar"><h3>Events</h3><div id="mtg-ev-list"></div></div>
   </div>
 </div>
 
-<!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
 <script>
-// ─── Firebase init ────────────────────────────────────────────────────────────
+const WEEK_LABEL = "15 Jun\u201321 Jun 2026";
+const DAY_NAMES  = ["Monday 15/06/2026", "Tuesday 16/06/2026", "Thursday 18/06/2026"];
+const EVENTS     = [
+{
+"id": "mon-just-play",
+"day": 0,
+"date": "Monday 15/06/2026",
+"client": "Just Play",
+"menu": [
+{
+"name": "Grilled Chicken with Pesto",
+"portions": 16,
+"diet": "Meat",
+"allergens": "",
+"category": "Main - Meat",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Quinoa Salad à 130g",
+"portions": 26,
+"diet": "Vegan",
+"allergens": "",
+"category": "Salad",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Roasted Potatoes",
+"portions": 26,
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Seasonal Vegetables",
+"portions": 26,
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Vegan Grilled Chicken with Pesto",
+"portions": 10,
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"packaging": "",
+"chafing": ""
+}
+],
+"equip": []
+},
+{
+"id": "tue-paypal",
+"day": 1,
+"date": "Tuesday 16/06/2026",
+"client": "Paypal",
+"menu": [
+{
+"name": "Deep Blueberry Muffin",
+"portions": 30,
+"diet": "Vegetarian",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Double Chocolate Muffins",
+"portions": 40,
+"diet": "Vegan",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Granola Greek Yoghurt Berries",
+"portions": 40,
+"diet": "Vegetarian",
+"allergens": "Milk",
+"category": "Breakfast",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Panini Red Pesto Eggplant (Gluten Free)",
+"portions": 40,
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Sandwich",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Panini Truffle Prosciutto Mushroom",
+"portions": 40,
+"diet": "Meat",
+"allergens": "Gluten",
+"category": "Sandwich",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Scrambled Eggs",
+"portions": 80,
+"diet": "Meat",
+"allergens": "Eggs, Milk",
+"category": "Breakfast",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Tortilla Española",
+"portions": 60,
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Starter",
+"packaging": "",
+"chafing": ""
+}
+],
+"equip": []
+},
+{
+"id": "thu-gyg",
+"day": 2,
+"date": "Thursday 18/06/2026",
+"client": "GYG",
+"menu": [
+{
+"name": "Chicken Kebap",
+"portions": 380,
+"diet": "Meat",
+"allergens": "",
+"category": "Main - Meat",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Chocolate Brownie",
+"portions": 370,
+"diet": "Vegetarian",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Oriental Cous Cous ( Chefs Culinar )",
+"portions": 470,
+"diet": "Vegan",
+"allergens": "Gluten",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Pita",
+"portions": 220,
+"diet": "Vegan",
+"allergens": "Gluten",
+"category": "Bread",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Raw Chocolate Coconut Cake",
+"portions": 96,
+"diet": "Vegan",
+"allergens": "Nuts",
+"category": "Sweet",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Tzatziki",
+"portions": 380,
+"diet": "Vegetarian",
+"allergens": "Milk",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Vegan Gyros (Soy Protein)",
+"portions": 90,
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Vegan Tzatziki (1 kg batch)",
+"portions": 90,
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+}
+],
+"equip": [
+"Serving Spoons"
+]
+},
+{
+"id": "thu-just-play",
+"day": 2,
+"date": "Thursday 18/06/2026",
+"client": "Just Play",
+"menu": [
+{
+"name": "Beetroot Salad",
+"portions": 30,
+"diet": "Vegan",
+"allergens": "",
+"category": "Salad",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Brown Gravy",
+"portions": 18,
+"diet": "Vegetarian",
+"allergens": "Gluten, Celery",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Buttered Rice",
+"portions": 30,
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Steamed Broccoli",
+"portions": 30,
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Traditional Meatballs (Beef)",
+"portions": 18,
+"diet": "Meat",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Main - Meat",
+"packaging": "",
+"chafing": ""
+},
+{
+"name": "Vegan Meatballs in Tomato Sauce",
+"portions": 12,
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"packaging": "",
+"chafing": ""
+}
+],
+"equip": []
+}
+];
+const RECIPES    = {
+"Grilled Chicken with Pesto": {
+"diet": "Meat",
+"allergens": "",
+"category": "Main - Meat",
+"ingredients": [
+{
+"name": "METRO Chef Hähnchenbrust gebraten tiefgefroren ca. 90 - 110 g - 2,5 kg Beutel",
+"qty": "0.16 kg",
+"total": "2.56 kg",
+"note": ""
+},
+{
+"name": "Pesto",
+"qty": "0.02 kg",
+"total": "0.32 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Quinoa Salad à 130g": {
+"diet": "Vegan",
+"allergens": "",
+"category": "Salad",
+"ingredients": [
+{
+"name": "Quinoa",
+"qty": "0.06 kg",
+"total": "1.56 kg",
+"note": ""
+},
+{
+"name": "Arugula",
+"qty": "0.02 kg",
+"total": "0.52 kg",
+"note": ""
+},
+{
+"name": "Corn",
+"qty": "0.015 kg",
+"total": "0.39 kg",
+"note": ""
+},
+{
+"name": "Cherry Tomatoes",
+"qty": "0.015 kg",
+"total": "0.39 kg",
+"note": ""
+},
+{
+"name": "Bell Peppers",
+"qty": "0.008 kg",
+"total": "0.208 kg",
+"note": ""
+},
+{
+"name": "Zucchini",
+"qty": "0.008 kg",
+"total": "0.208 kg",
+"note": ""
+},
+{
+"name": "Olives",
+"qty": "0.004 kg",
+"total": "0.104 kg",
+"note": ""
+}
+],
+"instructions": [
+"Cook quinoa: rinse, cook w/ double water ~15 min, cool. Prep vegetables: chop rucola, halve tomatoes, dice pepper & zucchini, drain corn, keep olives whole (pitted). Combine cooled quinoa + veg; add rucola just before service."
+],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Roasted Potatoes": {
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"ingredients": [
+{
+"name": "Potatoes",
+"qty": "0.2 kg",
+"total": "5.2 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Seasonal Vegetables": {
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Side",
+"ingredients": [
+{
+"name": "Eggplant",
+"qty": "0.13 kg",
+"total": "3.39 kg",
+"note": ""
+},
+{
+"name": "Red Bell Pepper",
+"qty": "0.0652 kg",
+"total": "1.7 kg",
+"note": ""
+},
+{
+"name": "Zucchini",
+"qty": "0.13 kg",
+"total": "3.39 kg",
+"note": ""
+},
+{
+"name": "Dr. Oetker Vegetable Gold Seasoning",
+"qty": "0.00217 kg",
+"total": "0.0565 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Vegan Grilled Chicken with Pesto": {
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"ingredients": [
+{
+"name": "Vegan Chicken",
+"qty": "0.16 kg",
+"total": "1.6 kg",
+"note": ""
+},
+{
+"name": "Pesto",
+"qty": "0.02 kg",
+"total": "0.2 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Deep Blueberry Muffin": {
+"diet": "Vegetarian",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"ingredients": [
+{
+"name": "Blueberry Muffins",
+"qty": "1 bx",
+"total": "30 bx",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Double Chocolate Muffins": {
+"diet": "Vegan",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"ingredients": [
+{
+"name": "Double Chocolate Muffins",
+"qty": "1 bx",
+"total": "40 bx",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Granola Greek Yoghurt Berries": {
+"diet": "Vegetarian",
+"allergens": "Milk",
+"category": "Breakfast",
+"ingredients": [
+{
+"name": "Greek Yoghurt",
+"qty": "0.09 kg",
+"total": "3.6 kg",
+"note": ""
+},
+{
+"name": "Berry Mix",
+"qty": "0.02 bag",
+"total": "0.8 bag",
+"note": ""
+},
+{
+"name": "Granola",
+"qty": "0.02 kg",
+"total": "0.8 kg",
+"note": ""
+}
+],
+"instructions": [
+"Thaw and drain berries",
+"Mix with Yoghurt",
+"Add Granola on top"
+],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Panini Red Pesto Eggplant (Gluten Free)": {
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Sandwich",
+"ingredients": [
+{
+"name": "Gluten Free Foccacia",
+"qty": "1 pc",
+"total": "40 pc",
+"note": ""
+},
+{
+"name": "Red Pesto",
+"qty": "0.015 kg",
+"total": "0.6 kg",
+"note": ""
+},
+{
+"name": "Eggplant",
+"qty": "0.035 kg",
+"total": "1.4 kg",
+"note": ""
+},
+{
+"name": "Arugula",
+"qty": "0.0075 kg",
+"total": "0.3 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Panini Truffle Prosciutto Mushroom": {
+"diet": "Meat",
+"allergens": "Gluten",
+"category": "Sandwich",
+"ingredients": [
+{
+"name": "Panini",
+"qty": "1 pc",
+"total": "40 pc",
+"note": ""
+},
+{
+"name": "Truffle Paste",
+"qty": "0.02 kg",
+"total": "0.8 kg",
+"note": ""
+},
+{
+"name": "Prosciutto Cotto",
+"qty": "0.05 kg",
+"total": "2 kg",
+"note": ""
+},
+{
+"name": "Mushrooms",
+"qty": "0.04 kg",
+"total": "1.6 kg",
+"note": "sliced, braised"
+},
+{
+"name": "Olive oil or neutral oil",
+"qty": "0.0035 l",
+"total": "0.14 l",
+"note": ""
+},
+{
+"name": "Salt",
+"qty": "0.0003 kg",
+"total": "0.012 kg",
+"note": ""
+},
+{
+"name": "Black Pepper",
+"qty": "0.0015 kg",
+"total": "0.06 kg",
+"note": ""
+},
+{
+"name": "Balsamic Vinegar",
+"qty": "0.015 l",
+"total": "0.6 l",
+"note": ""
+},
+{
+"name": "Arugula",
+"qty": "0.015 kg",
+"total": "0.6 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Scrambled Eggs": {
+"diet": "Meat",
+"allergens": "Eggs, Milk",
+"category": "Breakfast",
+"ingredients": [
+{
+"name": "Scrambled Eggs",
+"qty": "0.15 kg",
+"total": "12 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Tortilla Española": {
+"diet": "Vegetarian",
+"allergens": "",
+"category": "Starter",
+"ingredients": [
+{
+"name": "Potatoes",
+"qty": "0.2 kg",
+"total": "12 kg",
+"note": ""
+},
+{
+"name": "Onion",
+"qty": "0.04 kg",
+"total": "2.4 kg",
+"note": ""
+},
+{
+"name": "Liquid Eggs",
+"qty": "0.09 l",
+"total": "5.4 l",
+"note": ""
+},
+{
+"name": "Big Waxy Potatoes",
+"qty": "0.2 kg",
+"total": "12 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Chicken Kebap": {
+"diet": "Meat",
+"allergens": "",
+"category": "Main - Meat",
+"ingredients": [
+{
+"name": "Chicken Kebap",
+"qty": "0.267 kg",
+"total": "101 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Chocolate Brownie": {
+"diet": "Vegetarian",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Sweet",
+"ingredients": [
+{
+"name": "Brownie",
+"qty": "0.02 box",
+"total": "7.4 box",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Oriental Cous Cous ( Chefs Culinar )": {
+"diet": "Vegan",
+"allergens": "Gluten",
+"category": "Side",
+"ingredients": [
+{
+"name": "Oriental Couscous (Chefs Culinar)",
+"qty": "0.162 kg",
+"total": "76.2 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Pita": {
+"diet": "Vegan",
+"allergens": "Gluten",
+"category": "Bread",
+"ingredients": [
+{
+"name": "Pita Bread",
+"qty": "1 pc",
+"total": "220 pc",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Raw Chocolate Coconut Cake": {
+"diet": "Vegan",
+"allergens": "Nuts",
+"category": "Sweet",
+"ingredients": [
+{
+"name": "Raw Chocolate Coconut Cake",
+"qty": "1 pcs",
+"total": "96 pcs",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Tzatziki": {
+"diet": "Vegetarian",
+"allergens": "Milk",
+"category": "Side",
+"ingredients": [
+{
+"name": "Tzatziki",
+"qty": "0.02 bucket",
+"total": "7.6 bucket",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Vegan Gyros (Soy Protein)": {
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"ingredients": [
+{
+"name": "Vegan Gyros",
+"qty": "0.3 kg",
+"total": "27 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Vegan Tzatziki (1 kg batch)": {
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Side",
+"ingredients": [
+{
+"name": "Soy yogurt (unsweetened)",
+"qty": "0.4 kg",
+"total": "36 kg",
+"note": ""
+},
+{
+"name": "Cucumber",
+"qty": "0.3 kg",
+"total": "27 kg",
+"note": ""
+},
+{
+"name": "Fresh Dill",
+"qty": "0.01 kg",
+"total": "0.9 kg",
+"note": ""
+},
+{
+"name": "Garlic",
+"qty": "0.01 kg",
+"total": "0.9 kg",
+"note": ""
+},
+{
+"name": "Olive Oil",
+"qty": "0.02 l",
+"total": "1.8 l",
+"note": ""
+},
+{
+"name": "Lemon Juice",
+"qty": "0.015 l",
+"total": "1.35 l",
+"note": ""
+},
+{
+"name": "Salt",
+"qty": "0.008 kg",
+"total": "0.72 kg",
+"note": ""
+}
+],
+"instructions": [
+"Grate cucumbers, sprinkle salt, let rest 10 min, squeeze out water. Mix with soy yogurt, chopped garlic & dill, olive oil, lemon juice, salt & pepper. Chill before serving."
+],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Beetroot Salad": {
+"diet": "Vegan",
+"allergens": "",
+"category": "Salad",
+"ingredients": [
+{
+"name": "Beetroot Salad",
+"qty": "0.25 kg",
+"total": "7.5 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Brown Gravy": {
+"diet": "Vegetarian",
+"allergens": "Gluten, Celery",
+"category": "Side",
+"ingredients": [
+{
+"name": "Brown Gravy",
+"qty": "0.15 kg",
+"total": "2.7 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Buttered Rice": {
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"ingredients": [
+{
+"name": "Buttered Rice",
+"qty": "0 kg",
+"total": "0 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Steamed Broccoli": {
+"diet": "Vegan",
+"allergens": "",
+"category": "Side",
+"ingredients": [
+{
+"name": "Broccoli",
+"qty": "0.15 kg",
+"total": "4.5 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Traditional Meatballs (Beef)": {
+"diet": "Meat",
+"allergens": "Gluten, Eggs, Milk",
+"category": "Main - Meat",
+"ingredients": [
+{
+"name": "Meatballs",
+"qty": "0.196 kg",
+"total": "3.54 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+},
+"Vegan Meatballs in Tomato Sauce": {
+"diet": "Vegan",
+"allergens": "Soy",
+"category": "Main - Vegan",
+"ingredients": [
+{
+"name": "Vegan Meatballs",
+"qty": "0.12 kg",
+"total": "1.44 kg",
+"note": ""
+},
+{
+"name": "Tomato Sauce",
+"qty": "0.08 kg",
+"total": "0.96 kg",
+"note": ""
+}
+],
+"instructions": [],
+"cooking_stages": [],
+"transport": "",
+"rational": "",
+"buffet": "",
+"regen": ""
+}
+};
+const BOM        = [
+{
+"name": "Arugula",
+"unit": "kg",
+"qty": "1.42"
+},
+{
+"name": "Balsamic Vinegar",
+"unit": "l",
+"qty": "0.6"
+},
+{
+"name": "Beetroot Salad",
+"unit": "kg",
+"qty": "7.5"
+},
+{
+"name": "Bell Peppers",
+"unit": "kg",
+"qty": "0.208"
+},
+{
+"name": "Berry Mix",
+"unit": "bag",
+"qty": "0.8"
+},
+{
+"name": "Big Waxy Potatoes",
+"unit": "kg",
+"qty": "12"
+},
+{
+"name": "Black Pepper",
+"unit": "kg",
+"qty": "0.06"
+},
+{
+"name": "Blueberry Muffins",
+"unit": "bx",
+"qty": "30"
+},
+{
+"name": "Broccoli",
+"unit": "kg",
+"qty": "4.5"
+},
+{
+"name": "Brown Gravy",
+"unit": "kg",
+"qty": "2.7"
+},
+{
+"name": "Brownie",
+"unit": "box",
+"qty": "7.4"
+},
+{
+"name": "Buttered Rice",
+"unit": "kg",
+"qty": "6"
+},
+{
+"name": "Cherry Tomatoes",
+"unit": "kg",
+"qty": "0.39"
+},
+{
+"name": "Chicken Kebap",
+"unit": "kg",
+"qty": "101"
+},
+{
+"name": "Corn",
+"unit": "kg",
+"qty": "0.39"
+},
+{
+"name": "Cucumber",
+"unit": "kg",
+"qty": "2.25"
+},
+{
+"name": "Double Chocolate Muffins",
+"unit": "bx",
+"qty": "40"
+},
+{
+"name": "Dr. Oetker Vegetable Gold Seasoning",
+"unit": "kg",
+"qty": "0.0565"
+},
+{
+"name": "Eggplant",
+"unit": "kg",
+"qty": "4.79"
+},
+{
+"name": "Fresh Dill",
+"unit": "kg",
+"qty": "0.09"
+},
+{
+"name": "Garlic",
+"unit": "kg",
+"qty": "0.09"
+},
+{
+"name": "Gluten Free Foccacia",
+"unit": "pc",
+"qty": "40"
+},
+{
+"name": "Granola",
+"unit": "kg",
+"qty": "0.8"
+},
+{
+"name": "Greek Yoghurt",
+"unit": "kg",
+"qty": "3.6"
+},
+{
+"name": "Lemon Juice",
+"unit": "l",
+"qty": "0.09"
+},
+{
+"name": "Liquid Eggs",
+"unit": "l",
+"qty": "5.4"
+},
+{
+"name": "Meatballs",
+"unit": "kg",
+"qty": "3.54"
+},
+{
+"name": "METRO Chef Hähnchenbrust gebraten tiefgefroren ca. 90 - 110 g - 2,5 kg Beutel",
+"unit": "kg",
+"qty": "2.56"
+},
+{
+"name": "Mushrooms",
+"unit": "kg",
+"qty": "1.6"
+},
+{
+"name": "Olive oil or neutral oil",
+"unit": "l",
+"qty": "0.14"
+},
+{
+"name": "Olive Oil",
+"unit": "l",
+"qty": "0.18"
+},
+{
+"name": "Olives",
+"unit": "kg",
+"qty": "0.104"
+},
+{
+"name": "Onion",
+"unit": "kg",
+"qty": "2.4"
+},
+{
+"name": "Oriental Couscous (Chefs Culinar)",
+"unit": "kg",
+"qty": "76.2"
+},
+{
+"name": "Panini",
+"unit": "pc",
+"qty": "40"
+},
+{
+"name": "Pesto",
+"unit": "kg",
+"qty": "0.52"
+},
+{
+"name": "Pita Bread",
+"unit": "pc",
+"qty": "220"
+},
+{
+"name": "Potatoes",
+"unit": "kg",
+"qty": "17.2"
+},
+{
+"name": "Prosciutto Cotto",
+"unit": "kg",
+"qty": "2"
+},
+{
+"name": "Quinoa",
+"unit": "kg",
+"qty": "1.56"
+},
+{
+"name": "Raw Chocolate Coconut Cake",
+"unit": "pcs",
+"qty": "96"
+},
+{
+"name": "Red Bell Pepper",
+"unit": "kg",
+"qty": "1.7"
+},
+{
+"name": "Red Pesto",
+"unit": "kg",
+"qty": "0.6"
+},
+{
+"name": "Salt",
+"unit": "kg",
+"qty": "0.462"
+},
+{
+"name": "Scrambled Eggs",
+"unit": "kg",
+"qty": "12"
+},
+{
+"name": "Soy yogurt (unsweetened)",
+"unit": "kg",
+"qty": "3.15"
+},
+{
+"name": "Tomato Sauce",
+"unit": "kg",
+"qty": "0.96"
+},
+{
+"name": "Truffle Paste",
+"unit": "kg",
+"qty": "0.8"
+},
+{
+"name": "Tzatziki",
+"unit": "kg",
+"qty": "27.1"
+},
+{
+"name": "Vegan Chicken",
+"unit": "kg",
+"qty": "1.6"
+},
+{
+"name": "Vegan Gyros",
+"unit": "kg",
+"qty": "27"
+},
+{
+"name": "Vegan Meatballs",
+"unit": "kg",
+"qty": "1.44"
+},
+{
+"name": "Zucchini",
+"unit": "kg",
+"qty": "3.6"
+}
+];
+
+// ─── Firebase (checklist only) ────────────────────────────────────────────────
 firebase.initializeApp({
-  apiKey:            "AIzaSyAAli1-_46ehgM7hzaLLNybkP4MIUw0XZQ",
-  authDomain:        "stock-count-d0abf.firebaseapp.com",
-  projectId:         "stock-count-d0abf",
-  storageBucket:     "stock-count-d0abf.firebasestorage.app",
-  messagingSenderId: "1038826498876",
-  appId:             "1:1038826498876:web:fb1f017d91d5ac1188cc39"
+  apiKey:"AIzaSyAAli1-_46ehgM7hzaLLNybkP4MIUw0XZQ",
+  authDomain:"stock-count-d0abf.firebaseapp.com",
+  projectId:"stock-count-d0abf",
+  storageBucket:"stock-count-d0abf.firebasestorage.app",
+  messagingSenderId:"1038826498876",
+  appId:"1:1038826498876:web:fb1f017d91d5ac1188cc39"
 });
 const db = firebase.firestore();
 
-// ─── App state ────────────────────────────────────────────────────────────────
-let EVENTS = [], RECIPES = {}, BOM = [], DAY_NAMES = [], WEEK_LABEL = '';
-const S = { day: 0, evId: null, mtgIdx: 0, bomMode: false };
-const checks = {};          // local mirror
-const clUnsubMap = {};      // per-event Firestore listeners
+// ─── State ────────────────────────────────────────────────────────────────────
+const S = {day:0, evId:null, mtgIdx:0, bomMode:false};
+const checks = {};
+const unsubs = {};
 
-// ─── Bootstrap: load all kitchen data ─────────────────────────────────────────
-async function loadData() {
-  try {
-    const [metaSnap, evSnap, recSnap, bomSnap] = await Promise.all([
-      db.doc('kitchen/meta').get(),
-      db.doc('kitchen/events').get(),
-      db.doc('kitchen/recipes').get(),
-      db.doc('kitchen/bom').get(),
-    ]);
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+document.getElementById('week-label').textContent = WEEK_LABEL;
+document.getElementById('bom-week').textContent   = WEEK_LABEL;
+buildTabs();
+setDay(0);
+EVENTS.forEach(ev => subscribeChecklist(ev.id));
 
-    if (!metaSnap.exists) {
-      showError('No kitchen data found in Firebase. Run sync_to_firebase.py first.');
-      return;
-    }
-
-    const meta = metaSnap.data();
-    WEEK_LABEL = meta.weekLabel || '';
-    DAY_NAMES  = meta.dayNames  || [];
-
-    EVENTS = evSnap.exists ? (evSnap.data().data || []) : [];
-    BOM    = bomSnap.exists ? (bomSnap.data().items || []) : [];
-
-    const recList = recSnap.exists ? (recSnap.data().data || []) : [];
-    RECIPES = {};
-    recList.forEach(r => { const {name, ...rest} = r; RECIPES[name] = rest; });
-
-    document.getElementById('week-label').textContent = WEEK_LABEL;
-    document.getElementById('bom-week-label').textContent = WEEK_LABEL;
-    document.getElementById('sync-status').textContent = '● Live';
-    document.getElementById('sync-status').classList.add('live');
-
-    buildDayTabs();
-    setDay(0);
-    hide('loading');
-
-    // Listen for live checklist updates from all events
-    EVENTS.forEach(ev => subscribeChecklist(ev.id));
-
-  } catch (err) {
-    showError(`Firebase error: ${err.message}. Check Firestore rules allow read.`);
-  }
-}
-
-// ─── Checklist — Firebase real-time ──────────────────────────────────────────
-function subscribeChecklist(evId) {
-  if (clUnsubMap[evId]) return;
-  clUnsubMap[evId] = db.doc(`checklists/${evId}`).onSnapshot(snap => {
-    if (snap.exists) {
-      const remote = snap.data().checks || {};
-      checks[evId] = remote;
-      if (S.evId === evId) renderContent();
-      renderSidebar();
-    }
-  });
-}
-
-async function saveCheck(evId, key, val) {
-  checks[evId] = checks[evId] || {};
-  checks[evId][key] = val;
-  renderSidebar();
-  renderContent();
-  try {
-    await db.doc(`checklists/${evId}`).set({
-      checks: checks[evId],
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-  } catch (e) { console.warn('Checklist save failed', e); }
-}
-
-// ─── UI builders ──────────────────────────────────────────────────────────────
-function buildDayTabs() {
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function buildTabs(){
   const c = document.getElementById('daytabs');
-  c.innerHTML = '';
-  DAY_NAMES.forEach((d, i) => {
+  DAY_NAMES.forEach((d,i)=>{
     const t = document.createElement('div');
-    t.className = 'daytab';
-    t.textContent = d.split(' ')[0] + ' ' + d.split(' ')[1];
-    t.onclick = () => { S.bomMode = false; setDay(i); };
-    c.appendChild(t);
+    t.className='daytab'; t.textContent=d.split(' ')[0]+' '+d.split(' ')[1];
+    t.onclick=()=>{S.bomMode=false;setDay(i);}; c.appendChild(t);
   });
-  const bom = document.createElement('div');
-  bom.className = 'daytab bom-tab'; bom.textContent = '📦 BOM';
-  bom.onclick = openBom;
-  c.appendChild(bom);
+  const b=document.createElement('div');
+  b.className='daytab bom-tab';b.textContent='📦 BOM';b.onclick=openBom;c.appendChild(b);
 }
-
-function setDay(d) {
-  S.day = d; S.bomMode = false;
-  document.querySelectorAll('.daytab').forEach((t, i) => t.classList.toggle('active', i === d));
-  show('main'); hide('bom-view');
+function setDay(d){
+  S.day=d;S.bomMode=false;
+  document.querySelectorAll('.daytab').forEach((t,i)=>t.classList.toggle('active',i===d));
+  document.getElementById('main').style.display='flex';
+  document.getElementById('bom-view').style.display='none';
   renderSidebar();
-  const first = EVENTS.find(e => e.day === d);
-  if (first) selEv(first.id); else document.getElementById('content').innerHTML = '';
+  const first=EVENTS.find(e=>e.day===d);
+  if(first)selEv(first.id); else document.getElementById('content').innerHTML='';
 }
-
-function openBom() {
-  S.bomMode = true;
-  document.querySelectorAll('.daytab').forEach(t => t.classList.remove('active'));
+function openBom(){
+  S.bomMode=true;
+  document.querySelectorAll('.daytab').forEach(t=>t.classList.remove('active'));
   document.querySelector('.daytab.bom-tab').classList.add('active');
-  hide('main'); show('bom-view');
+  document.getElementById('main').style.display='none';
+  document.getElementById('bom-view').style.display='block';
   renderBom();
 }
 
-function renderSidebar() {
-  const dayEvs = EVENTS.filter(e => e.day === S.day);
-  const sb = document.getElementById('sidebar');
-  sb.innerHTML = '';
-  dayEvs.forEach(ev => {
-    const p = pct(ev);
-    const div = document.createElement('div');
-    div.className = 'ev-card' + (ev.id === S.evId ? ' active' : '');
-    div.innerHTML = `
-      <div class="ev-client">${ev.client}</div>
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const sb=document.getElementById('sidebar'); sb.innerHTML='';
+  EVENTS.filter(e=>e.day===S.day).forEach(ev=>{
+    const p=pct(ev);
+    const d=document.createElement('div');
+    d.className='ev-card'+(ev.id===S.evId?' active':'');
+    d.innerHTML=`<div class="ev-client">${ev.client}</div>
       <div class="ev-meta">${ev.date}</div>
       <div class="ev-meta">${ev.menu.length} recipes</div>
-      <div class="ev-pct" style="color:${p===100?'var(--green)':p>0?'var(--yellow)':'var(--muted)'}">
-        ${p}% complete</div>
+      <div class="ev-pct" style="color:${p===100?'var(--green)':p>0?'var(--yellow)':'var(--muted)'}">${p}% complete</div>
       <div class="pct-bar"><div class="pct-fill" style="width:${p}%"></div></div>`;
-    div.onclick = () => selEv(ev.id);
-    sb.appendChild(div);
+    d.onclick=()=>selEv(ev.id); sb.appendChild(d);
   });
 }
+function selEv(id){S.evId=id;renderSidebar();renderContent();}
 
-function selEv(id) { S.evId = id; renderSidebar(); renderContent(); }
-
-function renderContent() {
-  const ev = EVENTS.find(e => e.id === S.evId);
-  if (!ev) return;
-  const c = checks[ev.id] || {};
-
-  const eqHtml = ev.equip.length
-    ? ev.equip.map((e, i) => {
-        const done = !!c[`eq-${i}`];
-        return `<label class="equip-tag ${done?'done':''}">
-          <input type="checkbox" ${done?'checked':''} onchange="togEq('${ev.id}',${i})"> ${e}
-        </label>`;
-      }).join('')
-    : '<span class="empty-note">No equipment specified</span>';
-
-  const menuHtml = ev.menu.map((m, i) => {
-    const done = !!c[`mn-${i}`];
-    const dc = dietClass(m.diet);
+// ─── Content ──────────────────────────────────────────────────────────────────
+function renderContent(){
+  const ev=EVENTS.find(e=>e.id===S.evId); if(!ev)return;
+  const c=checks[ev.id]||{};
+  const eqH=ev.equip.length
+    ?ev.equip.map((e,i)=>`<label class="equip-tag ${c['eq-'+i]?'done':''}">
+        <input type="checkbox" ${c['eq-'+i]?'checked':''} onchange="togEq('${ev.id}',${i})"> ${e}
+      </label>`).join('')
+    :'<span class="empty-note">No equipment specified</span>';
+  const mnH=ev.menu.map((m,i)=>{
+    const done=!!c['mn-'+i];const dc=dClass(m.diet);
     return `<tr class="${done?'done':''}">
-      <td><input type="checkbox" ${done?'checked':''} onchange="togMn('${ev.id}',${i})"
-        style="accent-color:var(--green);cursor:pointer"></td>
+      <td><input type="checkbox" ${done?'checked':''} onchange="togMn('${ev.id}',${i})" style="accent-color:var(--green);cursor:pointer"></td>
       <td><span class="recipe-link" onclick="openRecipe(${JSON.stringify(m.name)})">${m.name}</span></td>
       <td><span class="diet-badge diet-${dc}">${m.diet||'—'}</span></td>
       <td style="font-weight:700;color:var(--accent)">${m.portions||'—'}</td>
       <td style="color:var(--muted)">${m.category||'—'}</td>
       <td style="color:var(--muted)">${m.packaging||'—'}</td>
-      <td style="color:var(--muted)">${m.chafing||'—'}</td>
-    </tr>`;
+      <td style="color:var(--muted)">${m.chafing||'—'}</td></tr>`;
   }).join('');
-
-  document.getElementById('content').innerHTML = `
-    <h2>${ev.client}</h2>
-    <p class="sub">${ev.date}</p>
-    <div class="section-card">
-      <h3>🎒 Equipment &amp; Kit</h3>
+  document.getElementById('content').innerHTML=`
+    <h2>${ev.client}</h2><p class="sub">${ev.date}</p>
+    <div class="section-card"><h3>🎒 Equipment &amp; Kit</h3>
       <div class="bulk-btns">
         <button class="bulk-btn" onclick="chkAll('${ev.id}','eq')">✓ Check All</button>
         <button class="bulk-btn" onclick="unchkAll('${ev.id}','eq')">✗ Uncheck All</button>
       </div>
-      <div class="equip-list">${eqHtml}</div>
-    </div>
-    <div class="section-card">
-      <h3>🍽 Menu</h3>
+      <div class="equip-list">${eqH}</div></div>
+    <div class="section-card"><h3>🍽 Menu</h3>
       <div class="bulk-btns">
         <button class="bulk-btn" onclick="chkAll('${ev.id}','mn')">✓ Check All</button>
         <button class="bulk-btn" onclick="unchkAll('${ev.id}','mn')">✗ Uncheck All</button>
       </div>
       <table class="menu-table">
-        <thead><tr>
-          <th></th><th>Recipe</th><th>Diet</th><th>Portions</th>
-          <th>Category</th><th>Packaging</th><th>Chafing</th>
-        </tr></thead>
-        <tbody>${menuHtml}</tbody>
-      </table>
-    </div>`;
+        <thead><tr><th></th><th>Recipe</th><th>Diet</th><th>Portions</th><th>Category</th><th>Packaging</th><th>Chafing</th></tr></thead>
+        <tbody>${mnH}</tbody></table></div>`;
 }
 
-// ─── Checks ───────────────────────────────────────────────────────────────────
-function pct(ev) {
-  const c = checks[ev.id] || {};
-  const total = ev.equip.length + ev.menu.length;
-  if (!total) return 0;
-  let done = 0;
-  ev.equip.forEach((_, i) => { if (c[`eq-${i}`]) done++; });
-  ev.menu.forEach((_, i)  => { if (c[`mn-${i}`]) done++; });
-  return Math.round(done / total * 100);
+// ─── Checklist + Firebase ─────────────────────────────────────────────────────
+function subscribeChecklist(evId){
+  if(unsubs[evId])return;
+  unsubs[evId]=db.doc('checklists/'+evId).onSnapshot(snap=>{
+    if(snap.exists){checks[evId]=snap.data().checks||{};}
+    else{checks[evId]={};}
+    if(S.evId===evId)renderContent();
+    renderSidebar();
+  });
 }
-function togEq(id, i) { const c = checks[id]||{}; saveCheck(id, `eq-${i}`, !c[`eq-${i}`]); }
-function togMn(id, i) { const c = checks[id]||{}; saveCheck(id, `mn-${i}`, !c[`mn-${i}`]); }
-function chkAll(id, type) {
-  const ev = EVENTS.find(e => e.id === id);
-  const arr = type === 'eq' ? ev.equip : ev.menu;
-  const upd = checks[id] || {};
-  arr.forEach((_, i) => upd[`${type}-${i}`] = true);
-  checks[id] = upd;
-  renderSidebar(); renderContent();
-  db.doc(`checklists/${id}`).set({ checks: upd, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(console.warn);
+function pct(ev){
+  const c=checks[ev.id]||{};
+  const total=ev.equip.length+ev.menu.length; if(!total)return 0;
+  let done=0;
+  ev.equip.forEach((_,i)=>{if(c['eq-'+i])done++;});
+  ev.menu.forEach((_,i)=>{if(c['mn-'+i])done++;});
+  return Math.round(done/total*100);
 }
-function unchkAll(id, type) {
-  const ev = EVENTS.find(e => e.id === id);
-  const arr = type === 'eq' ? ev.equip : ev.menu;
-  const upd = checks[id] || {};
-  arr.forEach((_, i) => upd[`${type}-${i}`] = false);
-  checks[id] = upd;
-  renderSidebar(); renderContent();
-  db.doc(`checklists/${id}`).set({ checks: upd, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(console.warn);
+function saveCheck(id,key,val){
+  checks[id]=checks[id]||{}; checks[id][key]=val;
+  renderSidebar();renderContent();
+  db.doc('checklists/'+id).set({checks:checks[id],updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.warn);
+}
+function togEq(id,i){const c=checks[id]||{};saveCheck(id,'eq-'+i,!c['eq-'+i]);}
+function togMn(id,i){const c=checks[id]||{};saveCheck(id,'mn-'+i,!c['mn-'+i]);}
+function chkAll(id,type){
+  const ev=EVENTS.find(e=>e.id===id);const arr=type==='eq'?ev.equip:ev.menu;
+  const u=checks[id]||{};arr.forEach((_,i)=>u[type+'-'+i]=true);checks[id]=u;
+  renderSidebar();renderContent();
+  db.doc('checklists/'+id).set({checks:u,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.warn);
+}
+function unchkAll(id,type){
+  const ev=EVENTS.find(e=>e.id===id);const arr=type==='eq'?ev.equip:ev.menu;
+  const u=checks[id]||{};arr.forEach((_,i)=>u[type+'-'+i]=false);checks[id]=u;
+  renderSidebar();renderContent();
+  db.doc('checklists/'+id).set({checks:u,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.warn);
 }
 
 // ─── Recipe modal ─────────────────────────────────────────────────────────────
-function openRecipe(name) {
-  const r = RECIPES[name];
-  const body = document.getElementById('modal-body');
-  if (!r) {
-    body.innerHTML = `<h2>${name}</h2><p class="empty-note">No recipe detail found.</p>`;
-  } else {
-    const aTags = r.allergens
-      ? r.allergens.split(',').map(a => `<span class="modal-tag allergen">⚠ ${a.trim()}</span>`).join('')
-      : '';
-    const dc = dietClass(r.diet);
-
-    const ingHtml = (r.ingredients||[]).length
-      ? `<table class="ing-table"><thead><tr><th>Ingredient</th><th>Per Portion</th><th>Total</th><th>Note</th></tr></thead><tbody>
-          ${(r.ingredients||[]).map(g => `<tr>
-            <td>${g.name}</td>
-            <td style="white-space:nowrap">${g.qty}</td>
-            <td style="color:var(--accent);white-space:nowrap">${g.total}</td>
-            <td class="note">${g.note||''}</td>
-          </tr>`).join('')}
-        </tbody></table>`
-      : '<p class="empty-note">No ingredient data.</p>';
-
-    const stepsHtml = (r.instructions||[]).length
-      ? `<ol class="step-list">${(r.instructions||[]).map(s => `<li>${s}</li>`).join('')}</ol>`
-      : '<p class="empty-note">No prep steps recorded.</p>';
-
-    const cookHtml = (r.cooking_stages||[]).length
-      ? `<table class="cooking-table"><thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Humidity</th><th>Notes</th></tr></thead><tbody>
-          ${(r.cooking_stages||[]).map(s => `<tr>
-            <td>${s.stage}</td><td>${s.mode}</td><td>${s.temp}</td>
-            <td>${s.time}</td><td>${s.humidity}</td><td style="color:var(--muted)">${s.notes||''}</td>
-          </tr>`).join('')}
-        </tbody></table>`
-      : '<p class="empty-note">No cooking stage data.</p>';
-
-    body.innerHTML = `
-      <h2>${name}</h2>
-      <div class="modal-meta">
-        <span class="diet-badge diet-${dc}">${r.diet||'Unknown'}</span>
-        <span class="modal-tag" style="background:var(--surface2);color:var(--muted)">${r.category||''}</span>
-        ${aTags}
-      </div>
-      <div class="modal-section"><h4>📦 Ingredients</h4>${ingHtml}</div>
-      <div class="modal-section"><h4>📋 Preparation Steps</h4>${stepsHtml}</div>
-      <div class="modal-section"><h4>🌡 Cooking Stages</h4>${cookHtml}</div>
+function openRecipe(name){
+  const r=RECIPES[name];const body=document.getElementById('modal-body');
+  if(!r){body.innerHTML=`<h2>${name}</h2><p class="empty-note">No recipe detail.</p>`;}
+  else{
+    const aTags=(r.allergens||'').split(',').filter(Boolean).map(a=>`<span class="modal-tag allergen">⚠ ${a.trim()}</span>`).join('');
+    const dc=dClass(r.diet);
+    const ingH=(r.ingredients||[]).length?`<table class="ing-table">
+      <thead><tr><th>Ingredient</th><th>Per Portion</th><th>Total</th><th>Note</th></tr></thead>
+      <tbody>${(r.ingredients||[]).map(g=>`<tr><td>${g.name}</td>
+        <td style="white-space:nowrap">${g.qty}</td>
+        <td style="color:var(--accent);white-space:nowrap">${g.total}</td>
+        <td class="note-cell">${g.note||''}</td></tr>`).join('')}</tbody></table>`
+      :'<p class="empty-note">No ingredient data.</p>';
+    const stH=(r.instructions||[]).length?`<ol class="step-list">${(r.instructions||[]).map(s=>`<li>${s}</li>`).join('')}</ol>`:'<p class="empty-note">No prep steps recorded.</p>';
+    const ckH=(r.cooking_stages||[]).length?`<table class="cook-table">
+      <thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Humidity</th><th>Notes</th></tr></thead>
+      <tbody>${(r.cooking_stages||[]).map(s=>`<tr><td>${s.stage}</td><td>${s.mode}</td><td>${s.temp}</td><td>${s.time}</td><td>${s.humidity}</td><td style="color:var(--muted)">${s.notes||''}</td></tr>`).join('')}</tbody></table>`
+      :'<p class="empty-note">No cooking stage data.</p>';
+    body.innerHTML=`<h2>${name}</h2>
+      <div class="modal-meta"><span class="diet-badge diet-${dc}">${r.diet||'Unknown'}</span>
+        <span class="modal-tag" style="background:var(--surface2);color:var(--muted)">${r.category||''}</span>${aTags}</div>
+      <div class="modal-section"><h4>📦 Ingredients</h4>${ingH}</div>
+      <div class="modal-section"><h4>📋 Preparation Steps</h4>${stH}</div>
+      <div class="modal-section"><h4>🌡 Cooking Stages</h4>${ckH}</div>
       <div class="modal-section"><h4>🚚 Logistics &amp; Holding</h4>
-        <div class="logistics-grid">
-          <div class="log-item"><div class="log-label">🚚 Transport</div>
-            <div class="log-val">${r.transport||'<em class="empty-note">—</em>'}</div></div>
-          <div class="log-item"><div class="log-label">📊 Buffet Stability</div>
-            <div class="log-val">${r.buffet||'<em class="empty-note">—</em>'}</div></div>
-          <div class="log-item"><div class="log-label">🔥 Rational/Regen</div>
-            <div class="log-val">${r.rational||'<em class="empty-note">—</em>'}</div></div>
-          <div class="log-item"><div class="log-label">♻ Regeneration</div>
-            <div class="log-val">${r.regen||'<em class="empty-note">—</em>'}</div></div>
-        </div>
-      </div>`;
+        <div class="log-grid">
+          <div class="log-item"><div class="log-label">🚚 Transport</div><div class="log-val">${r.transport||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">📊 Buffet Stability</div><div class="log-val">${r.buffet||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">🔥 Rational/Regen</div><div class="log-val">${r.rational||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">♻ Regeneration</div><div class="log-val">${r.regen||'<em class="empty-note">—</em>'}</div></div>
+        </div></div>`;
   }
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOut(e) { if (e.target.id === 'modal-overlay') closeModal(); }
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function closeModalOut(e){if(e.target.id==='modal-overlay')closeModal();}
 
 // ─── BOM ──────────────────────────────────────────────────────────────────────
-function renderBom() {
-  document.getElementById('bom-tbody').innerHTML = BOM.map((b, i) => `
-    <tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td>${b.name}</td>
-      <td style="color:var(--muted)">${b.unit}</td>
-      <td class="qty-val">${b.qty}</td>
-    </tr>`).join('');
+function renderBom(){
+  document.getElementById('bom-tbody').innerHTML=BOM.map((b,i)=>`<tr>
+    <td style="color:var(--muted)">${i+1}</td><td>${b.name}</td>
+    <td style="color:var(--muted)">${b.unit}</td><td class="qty-val">${b.qty}</td></tr>`).join('');
 }
-function filterBom(q) {
-  document.querySelectorAll('#bom-tbody tr').forEach(r => {
-    r.style.display = r.cells[1].textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+function filterBom(q){
+  document.querySelectorAll('#bom-tbody tr').forEach(r=>{
+    r.style.display=r.cells[1].textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
   });
 }
 
-// ─── Meeting mode ─────────────────────────────────────────────────────────────
-function openMeeting() {
-  S.mtgIdx = 0;
-  document.getElementById('meeting').classList.add('open');
-  document.getElementById('mtg-ev-list').innerHTML = EVENTS.map((ev, i) => `
-    <div class="mtg-ev-item${i===0?' active':''}" onclick="jumpMtg(${i})">
-      ${ev.date.split(' ')[0]} · ${ev.client}
-    </div>`).join('');
-  renderMeeting();
-  document.addEventListener('keydown', mtgKeys);
+// ─── Meeting ─────────────────────────────────────────────────────────────────
+function openMeeting(){
+  S.mtgIdx=0;document.getElementById('meeting').classList.add('open');
+  document.getElementById('mtg-ev-list').innerHTML=EVENTS.map((ev,i)=>`
+    <div class="mtg-ev${i===0?' active':''}" onclick="jumpMtg(${i})">${ev.date.split(' ')[0]} · ${ev.client}</div>`).join('');
+  renderMtg();document.addEventListener('keydown',mtgKey);
 }
-function closeMeeting() {
-  document.getElementById('meeting').classList.remove('open');
-  document.removeEventListener('keydown', mtgKeys);
-}
-function mtgKeys(e) {
-  if (e.key === 'Escape') closeMeeting();
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextEvent();
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevEvent();
-}
-function nextEvent() { if (S.mtgIdx < EVENTS.length-1) { S.mtgIdx++; renderMeeting(); } }
-function prevEvent() { if (S.mtgIdx > 0) { S.mtgIdx--; renderMeeting(); } }
-function jumpMtg(i) { S.mtgIdx = i; renderMeeting(); }
-function renderMeeting() {
-  const ev = EVENTS[S.mtgIdx];
-  document.getElementById('mtg-counter').textContent = `${S.mtgIdx+1} / ${EVENTS.length}`;
-  document.querySelectorAll('.mtg-ev-item').forEach((el, i) => el.classList.toggle('active', i===S.mtgIdx));
-  document.getElementById('mtg-main').innerHTML = `
-    <h2>${ev.client}</h2>
-    <p class="mtg-date">${ev.date} &nbsp;·&nbsp; ${ev.menu.length} recipes</p>
-    <div class="mtg-recipes">${ev.menu.map(m => {
-      const dc = dietClass(m.diet);
-      return `<div class="mtg-recipe-card">
-        <div class="rc-portions">${m.portions}</div>
-        <div class="rc-name">${m.name}</div>
-        <div class="rc-meta"><span class="diet-badge diet-${dc}">${m.diet||'—'}</span> ${m.category||''}</div>
-        ${m.allergens ? `<div class="rc-meta" style="margin-top:6px;color:#fdba74;font-size:.75rem">⚠ ${m.allergens}</div>` : ''}
-      </div>`;
-    }).join('')}</div>`;
+function closeMeeting(){document.getElementById('meeting').classList.remove('open');document.removeEventListener('keydown',mtgKey);}
+function mtgKey(e){if(e.key==='Escape')closeMeeting();if(e.key==='ArrowRight'||e.key==='ArrowDown')nextEv();if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevEv();}
+function nextEv(){if(S.mtgIdx<EVENTS.length-1){S.mtgIdx++;renderMtg();}}
+function prevEv(){if(S.mtgIdx>0){S.mtgIdx--;renderMtg();}}
+function jumpMtg(i){S.mtgIdx=i;renderMtg();}
+function renderMtg(){
+  const ev=EVENTS[S.mtgIdx];
+  document.getElementById('mtg-ctr').textContent=`${S.mtgIdx+1} / ${EVENTS.length}`;
+  document.querySelectorAll('.mtg-ev').forEach((el,i)=>el.classList.toggle('active',i===S.mtgIdx));
+  document.getElementById('mtg-main').innerHTML=`<h2>${ev.client}</h2>
+    <p class="mtg-date">${ev.date} · ${ev.menu.length} recipes</p>
+    <div class="mtg-recipes">${ev.menu.map(m=>{const dc=dClass(m.diet);return`<div class="mtg-card">
+      <div class="rc-portions">${m.portions}</div>
+      <div class="rc-name">${m.name}</div>
+      <div class="rc-meta"><span class="diet-badge diet-${dc}">${m.diet||'—'}</span> ${m.category||''}</div>
+      ${m.allergens?`<div class="rc-meta" style="margin-top:6px;color:#fdba74;font-size:.75rem">⚠ ${m.allergens}</div>`:''}</div>`;}).join('')}</div>`;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function dietClass(d) {
-  if (!d) return 'other';
-  const l = d.toLowerCase();
-  if (l.includes('meat')) return 'Meat';
-  if (l.includes('vegan')) return 'Vegan';
-  if (l.includes('vegetarian')) return 'Vegetarian';
-  if (l.includes('pescatarian')) return 'Pescatarian';
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function dClass(d){
+  if(!d)return 'other';const l=d.toLowerCase();
+  if(l.includes('meat'))return 'Meat';if(l.includes('vegan'))return 'Vegan';
+  if(l.includes('vegetarian'))return 'Vegetarian';if(l.includes('pescatarian'))return 'Pescatarian';
   return 'other';
 }
-function show(id) { document.getElementById(id).style.display = id === 'main' ? 'flex' : 'block'; }
-function hide(id) { document.getElementById(id).style.display = 'none'; }
-function showError(msg) {
-  hide('loading');
-  const b = document.getElementById('error-banner');
-  b.textContent = msg; b.style.display = 'block';
-}
-
-// ─── Start ────────────────────────────────────────────────────────────────────
-loadData();
 </script>
 </body>
 </html>

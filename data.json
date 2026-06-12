@@ -1,0 +1,1283 @@
+{
+  "weekLabel": "15 Jun–21 Jun 2026",
+  "dayNames": [
+    "Monday 15/06/2026",
+    "Tuesday 16/06/2026",
+    "Thursday 18/06/2026"
+  ],
+  "events": [
+    {
+      "id": "mon-just-play",
+      "day": 0,
+      "date": "Monday 15/06/2026",
+      "client": "Just Play",
+      "menu": [
+        {
+          "name": "Grilled Chicken with Pesto",
+          "portions": 16,
+          "diet": "Meat",
+          "allergens": "",
+          "category": "Main - Meat",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Quinoa Salad à 130g",
+          "portions": 26,
+          "diet": "Vegan",
+          "allergens": "",
+          "category": "Salad",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Roasted Potatoes",
+          "portions": 26,
+          "diet": "Vegan",
+          "allergens": "",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Seasonal Vegetables",
+          "portions": 26,
+          "diet": "Vegetarian",
+          "allergens": "",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Vegan Grilled Chicken with Pesto",
+          "portions": 10,
+          "diet": "Vegan",
+          "allergens": "Soy",
+          "category": "Main - Vegan",
+          "packaging": "",
+          "chafing": ""
+        }
+      ],
+      "equip": []
+    },
+    {
+      "id": "tue-paypal",
+      "day": 1,
+      "date": "Tuesday 16/06/2026",
+      "client": "Paypal",
+      "menu": [
+        {
+          "name": "Deep Blueberry Muffin",
+          "portions": 30,
+          "diet": "Vegetarian",
+          "allergens": "Gluten, Eggs, Milk",
+          "category": "Sweet",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Double Chocolate Muffins",
+          "portions": 40,
+          "diet": "Vegan",
+          "allergens": "Gluten, Eggs, Milk",
+          "category": "Sweet",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Granola Greek Yoghurt Berries",
+          "portions": 40,
+          "diet": "Vegetarian",
+          "allergens": "Milk",
+          "category": "Breakfast",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Panini Red Pesto Eggplant (Gluten Free)",
+          "portions": 40,
+          "diet": "Vegetarian",
+          "allergens": "",
+          "category": "Sandwich",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Panini Truffle Prosciutto Mushroom",
+          "portions": 40,
+          "diet": "Meat",
+          "allergens": "Gluten",
+          "category": "Sandwich",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Scrambled Eggs",
+          "portions": 80,
+          "diet": "Meat",
+          "allergens": "Eggs, Milk",
+          "category": "Breakfast",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Tortilla Española",
+          "portions": 60,
+          "diet": "Vegetarian",
+          "allergens": "",
+          "category": "Starter",
+          "packaging": "",
+          "chafing": ""
+        }
+      ],
+      "equip": []
+    },
+    {
+      "id": "thu-gyg",
+      "day": 2,
+      "date": "Thursday 18/06/2026",
+      "client": "GYG",
+      "menu": [
+        {
+          "name": "Chicken Kebap",
+          "portions": 380,
+          "diet": "Meat",
+          "allergens": "",
+          "category": "Main - Meat",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Chocolate Brownie",
+          "portions": 370,
+          "diet": "Vegetarian",
+          "allergens": "Gluten, Eggs, Milk",
+          "category": "Sweet",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Oriental Cous Cous ( Chefs Culinar )",
+          "portions": 470,
+          "diet": "Vegan",
+          "allergens": "Gluten",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Pita",
+          "portions": 220,
+          "diet": "Vegan",
+          "allergens": "Gluten",
+          "category": "Bread",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Raw Chocolate Coconut Cake",
+          "portions": 96,
+          "diet": "Vegan",
+          "allergens": "Nuts",
+          "category": "Sweet",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Tzatziki",
+          "portions": 380,
+          "diet": "Vegetarian",
+          "allergens": "Milk",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Vegan Gyros (Soy Protein)",
+          "portions": 90,
+          "diet": "Vegan",
+          "allergens": "Soy",
+          "category": "Main - Vegan",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Vegan Tzatziki (1 kg batch)",
+          "portions": 90,
+          "diet": "Vegan",
+          "allergens": "Soy",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        }
+      ],
+      "equip": [
+        "Serving Spoons"
+      ]
+    },
+    {
+      "id": "thu-just-play",
+      "day": 2,
+      "date": "Thursday 18/06/2026",
+      "client": "Just Play",
+      "menu": [
+        {
+          "name": "Beetroot Salad",
+          "portions": 30,
+          "diet": "Vegan",
+          "allergens": "",
+          "category": "Salad",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Brown Gravy",
+          "portions": 18,
+          "diet": "Vegetarian",
+          "allergens": "Gluten, Celery",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Buttered Rice",
+          "portions": 30,
+          "diet": "Vegan",
+          "allergens": "",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Steamed Broccoli",
+          "portions": 30,
+          "diet": "Vegan",
+          "allergens": "",
+          "category": "Side",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Traditional Meatballs (Beef)",
+          "portions": 18,
+          "diet": "Meat",
+          "allergens": "Gluten, Eggs, Milk",
+          "category": "Main - Meat",
+          "packaging": "",
+          "chafing": ""
+        },
+        {
+          "name": "Vegan Meatballs in Tomato Sauce",
+          "portions": 12,
+          "diet": "Vegan",
+          "allergens": "Soy",
+          "category": "Main - Vegan",
+          "packaging": "",
+          "chafing": ""
+        }
+      ],
+      "equip": []
+    }
+  ],
+  "recipes": [
+    {
+      "name": "Grilled Chicken with Pesto",
+      "diet": "Meat",
+      "allergens": "",
+      "category": "Main - Meat",
+      "ingredients": [
+        {
+          "name": "METRO Chef Hähnchenbrust gebraten tiefgefroren ca. 90 - 110 g - 2,5 kg Beutel",
+          "qty": "0.16 kg",
+          "total": "2.56 kg",
+          "note": ""
+        },
+        {
+          "name": "Pesto",
+          "qty": "0.02 kg",
+          "total": "0.32 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Quinoa Salad à 130g",
+      "diet": "Vegan",
+      "allergens": "",
+      "category": "Salad",
+      "ingredients": [
+        {
+          "name": "Quinoa",
+          "qty": "0.06 kg",
+          "total": "1.56 kg",
+          "note": ""
+        },
+        {
+          "name": "Arugula",
+          "qty": "0.02 kg",
+          "total": "0.52 kg",
+          "note": ""
+        },
+        {
+          "name": "Corn",
+          "qty": "0.015 kg",
+          "total": "0.39 kg",
+          "note": ""
+        },
+        {
+          "name": "Cherry Tomatoes",
+          "qty": "0.015 kg",
+          "total": "0.39 kg",
+          "note": ""
+        },
+        {
+          "name": "Bell Peppers",
+          "qty": "0.008 kg",
+          "total": "0.208 kg",
+          "note": ""
+        },
+        {
+          "name": "Zucchini",
+          "qty": "0.008 kg",
+          "total": "0.208 kg",
+          "note": ""
+        },
+        {
+          "name": "Olives",
+          "qty": "0.004 kg",
+          "total": "0.104 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [
+        "Cook quinoa: rinse, cook w/ double water ~15 min, cool. Prep vegetables: chop rucola, halve tomatoes, dice pepper & zucchini, drain corn, keep olives whole (pitted). Combine cooled quinoa + veg; add rucola just before service."
+      ],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Roasted Potatoes",
+      "diet": "Vegan",
+      "allergens": "",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Potatoes",
+          "qty": "0.2 kg",
+          "total": "5.2 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Seasonal Vegetables",
+      "diet": "Vegetarian",
+      "allergens": "",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Eggplant",
+          "qty": "0.13 kg",
+          "total": "3.39 kg",
+          "note": ""
+        },
+        {
+          "name": "Red Bell Pepper",
+          "qty": "0.0652 kg",
+          "total": "1.7 kg",
+          "note": ""
+        },
+        {
+          "name": "Zucchini",
+          "qty": "0.13 kg",
+          "total": "3.39 kg",
+          "note": ""
+        },
+        {
+          "name": "Dr. Oetker Vegetable Gold Seasoning",
+          "qty": "0.00217 kg",
+          "total": "0.0565 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Vegan Grilled Chicken with Pesto",
+      "diet": "Vegan",
+      "allergens": "Soy",
+      "category": "Main - Vegan",
+      "ingredients": [
+        {
+          "name": "Vegan Chicken",
+          "qty": "0.16 kg",
+          "total": "1.6 kg",
+          "note": ""
+        },
+        {
+          "name": "Pesto",
+          "qty": "0.02 kg",
+          "total": "0.2 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Deep Blueberry Muffin",
+      "diet": "Vegetarian",
+      "allergens": "Gluten, Eggs, Milk",
+      "category": "Sweet",
+      "ingredients": [
+        {
+          "name": "Blueberry Muffins",
+          "qty": "1 bx",
+          "total": "30 bx",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Double Chocolate Muffins",
+      "diet": "Vegan",
+      "allergens": "Gluten, Eggs, Milk",
+      "category": "Sweet",
+      "ingredients": [
+        {
+          "name": "Double Chocolate Muffins",
+          "qty": "1 bx",
+          "total": "40 bx",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Granola Greek Yoghurt Berries",
+      "diet": "Vegetarian",
+      "allergens": "Milk",
+      "category": "Breakfast",
+      "ingredients": [
+        {
+          "name": "Greek Yoghurt",
+          "qty": "0.09 kg",
+          "total": "3.6 kg",
+          "note": ""
+        },
+        {
+          "name": "Berry Mix",
+          "qty": "0.02 bag",
+          "total": "0.8 bag",
+          "note": ""
+        },
+        {
+          "name": "Granola",
+          "qty": "0.02 kg",
+          "total": "0.8 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [
+        "Thaw and drain berries",
+        "Mix with Yoghurt",
+        "Add Granola on top"
+      ],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Panini Red Pesto Eggplant (Gluten Free)",
+      "diet": "Vegetarian",
+      "allergens": "",
+      "category": "Sandwich",
+      "ingredients": [
+        {
+          "name": "Gluten Free Foccacia",
+          "qty": "1 pc",
+          "total": "40 pc",
+          "note": ""
+        },
+        {
+          "name": "Red Pesto",
+          "qty": "0.015 kg",
+          "total": "0.6 kg",
+          "note": ""
+        },
+        {
+          "name": "Eggplant",
+          "qty": "0.035 kg",
+          "total": "1.4 kg",
+          "note": ""
+        },
+        {
+          "name": "Arugula",
+          "qty": "0.0075 kg",
+          "total": "0.3 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Panini Truffle Prosciutto Mushroom",
+      "diet": "Meat",
+      "allergens": "Gluten",
+      "category": "Sandwich",
+      "ingredients": [
+        {
+          "name": "Panini",
+          "qty": "1 pc",
+          "total": "40 pc",
+          "note": ""
+        },
+        {
+          "name": "Truffle Paste",
+          "qty": "0.02 kg",
+          "total": "0.8 kg",
+          "note": ""
+        },
+        {
+          "name": "Prosciutto Cotto",
+          "qty": "0.05 kg",
+          "total": "2 kg",
+          "note": ""
+        },
+        {
+          "name": "Mushrooms",
+          "qty": "0.04 kg",
+          "total": "1.6 kg",
+          "note": "sliced, braised"
+        },
+        {
+          "name": "Olive oil or neutral oil",
+          "qty": "0.0035 l",
+          "total": "0.14 l",
+          "note": ""
+        },
+        {
+          "name": "Salt",
+          "qty": "0.0003 kg",
+          "total": "0.012 kg",
+          "note": ""
+        },
+        {
+          "name": "Black Pepper",
+          "qty": "0.0015 kg",
+          "total": "0.06 kg",
+          "note": ""
+        },
+        {
+          "name": "Balsamic Vinegar",
+          "qty": "0.015 l",
+          "total": "0.6 l",
+          "note": ""
+        },
+        {
+          "name": "Arugula",
+          "qty": "0.015 kg",
+          "total": "0.6 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Scrambled Eggs",
+      "diet": "Meat",
+      "allergens": "Eggs, Milk",
+      "category": "Breakfast",
+      "ingredients": [
+        {
+          "name": "Scrambled Eggs",
+          "qty": "0.15 kg",
+          "total": "12 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Tortilla Española",
+      "diet": "Vegetarian",
+      "allergens": "",
+      "category": "Starter",
+      "ingredients": [
+        {
+          "name": "Potatoes",
+          "qty": "0.2 kg",
+          "total": "12 kg",
+          "note": ""
+        },
+        {
+          "name": "Onion",
+          "qty": "0.04 kg",
+          "total": "2.4 kg",
+          "note": ""
+        },
+        {
+          "name": "Liquid Eggs",
+          "qty": "0.09 l",
+          "total": "5.4 l",
+          "note": ""
+        },
+        {
+          "name": "Big Waxy Potatoes",
+          "qty": "0.2 kg",
+          "total": "12 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Chicken Kebap",
+      "diet": "Meat",
+      "allergens": "",
+      "category": "Main - Meat",
+      "ingredients": [
+        {
+          "name": "Chicken Kebap",
+          "qty": "0.267 kg",
+          "total": "101 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Chocolate Brownie",
+      "diet": "Vegetarian",
+      "allergens": "Gluten, Eggs, Milk",
+      "category": "Sweet",
+      "ingredients": [
+        {
+          "name": "Brownie",
+          "qty": "0.02 box",
+          "total": "7.4 box",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Oriental Cous Cous ( Chefs Culinar )",
+      "diet": "Vegan",
+      "allergens": "Gluten",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Oriental Couscous (Chefs Culinar)",
+          "qty": "0.162 kg",
+          "total": "76.2 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Pita",
+      "diet": "Vegan",
+      "allergens": "Gluten",
+      "category": "Bread",
+      "ingredients": [
+        {
+          "name": "Pita Bread",
+          "qty": "1 pc",
+          "total": "220 pc",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Raw Chocolate Coconut Cake",
+      "diet": "Vegan",
+      "allergens": "Nuts",
+      "category": "Sweet",
+      "ingredients": [
+        {
+          "name": "Raw Chocolate Coconut Cake",
+          "qty": "1 pcs",
+          "total": "96 pcs",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Tzatziki",
+      "diet": "Vegetarian",
+      "allergens": "Milk",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Tzatziki",
+          "qty": "0.02 bucket",
+          "total": "7.6 bucket",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Vegan Gyros (Soy Protein)",
+      "diet": "Vegan",
+      "allergens": "Soy",
+      "category": "Main - Vegan",
+      "ingredients": [
+        {
+          "name": "Vegan Gyros",
+          "qty": "0.3 kg",
+          "total": "27 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Vegan Tzatziki (1 kg batch)",
+      "diet": "Vegan",
+      "allergens": "Soy",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Soy yogurt (unsweetened)",
+          "qty": "0.4 kg",
+          "total": "36 kg",
+          "note": ""
+        },
+        {
+          "name": "Cucumber",
+          "qty": "0.3 kg",
+          "total": "27 kg",
+          "note": ""
+        },
+        {
+          "name": "Fresh Dill",
+          "qty": "0.01 kg",
+          "total": "0.9 kg",
+          "note": ""
+        },
+        {
+          "name": "Garlic",
+          "qty": "0.01 kg",
+          "total": "0.9 kg",
+          "note": ""
+        },
+        {
+          "name": "Olive Oil",
+          "qty": "0.02 l",
+          "total": "1.8 l",
+          "note": ""
+        },
+        {
+          "name": "Lemon Juice",
+          "qty": "0.015 l",
+          "total": "1.35 l",
+          "note": ""
+        },
+        {
+          "name": "Salt",
+          "qty": "0.008 kg",
+          "total": "0.72 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [
+        "Grate cucumbers, sprinkle salt, let rest 10 min, squeeze out water. Mix with soy yogurt, chopped garlic & dill, olive oil, lemon juice, salt & pepper. Chill before serving."
+      ],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Beetroot Salad",
+      "diet": "Vegan",
+      "allergens": "",
+      "category": "Salad",
+      "ingredients": [
+        {
+          "name": "Beetroot Salad",
+          "qty": "0.25 kg",
+          "total": "7.5 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Brown Gravy",
+      "diet": "Vegetarian",
+      "allergens": "Gluten, Celery",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Brown Gravy",
+          "qty": "0.15 kg",
+          "total": "2.7 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Buttered Rice",
+      "diet": "Vegan",
+      "allergens": "",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Buttered Rice",
+          "qty": "0 kg",
+          "total": "0 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Steamed Broccoli",
+      "diet": "Vegan",
+      "allergens": "",
+      "category": "Side",
+      "ingredients": [
+        {
+          "name": "Broccoli",
+          "qty": "0.15 kg",
+          "total": "4.5 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Traditional Meatballs (Beef)",
+      "diet": "Meat",
+      "allergens": "Gluten, Eggs, Milk",
+      "category": "Main - Meat",
+      "ingredients": [
+        {
+          "name": "Meatballs",
+          "qty": "0.196 kg",
+          "total": "3.54 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    },
+    {
+      "name": "Vegan Meatballs in Tomato Sauce",
+      "diet": "Vegan",
+      "allergens": "Soy",
+      "category": "Main - Vegan",
+      "ingredients": [
+        {
+          "name": "Vegan Meatballs",
+          "qty": "0.12 kg",
+          "total": "1.44 kg",
+          "note": ""
+        },
+        {
+          "name": "Tomato Sauce",
+          "qty": "0.08 kg",
+          "total": "0.96 kg",
+          "note": ""
+        }
+      ],
+      "instructions": [],
+      "cooking_stages": [],
+      "transport": "",
+      "rational": "",
+      "buffet": "",
+      "regen": ""
+    }
+  ],
+  "bom": [
+    {
+      "name": "Arugula",
+      "unit": "kg",
+      "qty": "1.42"
+    },
+    {
+      "name": "Balsamic Vinegar",
+      "unit": "l",
+      "qty": "0.6"
+    },
+    {
+      "name": "Beetroot Salad",
+      "unit": "kg",
+      "qty": "7.5"
+    },
+    {
+      "name": "Bell Peppers",
+      "unit": "kg",
+      "qty": "0.208"
+    },
+    {
+      "name": "Berry Mix",
+      "unit": "bag",
+      "qty": "0.8"
+    },
+    {
+      "name": "Big Waxy Potatoes",
+      "unit": "kg",
+      "qty": "12"
+    },
+    {
+      "name": "Black Pepper",
+      "unit": "kg",
+      "qty": "0.06"
+    },
+    {
+      "name": "Blueberry Muffins",
+      "unit": "bx",
+      "qty": "30"
+    },
+    {
+      "name": "Broccoli",
+      "unit": "kg",
+      "qty": "4.5"
+    },
+    {
+      "name": "Brown Gravy",
+      "unit": "kg",
+      "qty": "2.7"
+    },
+    {
+      "name": "Brownie",
+      "unit": "box",
+      "qty": "7.4"
+    },
+    {
+      "name": "Buttered Rice",
+      "unit": "kg",
+      "qty": "6"
+    },
+    {
+      "name": "Cherry Tomatoes",
+      "unit": "kg",
+      "qty": "0.39"
+    },
+    {
+      "name": "Chicken Kebap",
+      "unit": "kg",
+      "qty": "101"
+    },
+    {
+      "name": "Corn",
+      "unit": "kg",
+      "qty": "0.39"
+    },
+    {
+      "name": "Cucumber",
+      "unit": "kg",
+      "qty": "2.25"
+    },
+    {
+      "name": "Double Chocolate Muffins",
+      "unit": "bx",
+      "qty": "40"
+    },
+    {
+      "name": "Dr. Oetker Vegetable Gold Seasoning",
+      "unit": "kg",
+      "qty": "0.0565"
+    },
+    {
+      "name": "Eggplant",
+      "unit": "kg",
+      "qty": "4.79"
+    },
+    {
+      "name": "Fresh Dill",
+      "unit": "kg",
+      "qty": "0.09"
+    },
+    {
+      "name": "Garlic",
+      "unit": "kg",
+      "qty": "0.09"
+    },
+    {
+      "name": "Gluten Free Foccacia",
+      "unit": "pc",
+      "qty": "40"
+    },
+    {
+      "name": "Granola",
+      "unit": "kg",
+      "qty": "0.8"
+    },
+    {
+      "name": "Greek Yoghurt",
+      "unit": "kg",
+      "qty": "3.6"
+    },
+    {
+      "name": "Lemon Juice",
+      "unit": "l",
+      "qty": "0.09"
+    },
+    {
+      "name": "Liquid Eggs",
+      "unit": "l",
+      "qty": "5.4"
+    },
+    {
+      "name": "Meatballs",
+      "unit": "kg",
+      "qty": "3.54"
+    },
+    {
+      "name": "METRO Chef Hähnchenbrust gebraten tiefgefroren ca. 90 - 110 g - 2,5 kg Beutel",
+      "unit": "kg",
+      "qty": "2.56"
+    },
+    {
+      "name": "Mushrooms",
+      "unit": "kg",
+      "qty": "1.6"
+    },
+    {
+      "name": "Olive oil or neutral oil",
+      "unit": "l",
+      "qty": "0.14"
+    },
+    {
+      "name": "Olive Oil",
+      "unit": "l",
+      "qty": "0.18"
+    },
+    {
+      "name": "Olives",
+      "unit": "kg",
+      "qty": "0.104"
+    },
+    {
+      "name": "Onion",
+      "unit": "kg",
+      "qty": "2.4"
+    },
+    {
+      "name": "Oriental Couscous (Chefs Culinar)",
+      "unit": "kg",
+      "qty": "76.2"
+    },
+    {
+      "name": "Panini",
+      "unit": "pc",
+      "qty": "40"
+    },
+    {
+      "name": "Pesto",
+      "unit": "kg",
+      "qty": "0.52"
+    },
+    {
+      "name": "Pita Bread",
+      "unit": "pc",
+      "qty": "220"
+    },
+    {
+      "name": "Potatoes",
+      "unit": "kg",
+      "qty": "17.2"
+    },
+    {
+      "name": "Prosciutto Cotto",
+      "unit": "kg",
+      "qty": "2"
+    },
+    {
+      "name": "Quinoa",
+      "unit": "kg",
+      "qty": "1.56"
+    },
+    {
+      "name": "Raw Chocolate Coconut Cake",
+      "unit": "pcs",
+      "qty": "96"
+    },
+    {
+      "name": "Red Bell Pepper",
+      "unit": "kg",
+      "qty": "1.7"
+    },
+    {
+      "name": "Red Pesto",
+      "unit": "kg",
+      "qty": "0.6"
+    },
+    {
+      "name": "Salt",
+      "unit": "kg",
+      "qty": "0.462"
+    },
+    {
+      "name": "Scrambled Eggs",
+      "unit": "kg",
+      "qty": "12"
+    },
+    {
+      "name": "Soy yogurt (unsweetened)",
+      "unit": "kg",
+      "qty": "3.15"
+    },
+    {
+      "name": "Tomato Sauce",
+      "unit": "kg",
+      "qty": "0.96"
+    },
+    {
+      "name": "Truffle Paste",
+      "unit": "kg",
+      "qty": "0.8"
+    },
+    {
+      "name": "Tzatziki",
+      "unit": "kg",
+      "qty": "27.1"
+    },
+    {
+      "name": "Vegan Chicken",
+      "unit": "kg",
+      "qty": "1.6"
+    },
+    {
+      "name": "Vegan Gyros",
+      "unit": "kg",
+      "qty": "27"
+    },
+    {
+      "name": "Vegan Meatballs",
+      "unit": "kg",
+      "qty": "1.44"
+    },
+    {
+      "name": "Zucchini",
+      "unit": "kg",
+      "qty": "3.6"
+    }
+  ]
+}
