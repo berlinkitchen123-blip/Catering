@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/Users/patelharsh513/Desktop/bb-kitchen/venv/bin/python3
 """
 Bella & Bona — Firebase Sync
 Reads Catering_BOMBEOGenerator_Macros_1.xlsb and pushes all data to Firestore.
@@ -209,8 +209,8 @@ def build_events_list(events):
 def sync(xlsb_path):
     print(f"📖 Reading: {xlsb_path}")
     with open_workbook(xlsb_path) as wb:
-        week_start, week_end, events, recipes = parse_beos(wb)
-        bom = parse_bom(wb)
+        week_start, week_end, events, recipes = parse_beos(wb, 'BEOs Extract - Next Week')
+        bom = parse_bom(wb, 'BOM - Next Week')
 
     day_names, ev_list = build_events_list(events)
     ws_str = week_start.strftime('%-d %b') if week_start else ''
