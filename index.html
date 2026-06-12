@@ -3,201 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍽 BB Kitchen — 8 Jun–14 Jun 2026</title>
+<title>🍽 BB Kitchen</title>
 <style>
 :root {
-  --bg:#0f1117; --surface:#1a1d27; --surface2:#222638; --border:#2e3248;
-  --accent:#f97316; --accent2:#fb923c; --text:#e2e8f0; --muted:#94a3b8;
-  --green:#22c55e; --yellow:#eab308; --red:#ef4444; --blue:#3b82f6;
-  --meat:#f87171; --vegan:#4ade80; --veg:#86efac; --pesc:#60a5fa;
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222638;--border:#2e3248;
+  --accent:#f97316;--accent2:#fb923c;--text:#e2e8f0;--muted:#94a3b8;
+  --green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#3b82f6;
 }
-* { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:999;gap:16px}
+#loading.hidden{display:none}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:.9rem}
+#error-banner{display:none;position:fixed;top:0;left:0;right:0;background:#7f1d1d;
+  color:#fca5a5;padding:12px 20px;font-size:.85rem;z-index:1000;text-align:center}
 
 /* Top bar */
-#topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 20px;
-  display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-#topbar h1 { font-size:1.1rem; font-weight:700; color:var(--accent); }
-#topbar .week { font-size:.85rem; color:var(--muted); }
-#btnMtg { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 16px;
-  font-size:.85rem; font-weight:600; cursor:pointer; transition:.2s; }
-#btnMtg:hover { background:var(--accent2); }
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+#topbar h1{font-size:1.1rem;font-weight:700;color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+#week-label{font-size:.85rem;color:var(--muted)}
+#sync-status{font-size:.75rem;color:var(--muted)}
+#sync-status.live{color:var(--green)}
+#btnMtg{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;
+  font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}
+#btnMtg:hover{background:var(--accent2)}
 
 /* Day tabs */
-#daytabs { background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; padding:0 16px; overflow-x:auto; gap:4px; }
-.daytab { padding:10px 16px; font-size:.82rem; font-weight:600; color:var(--muted);
-  border-bottom:2px solid transparent; cursor:pointer; white-space:nowrap; transition:.2s; }
-.daytab.active { color:var(--accent); border-color:var(--accent); }
-.daytab.bom-tab { color:var(--blue); }
-.daytab.bom-tab.active { color:var(--blue); border-color:var(--blue); }
+#daytabs{background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;padding:0 16px;overflow-x:auto;gap:4px}
+.daytab{padding:10px 16px;font-size:.82rem;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.2s}
+.daytab.active{color:var(--accent);border-color:var(--accent)}
+.daytab.bom-tab.active{color:var(--blue);border-color:var(--blue)}
 
-/* Main layout */
-#main { display:flex; height:calc(100vh - 96px); }
-
-/* Sidebar */
-#sidebar { width:280px; min-width:220px; background:var(--surface); border-right:1px solid var(--border);
-  overflow-y:auto; padding:12px 8px; display:flex; flex-direction:column; gap:6px; }
-.ev-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px;
-  padding:12px; cursor:pointer; transition:.2s; }
-.ev-card:hover { border-color:var(--accent); }
-.ev-card.active { border-color:var(--accent); background:#1e2235; }
-.ev-card .ev-client { font-weight:700; font-size:.95rem; }
-.ev-card .ev-meta { font-size:.75rem; color:var(--muted); margin-top:2px; }
-.ev-card .ev-pct { font-size:.72rem; font-weight:600; margin-top:6px; }
-.pct-bar { height:4px; background:var(--border); border-radius:2px; margin-top:4px; }
-.pct-fill { height:100%; border-radius:2px; background:var(--green); transition:.4s; }
+/* Layout */
+#main{display:flex;height:calc(100vh - 96px)}
+#sidebar{width:280px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;padding:12px 8px;display:flex;flex-direction:column;gap:6px}
+.ev-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px;cursor:pointer;transition:.2s}
+.ev-card:hover{border-color:var(--accent)}
+.ev-card.active{border-color:var(--accent);background:#1e2235}
+.ev-card .ev-client{font-weight:700;font-size:.95rem}
+.ev-card .ev-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
+.ev-card .ev-pct{font-size:.72rem;font-weight:600;margin-top:6px}
+.pct-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px}
+.pct-fill{height:100%;border-radius:2px;background:var(--green);transition:.4s}
 
 /* Content */
-#content { flex:1; overflow-y:auto; padding:24px; }
-#content h2 { font-size:1.3rem; font-weight:700; margin-bottom:4px; }
-#content .sub { font-size:.85rem; color:var(--muted); margin-bottom:20px; }
+#content{flex:1;overflow-y:auto;padding:24px}
+#content h2{font-size:1.3rem;font-weight:700;margin-bottom:4px}
+#content .sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:18px;margin-bottom:16px}
+.section-card h3{font-size:.95rem;font-weight:700;margin-bottom:12px;color:var(--accent)}
+.equip-list{display:flex;flex-wrap:wrap;gap:8px}
+.equip-tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:4px 10px;font-size:.8rem;display:flex;align-items:center;gap:6px}
+.equip-tag input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
+.equip-tag.done{opacity:.5;text-decoration:line-through}
+.menu-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.menu-table th{text-align:left;padding:6px 10px;color:var(--muted);
+  border-bottom:1px solid var(--border);font-weight:600;font-size:.78rem}
+.menu-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.menu-table tr:last-child td{border-bottom:none}
+.menu-table tr.done td{opacity:.45}
+.recipe-link{color:var(--accent);cursor:pointer;text-decoration:underline dotted;font-weight:600}
+.recipe-link:hover{color:var(--accent2)}
+.diet-badge{font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.diet-Meat{background:#7f1d1d;color:#f87171}
+.diet-Vegan{background:#14532d;color:#4ade80}
+.diet-Vegetarian{background:#166534;color:#86efac}
+.diet-Pescatarian{background:#1e3a8a;color:#60a5fa}
+.diet-other{background:#292524;color:var(--muted)}
+.bulk-btns{display:flex;gap:8px;margin-bottom:12px}
+.bulk-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:5px 12px;font-size:.78rem;cursor:pointer;color:var(--text);transition:.2s}
+.bulk-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-/* Section cards */
-.section-card { background:var(--surface); border:1px solid var(--border); border-radius:12px;
-  padding:18px; margin-bottom:16px; }
-.section-card h3 { font-size:.95rem; font-weight:700; margin-bottom:12px; color:var(--accent); }
-
-/* Equipment list */
-.equip-list { display:flex; flex-wrap:wrap; gap:8px; }
-.equip-tag { background:var(--surface2); border:1px solid var(--border); border-radius:6px;
-  padding:4px 10px; font-size:.8rem; display:flex; align-items:center; gap:6px; }
-.equip-tag input { accent-color:var(--green); width:14px; height:14px; cursor:pointer; }
-.equip-tag.done { opacity:.5; text-decoration:line-through; }
-
-/* Menu table */
-.menu-table { width:100%; border-collapse:collapse; font-size:.85rem; }
-.menu-table th { text-align:left; padding:6px 10px; color:var(--muted);
-  border-bottom:1px solid var(--border); font-weight:600; font-size:.78rem; }
-.menu-table td { padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
-.menu-table tr:last-child td { border-bottom:none; }
-.menu-table tr.done td { opacity:.45; }
-.menu-table .recipe-link { color:var(--accent); cursor:pointer; text-decoration:underline dotted;
-  font-weight:600; }
-.menu-table .recipe-link:hover { color:var(--accent2); }
-.diet-badge { font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:20px; white-space:nowrap; }
-.diet-Meat { background:#7f1d1d; color:var(--meat); }
-.diet-Vegan { background:#14532d; color:var(--vegan); }
-.diet-Vegetarian { background:#166534; color:var(--veg); }
-.diet-Pescatarian { background:#1e3a8a; color:var(--blue); }
-.diet-other { background:#292524; color:var(--muted); }
-
-/* Bulk actions */
-.bulk-btns { display:flex; gap:8px; margin-bottom:12px; }
-.bulk-btn { background:var(--surface2); border:1px solid var(--border); border-radius:6px;
-  padding:5px 12px; font-size:.78rem; cursor:pointer; color:var(--text); transition:.2s; }
-.bulk-btn:hover { border-color:var(--accent); color:var(--accent); }
-
-/* BOM view */
-#bom-view { padding:24px; }
-#bom-view h2 { font-size:1.3rem; font-weight:700; margin-bottom:4px; }
-#bom-view .sub { font-size:.85rem; color:var(--muted); margin-bottom:20px; }
-#bom-search { background:var(--surface); border:1px solid var(--border); border-radius:8px;
-  padding:8px 14px; color:var(--text); font-size:.9rem; width:100%; max-width:400px;
-  margin-bottom:16px; }
-#bom-search:focus { outline:none; border-color:var(--blue); }
-.bom-table { width:100%; border-collapse:collapse; font-size:.85rem; }
-.bom-table th { text-align:left; padding:8px 12px; color:var(--muted);
-  border-bottom:1px solid var(--border); font-weight:600; font-size:.78rem; position:sticky; top:0;
-  background:var(--bg); }
-.bom-table td { padding:8px 12px; border-bottom:1px solid var(--border); }
-.bom-table tr:hover td { background:var(--surface); }
-.bom-table .qty-val { font-weight:700; color:var(--accent); }
+/* BOM */
+#bom-view{padding:24px;display:none}
+#bom-view h2{font-size:1.3rem;font-weight:700;margin-bottom:4px}
+#bom-view .sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+#bom-search{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:8px 14px;color:var(--text);font-size:.9rem;width:100%;max-width:400px;margin-bottom:16px}
+#bom-search:focus{outline:none;border-color:var(--blue)}
+.bom-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.bom-table th{text-align:left;padding:8px 12px;color:var(--muted);
+  border-bottom:1px solid var(--border);font-weight:600;font-size:.78rem;
+  position:sticky;top:0;background:var(--bg)}
+.bom-table td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.bom-table tr:hover td{background:var(--surface)}
+.bom-table .qty-val{font-weight:700;color:var(--accent)}
 
 /* Recipe modal */
-#modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75);
-  z-index:200; align-items:center; justify-content:center; }
-#modal-overlay.open { display:flex; }
-#modal { background:var(--surface); border:1px solid var(--border); border-radius:16px;
-  max-width:820px; width:95vw; max-height:88vh; overflow-y:auto; padding:28px;
-  position:relative; }
-#modal-close { position:absolute; top:16px; right:16px; background:var(--surface2);
-  border:1px solid var(--border); border-radius:6px; padding:4px 10px; cursor:pointer;
-  color:var(--text); font-size:.85rem; }
-#modal-close:hover { border-color:var(--accent); color:var(--accent); }
-#modal h2 { font-size:1.2rem; font-weight:700; margin-bottom:6px; padding-right:60px; }
-.modal-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
-.modal-tag { font-size:.75rem; padding:3px 9px; border-radius:20px; font-weight:600; }
-.modal-tag.allergen { background:#451a03; color:#fdba74; }
-.modal-section { margin-bottom:20px; }
-.modal-section h4 { font-size:.85rem; font-weight:700; color:var(--accent); margin-bottom:10px;
-  text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); padding-bottom:6px; }
-.ing-table { width:100%; border-collapse:collapse; font-size:.83rem; }
-.ing-table th { text-align:left; padding:5px 8px; color:var(--muted); font-size:.75rem; font-weight:600; }
-.ing-table td { padding:6px 8px; border-bottom:1px solid var(--border); }
-.ing-table tr:last-child td { border-bottom:none; }
-.ing-table .note { font-size:.75rem; color:var(--muted); }
-.step-list { list-style:none; counter-reset:steps; }
-.step-list li { counter-increment:steps; display:flex; gap:12px; margin-bottom:10px;
-  font-size:.85rem; }
-.step-list li::before { content:counter(steps); background:var(--accent); color:#fff;
-  border-radius:50%; width:22px; height:22px; display:flex; align-items:center;
-  justify-content:center; font-size:.75rem; font-weight:700; flex-shrink:0; margin-top:1px; }
-.cooking-table { width:100%; border-collapse:collapse; font-size:.82rem; }
-.cooking-table th { text-align:left; padding:5px 8px; color:var(--muted); font-size:.75rem; font-weight:600; }
-.cooking-table td { padding:6px 8px; border-bottom:1px solid var(--border); }
-.cooking-table tr:last-child td { border-bottom:none; }
-.logistics-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.log-item { background:var(--surface2); border-radius:8px; padding:12px; }
-.log-item .log-label { font-size:.72rem; font-weight:700; color:var(--muted); text-transform:uppercase;
-  letter-spacing:.06em; margin-bottom:6px; }
-.log-item .log-val { font-size:.82rem; line-height:1.5; }
-.empty-note { color:var(--muted); font-style:italic; font-size:.83rem; }
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:200;align-items:center;justify-content:center}
+#modal-overlay.open{display:flex}
+#modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  max-width:820px;width:95vw;max-height:88vh;overflow-y:auto;padding:28px;position:relative}
+#modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;
+  color:var(--text);font-size:.85rem}
+#modal-close:hover{border-color:var(--accent);color:var(--accent)}
+#modal h2{font-size:1.2rem;font-weight:700;margin-bottom:6px;padding-right:60px}
+.modal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.modal-tag{font-size:.75rem;padding:3px 9px;border-radius:20px;font-weight:600}
+.modal-tag.allergen{background:#451a03;color:#fdba74}
+.modal-section{margin-bottom:20px}
+.modal-section h4{font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);padding-bottom:6px}
+.ing-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.ing-table th{text-align:left;padding:5px 8px;color:var(--muted);font-size:.75rem;font-weight:600}
+.ing-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.ing-table tr:last-child td{border-bottom:none}
+.ing-table .note{font-size:.75rem;color:var(--muted)}
+.step-list{list-style:none;counter-reset:steps}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;font-size:.85rem}
+.step-list li::before{content:counter(steps);background:var(--accent);color:#fff;
+  border-radius:50%;width:22px;height:22px;display:flex;align-items:center;
+  justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.cooking-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.cooking-table th{text-align:left;padding:5px 8px;color:var(--muted);font-size:.75rem;font-weight:600}
+.cooking-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.cooking-table tr:last-child td{border-bottom:none}
+.logistics-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.log-item{background:var(--surface2);border-radius:8px;padding:12px}
+.log-item .log-label{font-size:.72rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.log-item .log-val{font-size:.82rem;line-height:1.5}
+.empty-note{color:var(--muted);font-style:italic;font-size:.83rem}
 
 /* Meeting mode */
-#meeting { display:none; position:fixed; inset:0; background:#000; z-index:300;
-  flex-direction:column; }
-#meeting.open { display:flex; }
-#mtg-header { padding:20px 32px; display:flex; justify-content:space-between; align-items:center;
-  border-bottom:1px solid #222; }
-#mtg-header h1 { font-size:1.3rem; font-weight:800; color:var(--accent); }
-#mtg-header .nav { display:flex; gap:12px; align-items:center; }
-#mtg-header .nav button { background:#111; border:1px solid #333; border-radius:8px;
-  padding:8px 18px; color:#fff; cursor:pointer; font-size:.9rem; transition:.2s; }
-#mtg-header .nav button:hover { border-color:var(--accent); color:var(--accent); }
-#mtg-header .nav .counter { font-size:.85rem; color:var(--muted); }
-#mtg-body { flex:1; overflow:hidden; display:flex; }
-#mtg-main { flex:1; padding:40px; overflow-y:auto; }
-#mtg-main h2 { font-size:2.2rem; font-weight:800; margin-bottom:8px; }
-#mtg-main .mtg-date { font-size:1rem; color:var(--muted); margin-bottom:28px; }
-.mtg-recipes { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
-.mtg-recipe-card { background:#111; border:1px solid #222; border-radius:12px; padding:18px; }
-.mtg-recipe-card .rc-name { font-size:1rem; font-weight:700; margin-bottom:6px; color:var(--text); }
-.mtg-recipe-card .rc-meta { font-size:.8rem; color:var(--muted); }
-.mtg-recipe-card .rc-portions { font-size:1.4rem; font-weight:800; color:var(--accent); }
-#mtg-sidebar { width:240px; background:#0a0a0a; border-left:1px solid #222;
-  padding:20px; overflow-y:auto; }
-#mtg-sidebar h3 { font-size:.85rem; font-weight:700; color:var(--muted); text-transform:uppercase;
-  letter-spacing:.08em; margin-bottom:12px; }
-.mtg-ev-item { padding:8px 12px; border-radius:8px; cursor:pointer; font-size:.85rem;
-  color:var(--muted); margin-bottom:4px; transition:.2s; }
-.mtg-ev-item:hover { background:#111; color:var(--text); }
-.mtg-ev-item.active { background:#1e2235; color:var(--accent); font-weight:600; }
+#meeting{display:none;position:fixed;inset:0;background:#000;z-index:300;flex-direction:column}
+#meeting.open{display:flex}
+#mtg-header{padding:20px 32px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #222}
+#mtg-header h1{font-size:1.3rem;font-weight:800;color:var(--accent)}
+#mtg-header .nav{display:flex;gap:12px;align-items:center}
+#mtg-header .nav button{background:#111;border:1px solid #333;border-radius:8px;
+  padding:8px 18px;color:#fff;cursor:pointer;font-size:.9rem;transition:.2s}
+#mtg-header .nav button:hover{border-color:var(--accent);color:var(--accent)}
+#mtg-header .nav .counter{font-size:.85rem;color:var(--muted)}
+#mtg-body{flex:1;overflow:hidden;display:flex}
+#mtg-main{flex:1;padding:40px;overflow-y:auto}
+#mtg-main h2{font-size:2.2rem;font-weight:800;margin-bottom:8px}
+#mtg-main .mtg-date{font-size:1rem;color:var(--muted);margin-bottom:28px}
+.mtg-recipes{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.mtg-recipe-card{background:#111;border:1px solid #222;border-radius:12px;padding:18px}
+.mtg-recipe-card .rc-name{font-size:1rem;font-weight:700;margin-bottom:6px}
+.mtg-recipe-card .rc-meta{font-size:.8rem;color:var(--muted)}
+.mtg-recipe-card .rc-portions{font-size:1.4rem;font-weight:800;color:var(--accent)}
+#mtg-sidebar{width:240px;background:#0a0a0a;border-left:1px solid #222;padding:20px;overflow-y:auto}
+#mtg-sidebar h3{font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px}
+.mtg-ev-item{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;
+  color:var(--muted);margin-bottom:4px;transition:.2s}
+.mtg-ev-item:hover{background:#111;color:var(--text)}
+.mtg-ev-item.active{background:#1e2235;color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
 
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading kitchen data…</div>
+</div>
+<div id="error-banner"></div>
+
 <!-- Top bar -->
 <div id="topbar">
   <h1>🍽 Bella &amp; Bona — Kitchen</h1>
-  <span class="week" id="week-label"></span>
-  <button id="btnMtg" onclick="openMeeting()">📋 Meeting Mode</button>
+  <div class="topbar-right">
+    <span id="sync-status">●</span>
+    <span id="week-label"></span>
+    <button id="btnMtg" onclick="openMeeting()">📋 Meeting Mode</button>
+  </div>
 </div>
 
 <!-- Day tabs -->
 <div id="daytabs"></div>
 
-<!-- Main -->
+<!-- Main layout -->
 <div id="main">
   <div id="sidebar"></div>
   <div id="content"></div>
 </div>
 
-<!-- BOM view (hidden until selected) -->
-<div id="bom-view" style="display:none">
+<!-- BOM view -->
+<div id="bom-view">
   <h2>📦 Bill of Materials — <span id="bom-week-label"></span></h2>
   <p class="sub">Weekly aggregate ingredient quantities</p>
-  <input id="bom-search" type="text" placeholder="🔍 Search ingredients..." oninput="filterBom(this.value)">
+  <input id="bom-search" type="text" placeholder="🔍 Search ingredients…" oninput="filterBom(this.value)">
   <table class="bom-table">
     <thead><tr><th>#</th><th>Ingredient</th><th>Unit</th><th>Total Qty</th></tr></thead>
     <tbody id="bom-tbody"></tbody>
@@ -232,46 +238,119 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
   </div>
 </div>
 
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <script>
-const WEEK_LABEL = `8 Jun–14 Jun 2026`;
-const DAY_NAMES = ["Monday 08/06/2026", "Tuesday 09/06/2026", "Wednesday 10/06/2026", "Thursday 11/06/2026", "Friday 12/06/2026"];
-const EVENTS = [{"id": "mon-just-play", "day": 0, "date": "Monday 08/06/2026", "client": "Just Play", "menu": [{"name": "Breaded Plaice with Dijon Mustard", "portions": 15, "diet": "Meat", "allergens": "Lactose, Gluten, Mustard, Fish, Sulfites", "category": "Main - Meat", "packaging": "GN", "chafing": "2"}, {"name": "Mixed Green Salad", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Salad", "packaging": "Glass Bowl", "chafing": ""}, {"name": "Potato wedges", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": "1"}, {"name": "Pulled BBQ Plant Protein (Vegan)", "portions": 10, "diet": "Vegan", "allergens": "", "category": "Main - Vegan", "packaging": "GN", "chafing": "1"}, {"name": "Roasted Seasonal Veggies", "portions": 25, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": "1"}], "equip": ["Gloves", "Hairnet"]}, {"id": "mon-ufa", "day": 0, "date": "Monday 08/06/2026", "client": "UFA", "menu": [{"name": "Chicken Breast Pieces \"Pesto Rosso\" in Creamy Tomato Sauce with Olive Oil", "portions": 30, "diet": "Meat", "allergens": "Milk", "category": "Main - Meat", "packaging": "GN", "chafing": ""}, {"name": "Gnocchi al Forno with Spinach, Cherry Tomatoes & Ricotta", "portions": 30, "diet": "Vegetarian", "allergens": "Gluten (Wheat)", "category": "Main - Vegetarian", "packaging": "GN", "chafing": ""}, {"name": "Pasta Salad with Sun-Dried Tomatoes, Olives, Rocket & Parmesan with Basil Vinaigrette", "portions": 30, "diet": "Vegetarian", "allergens": "Gluten, Eggs", "category": "Salad", "packaging": "Glass Bowl", "chafing": ""}, {"name": "Roasted Courgette & Red Onion with Fresh Herbs & Olive Oil", "portions": 60, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Shaved Fennel & Rocket with Lemon Dressing, Capers & Shaved Parmesan", "portions": 60, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}], "equip": []}, {"id": "tue-gyg", "day": 1, "date": "Tuesday 09/06/2026", "client": "GYG", "menu": [{"name": "Choco-Coco Cake", "portions": 370, "diet": "Vegetarian", "allergens": "Gluten, Eggs, Milk", "category": "Sweet", "packaging": "Bamboo Boats", "chafing": ""}, {"name": "Phanaeng Curry with Chicken", "portions": 380, "diet": "Meat", "allergens": "", "category": "Main - Meat", "packaging": "GN", "chafing": "8"}, {"name": "Raw Raspberry & Blueberry Cake (Vegan)", "portions": 96, "diet": "Vegan", "allergens": "Nuts", "category": "Sweet", "packaging": "Bamboo Boats", "chafing": ""}, {"name": "Red Thai Curry with Vegan Chicken", "portions": 90, "diet": "Vegan", "allergens": "", "category": "Main - Vegan", "packaging": "GN", "chafing": "2"}, {"name": "Rice", "portions": 470, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": "2"}, {"name": "Vegan Sweet Potato and Chickpea Daal", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Main - Vegan", "packaging": "GN", "chafing": "2"}], "equip": ["2 Servin Spoons", "2 Serving Spoons", "6 extension chords", "8 Servin Spoons", "9 aprons", "gloves", "hair net"]}, {"id": "tue-paypal", "day": 1, "date": "Tuesday 09/06/2026", "client": "Paypal", "menu": [{"name": "Acai Bowl (á 140g)", "portions": 40, "diet": "Vegan", "allergens": "", "category": "Breakfast", "packaging": "Glass Jars", "chafing": ""}, {"name": "Pain au Chocolat", "portions": 40, "diet": "Vegetarian", "allergens": "Gluten, Milk, Eggs", "category": "Sweet", "packaging": "Baskets", "chafing": ""}, {"name": "Pistachio Croissant", "portions": 30, "diet": "Vegetarian", "allergens": "Gluten, Milk, Eggs, Nuts", "category": "Sweet", "packaging": "Baskets", "chafing": ""}, {"name": "Roasted Potatoes, Grilled Mediterranean Vegetables", "portions": 60, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": "2"}, {"name": "Salmon Wrap", "portions": 40, "diet": "Fish", "allergens": "", "category": "Sandwich", "packaging": "Baskets", "chafing": ""}, {"name": "Scrambled Eggs with Mushrooms & Chives", "portions": 80, "diet": "Vegetarian", "allergens": "Eggs, Milk", "category": "Breakfast", "packaging": "GN", "chafing": "2"}, {"name": "Zucchini Falafel Wrap", "portions": 40, "diet": "Vegetarian", "allergens": "Sesame", "category": "Sandwich", "packaging": "Baskets", "chafing": ""}], "equip": ["Gloves", "Hairnet"]}, {"id": "tue-ufa", "day": 1, "date": "Tuesday 09/06/2026", "client": "UFA", "menu": [{"name": "Apple & Kohlrabi Slaw with Cider Vinegar & Dill", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Salad", "packaging": "GN", "chafing": ""}, {"name": "Braised Pointed Cabbage with Caraway & Apple Cider Vinegar", "portions": 60, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Roasted Sweet Potato Cubes with Smoked Paprika & Olive Oil", "portions": 30, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Romaine with Lime & Herb Dressing", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Vegan Bean & Sweet Potato Chili", "portions": 30, "diet": "Vegan", "allergens": "", "category": "Main - Vegan", "packaging": "GN", "chafing": ""}], "equip": []}, {"id": "wed-ufa", "day": 2, "date": "Wednesday 10/06/2026", "client": "UFA", "menu": [{"name": "Butterhead & Watercress with Lemon & Mustard Dressing", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Glazed Carrots & Parsnips with Thyme", "portions": 60, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "Glass Bowl", "chafing": ""}, {"name": "Grillkäse with Roasted Vegetables & Herb Dressing", "portions": 30, "diet": "Vegetarian", "allergens": "Milk", "category": "Main - Vegetarian", "packaging": "GN", "chafing": ""}, {"name": "Roasted Beetroot & Orange with Toasted Walnuts", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Roasted Rosemary Potatoes", "portions": 30, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Sauerbraten Goulash", "portions": 24, "diet": "Meat", "allergens": "", "category": "Main - Meat", "packaging": "GN", "chafing": ""}], "equip": []}, {"id": "thu-just-play", "day": 3, "date": "Thursday 11/06/2026", "client": "Just Play", "menu": [{"name": "Carrot Salad", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Salad", "packaging": "", "chafing": ""}, {"name": "Chickpea Masala", "portions": 10, "diet": "Vegan", "allergens": "Milk", "category": "Side", "packaging": "", "chafing": ""}, {"name": "Roasted Broccoli", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "", "chafing": ""}, {"name": "South American Style Beef Stew", "portions": 15, "diet": "Meat", "allergens": "Mustard, Sesame", "category": "Main - Meat", "packaging": "", "chafing": ""}, {"name": "Steamed Jasmine Rice", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "", "chafing": ""}], "equip": []}, {"id": "thu-ufa", "day": 3, "date": "Thursday 11/06/2026", "client": "UFA", "menu": [{"name": "Chickpea Masala", "portions": 30, "diet": "Vegan", "allergens": "Milk", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Little Gem & Avocado with Lime & Coriander Dressing", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Side", "packaging": "Glass Bowl", "chafing": ""}, {"name": "Roasted Broccoli", "portions": 60, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Shredded Carrot Salad", "portions": 30, "diet": "Vegetarian", "allergens": "", "category": "Salad", "packaging": "Glass Bowl", "chafing": ""}, {"name": "Steamed Jasmine Rice", "portions": 30, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "“South American-style” Beef Stew", "portions": 24, "diet": "Meat", "allergens": "", "category": "Main - Meat", "packaging": "GN", "chafing": ""}], "equip": []}, {"id": "fri-ufa", "day": 4, "date": "Friday 12/06/2026", "client": "UFA", "menu": [{"name": "Boiled Potatoes", "portions": 25, "diet": "Vegan", "allergens": "", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Spring Spätzle with Green Asparagus", "portions": 30, "diet": "Vegetarian", "allergens": "Milk", "category": "Side", "packaging": "GN", "chafing": ""}, {"name": "Tomato salad with greens", "portions": 50, "diet": "Vegan", "allergens": "", "category": "Salad", "packaging": "", "chafing": ""}, {"name": "White Asparagus with Breadcrumb Butter and Ham", "portions": 25, "diet": "Meat", "allergens": "", "category": "Main - Meat", "packaging": "GN", "chafing": ""}], "equip": []}];
-const RECIPES = {"Breaded Plaice with Dijon Mustard": {"diet": "Meat", "allergens": "Lactose, Gluten, Mustard, Fish, Sulfites", "category": "Main - Meat", "ingredients": [{"name": "Breaded Plaice with Dijon Mustard", "qty": "0.16 kg", "total": "2.4 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Mixed Green Salad": {"diet": "Vegan", "allergens": "", "category": "Salad", "ingredients": [{"name": "Romaine Lettuce", "qty": "0.0563 kg", "total": "1.41 kg", "note": ""}, {"name": "Baby Spinach", "qty": "0.025 kg", "total": "0.625 kg", "note": ""}, {"name": "Arugula", "qty": "0.0187 kg", "total": "0.469 kg", "note": ""}, {"name": "Pomegranate Seeds", "qty": "0.0187 kg", "total": "0.469 kg", "note": ""}, {"name": "Cucumber", "qty": "0.0375 kg", "total": "0.938 kg", "note": ""}, {"name": "Cherry Tomatoes", "qty": "0.0312 kg", "total": "0.781 kg", "note": ""}, {"name": "Balsamico Dressing", "qty": "0.025 kg", "total": "0.625 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Potato wedges": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Potatoes", "qty": "0.0286 kg", "total": "0.714 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Pulled BBQ Plant Protein (Vegan)": {"diet": "Vegan", "allergens": "", "category": "Main - Vegan", "ingredients": [{"name": "Pulled BBQ Plant Protein (Vegan)", "qty": "0.15 kg", "total": "1.5 kg", "note": ""}, {"name": "BBQ Sauce", "qty": "0.05 kg", "total": "0.5 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Roasted Seasonal Veggies": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Eggplant", "qty": "0.0811 kg", "total": "2.03 kg", "note": ""}, {"name": "Red Bell Pepper", "qty": "0.0405 kg", "total": "1.01 kg", "note": ""}, {"name": "Zucchini", "qty": "0.0811 kg", "total": "2.03 kg", "note": ""}, {"name": "Dr. Oetker Vegetable Gold Seasoning", "qty": "0.00135 kg", "total": "0.0338 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Chicken Breast Pieces \"Pesto Rosso\" in Creamy Tomato Sauce with Olive Oil": {"diet": "Meat", "allergens": "Milk", "category": "Main - Meat", "ingredients": [{"name": "Chicken Breast Pieces \"Pesto Rosso\" in Creamy Tomato Sauce with Olive Oil", "qty": "0.28 kg", "total": "8.4 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Gnocchi al Forno with Spinach, Cherry Tomatoes & Ricotta": {"diet": "Vegetarian", "allergens": "Gluten (Wheat)", "category": "Main - Vegetarian", "ingredients": [{"name": "Gnocchi", "qty": "0.18 kg", "total": "5.4 kg", "note": "fresh or shelf-stable; Pre-made gnocchi; purchase weight; no trim loss"}, {"name": "Passata", "qty": "0.08 l", "total": "2.4 l", "note": "tomato; Base sauce; good-quality passata for clean flavour"}, {"name": "Ricotta", "qty": "0.04 kg", "total": "1.2 kg", "note": "Stirred through sauce off heat before combining with gnocchi; do not bake on surface"}, {"name": "Spinach", "qty": "0.045 kg", "total": "1.35 kg", "note": "Frozen thawed and drained; Gross thawed weight; squeeze firmly before use; yields approx 0,039 kg usable"}, {"name": "Cherry tomatoes", "qty": "0.04 kg", "total": "1.2 kg", "note": "Halved; yields approx 0,034 kg usable; do not increase proportion"}, {"name": "Parmesan", "qty": "0.012 kg", "total": "0.36 kg", "note": "grated; Scatter over surface before baking; holds well in chafing dish without degrading"}, {"name": "Garlic cloves", "qty": "0.004 kg", "total": "0.12 kg", "note": "2 small cloves; sliced thin; sweated in oil before adding passata"}, {"name": "Olive oil", "qty": "0.01 l", "total": "0.3 l", "note": "For sweating garlic"}, {"name": "Dried oregano", "qty": "0.001 kg", "total": "0.03 kg", "note": "1g; for sauce"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season sauce; taste before combining"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Thaw frozen spinach fully; squeeze firmly in a clean cloth to remove all excess water — Wet spinach will water down sauce and cause GN tray pooling in holding", "2. Sweat sliced garlic in olive oil over low heat until soft; do not colour — Approx 2 minutes", "3. Add passata; season with oregano, salt and pepper; simmer 8–10 minutes until slightly reduced — Sauce should be 10–15% thinner than desired final consistency; it will tighten further in holding", "4. Remove sauce from heat; stir ricotta through until fully incorporated and smooth — Do not boil ricotta into sauce; stir in off heat to prevent graining", "5. Add squeezed spinach and halved cherry tomatoes to sauce; stir through — Tomatoes will release some moisture during baking; accounted for in sauce volume", "6. Blanch gnocchi in salted boiling water 1–2 minutes until they float; drain immediately — Do not overcook; they will bake further in Rational", "7. Combine drained gnocchi with ricotta tomato sauce in GN tray; mix gently to coat — Sauce should coat gnocchi fully; add a small splash of water if sauce looks too thick before baking", "8. Scatter grated Parmesan evenly over surface — Forms a light crust; holds well in chafing dish service"], "cooking_stages": [{"stage": "Baking", "mode": "Combi", "temp": "185°C", "time": "18–22 min", "humidity": "0.3", "notes": "Until sauce is bubbling and Parmesan surface is lightly golden"}, {"stage": "Hot holding (pre-transport)", "mode": "Hot holding cabinet", "temp": "70°C+", "time": "Max 30 min before loading", "humidity": "N/A", "notes": "Load into transport promptly; do not hold long before dispatch"}, {"stage": "Regeneration", "mode": "Combi", "temp": "160°C", "time": "12–15 min", "humidity": "0.4", "notes": "Cover GN tray during regen to retain moisture; remove cover last 3 min for surface colour"}], "transport": "GN tray with lid; insulated hot transport. Dish fully finished before loading. No components travel separately.", "rational": "See fallback rows above. Foil cover replaces humidity function for both baking and regeneration.", "buffet": "Good. Ricotta incorporated into sauce is stable in chafing dish service. Sauce will thicken gradually; normal behaviour. Gnocchi will continue to absorb sauce over time. Maximum recommended service window: 75–90 minutes. If sauce tightens excessively add a small amount of hot water to chafing dish tray base.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regenerate per instructions above. Do not regen more than once."}, "Pasta Salad with Sun-Dried Tomatoes, Olives, Rocket & Parmesan with Basil Vinaigrette": {"diet": "Vegetarian", "allergens": "Gluten, Eggs", "category": "Salad", "ingredients": [{"name": "Pasta", "qty": "0.023 kg", "total": "0.69 kg", "note": "Dry weight; cooks to approx 0,054 kg cooked"}, {"name": "Dried Tomatoes", "qty": "0.018 glass", "total": "0.54 glass", "note": "Sun- in oil drained; Drain thoroughly; pat dry; slice if large"}, {"name": "Olives", "qty": "0.015 kg", "total": "0.45 kg", "note": "Black pitted drained; Kalamata or similar; halve if large"}, {"name": "Arugula", "qty": "0.02 kg", "total": "0.6 kg", "note": "Rocket raw; Gross; yields 0,016 kg after trim; fold in at final stage in kitchen"}, {"name": "Parmesan", "qty": "0.01 kg", "total": "0.3 kg", "note": "shaved; Shave with peeler; scatter over top before dispatch"}, {"name": "Garlic", "qty": "0.003 kg", "total": "0.09 kg", "note": "clove; 1 small clove; minced fine for dressing base"}, {"name": "Fresh basil leaves", "qty": "0.005 kg", "total": "0.15 kg", "note": "Approx 5g gross; 0,003 kg usable; chop fine for dressing"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.018 l", "total": "0.54 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "White wine vinegar", "qty": "0.007 l", "total": "0.21 l", "note": "For dressing"}, {"name": "Dijon mustard", "qty": "0.003 kg", "total": "0.09 kg", "note": "For dressing; emulsifier"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season pasta after cooking and again in dressing"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g; for dressing"}], "instructions": ["1. Cook pasta in well-salted boiling water until al dente — Do not undercook; salad pasta must be fully cooked — it will not cook further", "2. Drain and rinse under cold water immediately; toss with a small amount of olive oil to prevent clumping — Cool fully before combining", "3. Whisk together olive oil, white wine vinegar, Dijon mustard, minced garlic, chopped basil, salt and pepper — Emulsify well; taste and adjust acid/salt balance", "4. Drain sun-dried tomatoes thoroughly; pat dry; slice if large — Excess oil from sun-dried tomatoes will make dressing greasy", "5. Combine cooled pasta, sun-dried tomatoes and olives; toss with approximately two-thirds of the dressing — Reserve remaining dressing for transport", "6. Fold rocket through the dressed pasta; scatter shaved Parmesan over top — All finishing steps completed in kitchen before dispatch", "7. Transfer to GN tray; pour remaining dressing into sealed container for transport alongside — Remaining dressing used to refresh salad if it looks dry during service setup"], "cooking_stages": [{"stage": "Pasta cooking", "mode": "Boiling water (hob)", "temp": "100°C", "time": "10–12 min", "humidity": "N/A", "notes": "Standard hob cooking; not a Rational application"}, {"stage": "Cooling", "mode": "Blast chiller or cold water rinse", "temp": "-", "time": "Until fully cold", "humidity": "N/A", "notes": "Must reach below 8°C before combining with other ingredients"}, {"stage": "Cold holding", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 24 hrs assembled", "humidity": "N/A", "notes": "Cover GN tray with film; store reserve dressing separately"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only"}], "transport": "GN tray covered with film; chilled transport. Pasta dressed at two-thirds level before dispatch. Reserve dressing in sealed container loaded alongside.", "rational": "Not applicable — no Rational step in this recipe.", "buffet": "Cold buffet only. Rocket will wilt after 30–40 minutes; acceptable as it is folded through, not used as a standalone garnish. Parmesan may soften slightly — acceptable. Maximum recommended service window: 60 minutes.", "regen": "Not applicable — cold dish."}, "Roasted Courgette & Red Onion with Fresh Herbs & Olive Oil": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Zucchini", "qty": "0.171 kg", "total": "10.2 kg", "note": "Courgette; Gross; yields approx 0,092 kg roasted; dominant component"}, {"name": "Red onion", "qty": "0.0532 kg", "total": "3.19 kg", "note": "Gross; yields approx 0,032 kg roasted; supporting component; do not increase — releases significant moisture"}, {"name": "Olive oil", "qty": "0.0168 l", "total": "1.01 l", "note": "For roasting; coat vegetables evenly before loading trays"}, {"name": "Garlic cloves", "qty": "0.0056 kg", "total": "0.336 kg", "note": "2 small cloves; sliced thin; toss with vegetables before roasting"}, {"name": "Parsley", "qty": "0.0084 kg", "total": "0.504 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,004 kg usable; chopped; added after roasting in kitchen"}, {"name": "Thyme", "qty": "0.0042 kg", "total": "0.252 kg", "note": "Fresh leaves only; Gross; yields approx 0,002 kg usable; strip leaves; add before roasting"}, {"name": "Lemon Juice", "qty": "0.0056 l", "total": "0.336 l", "note": "fresh; Approx 0,010 kg whole lemon to yield 0,004 kg juice; finish dish in kitchen before dispatch"}, {"name": "Salt", "qty": "0.0028 kg", "total": "0.168 kg", "note": "2g; season before roasting; taste and adjust after"}, {"name": "Black Pepper", "qty": "0.0014 kg", "total": "0.084 kg", "note": "ground; 1g"}], "instructions": ["1. Slice courgette into half-moons approx 1,5 cm thick; cut red onion into wedges approx 1,5–2 cm — Even sizing critical for uniform roasting; too thin and courgette will collapse and pool liquid", "2. Toss courgette, red onion and garlic with olive oil, thyme leaves, salt and pepper — Coat evenly; do not overload tray", "3. Spread in a single layer on GN tray; do not stack or crowd — Overcrowding causes steaming not roasting; excess moisture pools in tray", "4. Roast in Rational; see Cooking / Holding section — Check at 18 minutes; courgette should have colour but retain structure", "5. Remove from oven; rest 3–4 minutes on tray — Residual moisture will reabsorb during rest", "6. Squeeze fresh lemon juice over vegetables; scatter chopped parsley; taste and adjust salt — All finishing completed in kitchen before dispatch", "7. Decant to clean GN tray if roasting tray has excess liquid in base — Do not transport in a tray with standing liquid"], "cooking_stages": [{"stage": "Roasting", "mode": "Combi", "temp": "200°C", "time": "20–24 min", "humidity": "0.1", "notes": "Low humidity promotes colour and reduces moisture pooling; rotate tray halfway if oven has hot spots"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 90 min", "humidity": "N/A", "notes": "Vegetables will continue to soften in holding; texture at 90 min is soft but not mushy if cut correctly"}, {"stage": "Regeneration", "mode": "Combi", "temp": "175°C", "time": "8–10 min", "humidity": "0.1", "notes": "From chilled; do not cover during regen — steam causes excess moisture"}], "transport": "GN tray with lid; hot insulated transport. Fully finished with lemon and parsley in kitchen. Decant away from standing liquid before loading.", "rational": "See fallback rows above. Convection mode without humidity performs well for this dish.", "buffet": "Acceptable up to 90 minutes. Courgette softens progressively but retains shape if cut at 1,5 cm. Red onion sweetens in holding — positive for flavour. Monitor GN tray for excess liquid; drain if necessary during service setup.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen per instructions above without covering tray."}, "Shaved Fennel & Rocket with Lemon Dressing, Capers & Shaved Parmesan": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Fennel", "qty": "0.065 kg", "total": "3.9 kg", "note": "bulb fresh; Gross; yields approx 0,051 kg after trim; shave on mandoline 2–3 mm; [estimate — validate in kitchen]"}, {"name": "Arugula", "qty": "0.03 kg", "total": "1.8 kg", "note": "Rocket raw; Gross; yields approx 0,024 kg after trim; handle gently"}, {"name": "Capers", "qty": "0.008 kg", "total": "0.48 kg", "note": "drained small; Rinse briefly if salt-packed; brine-packed preferred for convenience"}, {"name": "Parmesan", "qty": "0.012 kg", "total": "0.72 kg", "note": "shaved; Shave with peeler; scatter over top at final stage in kitchen before covering tray"}, {"name": "Lemon Juice", "qty": "0.01 l", "total": "0.6 l", "note": "fresh; Approx 0,025 kg whole lemon to yield 0,010 kg juice; primary acid in dressing"}, {"name": "Lemon zest", "qty": "0.002 kg", "total": "0.12 kg", "note": "Zest of approx 0,5 lemon gross; add to dressing for brightness"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.018 l", "total": "1.08 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Dijon mustard", "qty": "0.003 kg", "total": "0.18 kg", "note": "Emulsifier for dressing"}, {"name": "Salt", "qty": "0.001 kg", "total": "0.06 kg", "note": "1g; capers add salinity — taste before adding salt"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.06 kg", "note": "ground; 1g"}], "instructions": ["1. Remove fennel fronds, stalks and tough outer leaves; reserve any fine fronds for garnish if desired — Weigh after trim to verify yield; fennel density varies by season", "2. Shave fennel on mandoline at 2–3 mm; place immediately in cold acidulated water (water with lemon juice) to prevent browning — Drain and dry just before combining", "3. Whisk together lemon juice, lemon zest, Dijon mustard, olive oil, salt and pepper until emulsified — Dressing should coat a spoon lightly", "4. Drain fennel thoroughly; spin or pat dry — Excess water on fennel will dilute dressing significantly", "5. Combine dried fennel, rocket and capers in GN tray; do not dress before transport — Dressing travels separately in sealed container", "6. Scatter shaved Parmesan over the top of the undressed salad; cover GN tray with film for transport — Parmesan travels on top; does not require separate transport", "7. Pack lemon dressing in sealed container; label and load alongside GN tray — Dressing applied immediately before service begins"], "cooking_stages": [{"stage": "Cold holding (assembled, undressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 4 hrs", "humidity": "N/A", "notes": "Fennel discolours over time even after acidulated water treatment; do not prep more than 4 hrs in advance"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; dressing applied at service point"}], "transport": "GN tray with film cover; chilled transport. Salad undressed. Lemon dressing in separate sealed container loaded alongside. Parmesan shaved and placed on top before covering.", "rational": "Not applicable.", "buffet": "Maximum recommended service window after dressing: 30–40 minutes. Rocket wilts faster than robust leaves. Fennel retains some crunch for approx 25–30 minutes after dressing. Do not dress more than 5 minutes before guests arrive. Undressed salad holds acceptable appearance on cold buffet up to 60 minutes.", "regen": "Not applicable — cold dish."}, "Choco-Coco Cake": {"diet": "Vegetarian", "allergens": "Gluten, Eggs, Milk", "category": "Sweet", "ingredients": [{"name": "Choco-Coco Cake", "qty": "1 pc", "total": "370 pc", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Phanaeng Curry with Chicken": {"diet": "Meat", "allergens": "", "category": "Main - Meat", "ingredients": [{"name": "Chicken Breast", "qty": "0.2 kg", "total": "76 kg", "note": ""}, {"name": "Green Beans", "qty": "0.0667 kg", "total": "25.3 kg", "note": ""}, {"name": "Parsley", "qty": "0.00667 kg", "total": "2.53 kg", "note": ""}, {"name": "Thai Phanaeng Curry", "qty": "0.25 kg", "total": "95 kg", "note": ""}, {"name": "Zucchini", "qty": "0.0833 kg", "total": "31.7 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Raw Raspberry & Blueberry Cake (Vegan)": {"diet": "Vegan", "allergens": "Nuts", "category": "Sweet", "ingredients": [{"name": "Raw Cake", "qty": "0.0833 pc", "total": "8 pc", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Red Thai Curry with Vegan Chicken": {"diet": "Vegan", "allergens": "", "category": "Main - Vegan", "ingredients": [{"name": "Vegan Red Curry", "qty": "0.3 kg", "total": "27 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Rice": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Rice", "qty": "0.2 kg", "total": "94 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Vegan Sweet Potato and Chickpea Daal": {"diet": "Vegan", "allergens": "", "category": "Main - Vegan", "ingredients": [{"name": "Sesame seeds", "qty": "0.003 kg", "total": "0.075 kg", "note": ""}, {"name": "Parsley", "qty": "0.0051 kg", "total": "0.128 kg", "note": ""}, {"name": "Sweet Potato", "qty": "0.1 kg", "total": "2.5 kg", "note": ""}, {"name": "Sweet Potato chickpeak Daal", "qty": "0.15 kg", "total": "3.75 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Acai Bowl (á 140g)": {"diet": "Vegan", "allergens": "", "category": "Breakfast", "ingredients": [{"name": "Acai Puree", "qty": "0.06 l", "total": "2.4 l", "note": "Blend all except Banana Chips; fill 130g p.Bowl and add chips on top"}, {"name": "Banana", "qty": "0.04 kg", "total": "1.6 kg", "note": ""}, {"name": "Apple Juice", "qty": "0.02 kg", "total": "0.8 kg", "note": ""}, {"name": "Banana Chips", "qty": "0.02 kg", "total": "0.8 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Pain au Chocolat": {"diet": "Vegetarian", "allergens": "Gluten, Milk, Eggs", "category": "Sweet", "ingredients": [{"name": "Pain au Chocolat", "qty": "1 bx", "total": "40 bx", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Pistachio Croissant": {"diet": "Vegetarian", "allergens": "Gluten, Milk, Eggs, Nuts", "category": "Sweet", "ingredients": [{"name": "Pistachio Croissant", "qty": "1 pc", "total": "30 pc", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Roasted Potatoes, Grilled Mediterranean Vegetables": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Mushrooms", "qty": "0.02 kg", "total": "1.2 kg", "note": ""}, {"name": "Chives", "qty": "0.0133 bag", "total": "0.8 bag", "note": ""}, {"name": "Mixed Roasted Vegetables", "qty": "0.1 kg", "total": "6 kg", "note": ""}, {"name": "Small Potatoes", "qty": "0.0667 kg", "total": "4 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Salmon Wrap": {"diet": "Fish", "allergens": "", "category": "Sandwich", "ingredients": [{"name": "Baby Spinach", "qty": "0.0375 kg", "total": "1.5 kg", "note": ""}, {"name": "Chickpeas", "qty": "0.05 kg", "total": "2 kg", "note": ""}, {"name": "Daikon", "qty": "0.0375 kg", "total": "1.5 kg", "note": ""}, {"name": "Edamame", "qty": "0.05 kg", "total": "2 kg", "note": ""}, {"name": "Iceberg Lettuce", "qty": "0.0875 kg", "total": "3.5 kg", "note": ""}, {"name": "Olive Oil", "qty": "0.0075 l", "total": "0.3 l", "note": ""}, {"name": "Paprika Powder", "qty": "0.005 kg", "total": "0.2 kg", "note": ""}, {"name": "Parsley", "qty": "0.005 kg", "total": "0.2 kg", "note": ""}, {"name": "Radicchio", "qty": "0.025 kg", "total": "1 kg", "note": ""}, {"name": "Smoked Salmon", "qty": "0.075 kg", "total": "3 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Scrambled Eggs with Mushrooms & Chives": {"diet": "Vegetarian", "allergens": "Eggs, Milk", "category": "Breakfast", "ingredients": [{"name": "Scrambled Eggs", "qty": "0.133 kg", "total": "10.7 kg", "note": ""}, {"name": "Mushrooms", "qty": "0.025 kg", "total": "2 kg", "note": ""}, {"name": "Chives", "qty": "0.0125 bag", "total": "1 bag", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Zucchini Falafel Wrap": {"diet": "Vegetarian", "allergens": "Sesame", "category": "Sandwich", "ingredients": [{"name": "Spicy Hummus", "qty": "0.075 kg", "total": "3 kg", "note": ""}, {"name": "Wraps 30\"", "qty": "2 kg", "total": "80 kg", "note": ""}, {"name": "Yogurt Dressing", "qty": "0.05 l", "total": "2 l", "note": ""}, {"name": "Carrots", "qty": "0.125 kg", "total": "5 kg", "note": ""}, {"name": "Falafel", "qty": "0.075 kg", "total": "3 kg", "note": ""}, {"name": "Hummus", "qty": "0.05 kg", "total": "2 kg", "note": ""}, {"name": "Sriracha Mayo", "qty": "0.0375 kg", "total": "1.5 kg", "note": ""}, {"name": "Zucchini", "qty": "0.125 kg", "total": "5 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Apple & Kohlrabi Slaw with Cider Vinegar & Dill": {"diet": "Vegetarian", "allergens": "", "category": "Salad", "ingredients": [{"name": "Kohlrabi", "qty": "0.075 kg", "total": "2.25 kg", "note": "whole fresh; Gross; yields approx 0,054 kg after peeling and trim; julienne or coarse grate; [estimate — validate in kitchen]"}, {"name": "Apples", "qty": "0.05 kg", "total": "1.5 kg", "note": "Apple firm variety — Granny Smith or Braeburn; Gross; yields approx 0,044 kg after core and trim; julienne or coarse grate; do not peel — skin adds colour and texture"}, {"name": "Cider vinegar", "qty": "0.008 kg", "total": "0.24 kg", "note": "Apple; Primary acid in dressing; also prevents apple browning"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.01 l", "total": "0.3 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Dijon mustard", "qty": "0.003 kg", "total": "0.09 kg", "note": "Emulsifier and background flavour"}, {"name": "Honey", "qty": "0.004 kg", "total": "0.12 kg", "note": "Balances acidity; not suitable for strict vegan guests — flag if required"}, {"name": "Fresh dill", "qty": "0.006 kg", "total": "0.18 kg", "note": "Gross; yields approx 0,004 kg usable; roughly chopped; defines the dish"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season dressing; kohlrabi absorbs salt well — taste after 10 min resting"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Peel kohlrabi; julienne or coarse grate; place immediately in bowl — Kohlrabi does not brown but oxidises slightly — dress promptly", "2. Core apple; julienne or coarse grate with skin on; add to kohlrabi immediately — Toss with a few drops of cider vinegar straight away to prevent browning", "3. Whisk together cider vinegar, olive oil, Dijon mustard, honey, salt and pepper until emulsified — Taste and adjust acid/sweet balance before adding to vegetables", "4. Pour dressing over kohlrabi and apple; toss thoroughly to coat — Bound slaw — dressing is fully combined in kitchen; no separation for transport", "5. Add chopped dill; fold through gently — Add dill after dressing to prevent bruising", "6. Rest dressed slaw for minimum 15 minutes in refrigerator before tasting; adjust seasoning — Kohlrabi and apple release a small amount of liquid as they rest; this is normal and improves dressing integration", "7. Transfer to GN tray; cover with film; refrigerate until dispatch — Slaw improves with resting time up to 4 hours; do not prep more than 12 hours in advance"], "cooking_stages": [{"stage": "Cold holding (dressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 12 hrs", "humidity": "N/A", "notes": "Flavour improves with resting; texture remains good up to 12 hrs; beyond this apple softens noticeably"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; travels and serves fully dressed"}], "transport": "GN tray with film cover; chilled transport. Slaw fully dressed and rested in kitchen before loading. No components travel separately.", "rational": "Not applicable.", "buffet": "Good. Kohlrabi is significantly more robust than cabbage-based slaws; holds texture and crunch well for 60–75 minutes on a cold buffet. Apple will soften gradually after dressing but remains pleasant within the service window. Some liquid pooling at base of GN tray is normal — stir gently before placing on buffet. Maximum recommended service window: 75 minutes.", "regen": "Not applicable — cold dish."}, "Braised Pointed Cabbage with Caraway & Apple Cider Vinegar": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "White cabbage", "qty": "0.23 kg", "total": "13.8 kg", "note": "Pointed cabbage whole fresh; Gross; yields approx 0,166 kg after outer leaves, core and trim removed; braising loss brings to approx 0,150 kg finished; [estimate — validate in kitchen]"}, {"name": "Butter", "qty": "0.01 kg", "total": "0.6 kg", "note": "For sweating onion and finishing; adds richness and gloss to braising liquid"}, {"name": "Onion", "qty": "0.025 kg", "total": "1.5 kg", "note": "peeled and diced fine; Gross; yields approx 0,022 kg usable; sweated before adding cabbage"}, {"name": "Cider vinegar", "qty": "0.008 kg", "total": "0.48 kg", "note": "Apple; Deglazes pan and provides acidity; add in two stages — before and after braising"}, {"name": "Vegetable stock", "qty": "0.04 l", "total": "2.4 l", "note": "Braising liquid; check stock cube allergens — celery common in commercial stocks"}, {"name": "Caraway seeds", "qty": "0.002 kg", "total": "0.12 kg", "note": "2g; toast briefly before adding; defines the dish"}, {"name": "Sugar", "qty": "0.002 kg", "total": "0.12 kg", "note": "white; 2g; balances acidity of vinegar; do not omit"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.12 kg", "note": "2g; season during braising; taste and adjust before dispatch"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.06 kg", "note": "ground; 1g"}], "instructions": ["1. Remove outer leaves and core from pointed cabbage; cut into wedges approx 3–4 cm wide or shred coarsely into wide ribbons — Wedges give better visual presentation and texture in holding; ribbons are faster for batch production — choose based on volume", "2. Toast caraway seeds dry in pan for 60–90 seconds until fragrant; set aside — Watch carefully; caraway burns quickly and turns bitter", "3. Sweat diced onion in butter over medium heat until soft and translucent; approx 4–5 minutes — Do not colour; soft sweet base is the goal", "4. Add caraway seeds; stir through onion for 30 seconds — Blooming spice in butter releases flavour", "5. Add cabbage; toss to coat in butter and onion base — Light coating before liquid is added improves flavour absorption", "6. Deglaze with half the apple cider vinegar; add vegetable stock and sugar; season with salt and pepper — Liquid should come approximately one-third up the cabbage; not submerged", "7. Cover and braise on hob or in Rational until cabbage is tender but retains slight structure; see Cooking / Holding — Do not braise to full collapse; cabbage will continue to soften in chafing dish", "8. Remove lid; reduce braising liquid briefly if excess remains; stir in remaining apple cider vinegar; taste and adjust seasoning — Final acid addition brightens the dish; all finishing completed in kitchen before dispatch"], "cooking_stages": [{"stage": "Braising", "mode": "Combi steam", "temp": "100°C", "time": "18–22 min", "humidity": "0.8", "notes": "Cover GN tray tightly with lid or foil; check at 18 min — cabbage should be tender with slight resistance"}, {"stage": "Sauce reduction", "mode": "Hob", "temp": "Medium heat", "time": "3–5 min", "humidity": "N/A", "notes": "If excess braising liquid remains after Rational; reduce briefly in tray or pan before final seasoning"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 90 min", "humidity": "N/A", "notes": "Cabbage will continue to soften in holding; this is within acceptable range; braising liquid keeps it moist and flavourful throughout service window"}, {"stage": "Regeneration", "mode": "Combi steam", "temp": "95°C", "time": "10–12 min", "humidity": "0.8", "notes": "Cover tray during regen; add a small splash of stock or water if braising liquid has been fully absorbed"}], "transport": "GN tray with lid; hot insulated transport. Fully finished and seasoned in kitchen. Braising liquid travels with the cabbage in the same tray — do not drain.", "rational": "Hob braise as per fallback above. Covered tightly throughout. Monitor liquid level during cooking.", "buffet": "Good. Braising liquid in the tray keeps cabbage moist and flavourful throughout service. Texture softens progressively but remains pleasant. Caraway flavour deepens in holding — positive. Maximum recommended service window: 90 minutes.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen covered per instructions above. Add a small amount of stock if liquid has been fully absorbed during chilling."}, "Roasted Sweet Potato Cubes with Smoked Paprika & Olive Oil": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Sweet potato", "qty": "0.195 kg", "total": "5.85 kg", "note": "whole unpeeled; Gross; yields approx 0,146 kg peeled and cubed; further roasting loss to approx 0,130 kg finished; [estimate — validate in kitchen]"}, {"name": "Olive oil", "qty": "0.01 l", "total": "0.3 l", "note": "For roasting; coat cubes evenly"}, {"name": "Sweet smoked paprika", "qty": "0.003 kg", "total": "0.09 kg", "note": "Smoked paprika; 3g; use sweet smoked paprika; not hot; toss with oil before roasting"}, {"name": "Garlic powder", "qty": "0.001 kg", "total": "0.03 kg", "note": "1g; background seasoning; optional but recommended"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season before roasting"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}, {"name": "Parsley", "qty": "0.005 kg", "total": "0.15 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,003 kg usable; chopped; added in kitchen after roasting before dispatch"}], "instructions": ["1. Peel sweet potatoes; cut into even cubes approx 2–2,5 cm — Even sizing critical for uniform roasting; smaller cubes collapse and become mushy in holding", "2. Toss cubes with olive oil, smoked paprika, garlic powder, salt and pepper — Coat evenly; oil must cover all surfaces to prevent drying in oven", "3. Spread in a single layer on GN tray; do not stack or crowd — Crowding causes steaming; cubes will not develop colour and will release excess moisture", "4. Roast in Rational; see Cooking / Holding section — Check at 20 minutes; cubes should be caramelised on edges and cooked through but holding shape", "5. Remove from oven; rest 3–4 minutes on tray — Allow surface moisture to settle", "6. Scatter chopped parsley over roasted cubes; taste and adjust salt — All finishing completed in kitchen before dispatch", "7. Check tray for pooled liquid; decant to clean GN tray if necessary before loading — Sweet potato releases sugary liquid during roasting; do not transport in standing liquid"], "cooking_stages": [{"stage": "Roasting", "mode": "Combi", "temp": "200°C", "time": "22–26 min", "humidity": "0.1", "notes": "Low humidity promotes caramelisation and reduces moisture pooling; rotate tray halfway if oven has hot spots"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 90 min", "humidity": "N/A", "notes": "Sweet potato holds well in chafing dish; high natural sugar content retains moisture better than most vegetables; texture remains acceptable at 90 min if cubes cut at 2–2,5 cm"}, {"stage": "Regeneration", "mode": "Combi", "temp": "180°C", "time": "10–12 min", "humidity": "0.1", "notes": "From chilled; do not cover during regen — steam softens cubes excessively"}], "transport": "GN tray with lid; hot insulated transport. Fully finished with parsley in kitchen. Decant away from standing liquid before loading.", "rational": "See fallback rows above. Convection mode without humidity performs well for this dish.", "buffet": "Very good. Sweet potato is one of the more stable roasted vegetable sides in chafing dish service. High sugar content retains moisture and flavour over holding time. Cubes soften gradually but do not collapse if cut at correct size. Maximum recommended service window: 90 minutes.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen per instructions above uncovered."}, "Romaine with Lime & Herb Dressing": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Romaine Lettuce", "qty": "0.095 kg", "total": "2.85 kg", "note": "whole heads; Gross; yields approx 0,076 kg after outer leaves, base and trim; tear or cut into large pieces"}, {"name": "Parsley", "qty": "0.008 kg", "total": "0.24 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,005 kg usable; roughly chopped; mixed through lettuce"}, {"name": "Fresh Mint", "qty": "0.005 kg", "total": "0.15 kg", "note": "leaves; Gross; yields approx 0,003 kg usable; tear leaves; do not chop fine — bruises and blackens"}, {"name": "Lime juice", "qty": "0.012 l", "total": "0.36 l", "note": "fresh; Approx 0,030 kg whole lime to yield 0,012 kg juice; primary acid in dressing"}, {"name": "Lime zest", "qty": "0.002 kg", "total": "0.06 kg", "note": "Zest of approx 0,5 lime gross; adds brightness to dressing"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.018 l", "total": "0.54 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Dijon mustard", "qty": "0.002 kg", "total": "0.06 kg", "note": "Emulsifier; use sparingly — mustard flavour should be background only"}, {"name": "Honey", "qty": "0.003 kg", "total": "0.09 kg", "note": "Balances lime acidity; not suitable for strict vegan guests — flag if required"}, {"name": "Salt", "qty": "0.001 kg", "total": "0.03 kg", "note": "1g; season dressing"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Wash and dry romaine thoroughly; tear or cut into large pieces approx 4–5 cm — Dry leaves essential — water on leaves dilutes dressing and accelerates wilting", "2. Wash and dry parsley; roughly chop; wash and dry mint; tear leaves — Handle mint gently; torn mint holds colour and texture better than chopped", "3. Whisk together lime juice, lime zest, Dijon mustard, honey, olive oil, salt and pepper until emulsified — Taste and adjust — lime varies in acidity; balance with honey if too sharp", "4. Combine romaine, parsley and mint in GN tray; do not dress before transport — Dressing travels separately in sealed container per protocol", "5. Pack lime herb dressing in sealed container; label and load alongside GN tray — Dressing applied immediately before service begins"], "cooking_stages": [{"stage": "Cold holding (assembled, undressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 6 hrs", "humidity": "N/A", "notes": "Romaine holds well undressed; mint may darken slightly at edges over time — acceptable"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; dressing applied at service point"}], "transport": "GN tray with film cover; chilled transport. Salad undressed. Lime herb dressing in separate sealed container loaded alongside.", "rational": "Not applicable.", "buffet": "Good for a leafy salad. Romaine is more robust than rocket or mixed leaves and holds structure well after dressing for 40–50 minutes. Mint will wilt and darken after approximately 30 minutes once dressed — acceptable within service window. Do not dress more than 5 minutes before guests arrive. Undressed salad holds well on cold buffet for up to 90 minutes.", "regen": "Not applicable — cold dish."}, "Vegan Bean & Sweet Potato Chili": {"diet": "Vegan", "allergens": "", "category": "Main - Vegan", "ingredients": [{"name": "Vegan Bean & Sweet Potato Chili", "qty": "0.25 kg", "total": "7.5 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Butterhead & Watercress with Lemon & Mustard Dressing": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Butterhead lettuce (fresh, whole head)", "qty": "0.075 kg", "total": "2.25 kg", "note": "Butterhead lettuce whole heads; Gross; yields approx 0,056 kg after outer leaves, core and trim; tear into large pieces; do not cut — cut edges bruise and brown faster"}, {"name": "Watercress", "qty": "0.04 kg", "total": "1.2 kg", "note": "fresh trimmed; Gross; yields approx 0,034 kg after thick stems removed; handle gently; wilts faster than most leaves"}, {"name": "Lemon Juice", "qty": "0.01 l", "total": "0.3 l", "note": "fresh; Approx 0,025 kg whole lemon to yield 0,010 kg juice; primary acid in dressing"}, {"name": "Lemon zest", "qty": "0.002 kg", "total": "0.06 kg", "note": "Zest of approx 0,5 lemon gross; adds brightness"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.018 l", "total": "0.54 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Dijon mustard", "qty": "0.005 kg", "total": "0.15 kg", "note": "Higher proportion than other dressings in this range — mustard is a feature here not just an emulsifier"}, {"name": "Honey", "qty": "0.003 kg", "total": "0.09 kg", "note": "Balances lemon and mustard; not suitable for strict vegan guests — flag if required"}, {"name": "Salt", "qty": "0.001 kg", "total": "0.03 kg", "note": "1g"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Separate butterhead leaves; wash and dry thoroughly; tear into large pieces — Butterhead is delicate — handle minimally; do not prep more than 4 hours in advance", "2. Trim thick watercress stems; wash and dry gently — Watercress wilts faster than butterhead; keep refrigerated and dry until loading", "3. Whisk together lemon juice, lemon zest, Dijon mustard, honey, olive oil, salt and pepper until emulsified — Taste and balance — mustard is prominent in this dressing; adjust lemon and honey to preference", "4. Combine butterhead and watercress in GN tray; do not dress before transport — Dressing travels separately in sealed container per protocol", "5. Pack lemon mustard dressing in sealed container; label and load alongside GN tray — Dressing applied immediately before service begins"], "cooking_stages": [{"stage": "Cold holding (assembled, undressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 4 hrs", "humidity": "N/A", "notes": "Butterhead and watercress are both delicate; do not prep more than 4 hours before dispatch; watercress is the limiting factor"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; dressing applied at service point"}], "transport": "GN tray with film cover; chilled transport. Salad undressed. Lemon mustard dressing in separate sealed container loaded alongside.", "rational": "Not applicable.", "buffet": "Moderate. Butterhead and watercress are among the most delicate leaves in this recipe range. After dressing, acceptable texture window is 20–30 minutes maximum. Watercress wilts faster than butterhead. Do not dress more than 5 minutes before guests arrive. Undressed salad holds on cold buffet up to 60 minutes with acceptable appearance. Schedule this salad last in buffet setup.", "regen": "Not applicable — cold dish."}, "Glazed Carrots & Parsnips with Thyme": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Carrots", "qty": "0.085 kg", "total": "5.1 kg", "note": "whole fresh; Gross; yields approx 0,074 kg peeled and cut; equal weight split with parsnip in finished dish"}, {"name": "Parsnip", "qty": "0.075 kg", "total": "4.5 kg", "note": "s whole fresh; Gross; yields approx 0,060 kg peeled and cut; parsnip has higher trim loss than carrot; [estimate — validate in kitchen]"}, {"name": "Butter", "qty": "0.008 kg", "total": "0.48 kg", "note": "For glazing; essential for gloss and flavour; do not substitute with oil"}, {"name": "Honey", "qty": "0.006 kg", "total": "0.36 kg", "note": "For glaze; not suitable for strict vegan guests — flag if required"}, {"name": "Thyme", "qty": "0.003 kg", "total": "0.18 kg", "note": "Fresh leaves only; Gross; yields approx 0,002 kg usable; strip leaves; add during glazing"}, {"name": "Vegetable stock", "qty": "0.03 l", "total": "1.8 l", "note": "Used to start the glazing process; evaporates during cooking to leave glaze behind; check stock allergens"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.12 kg", "note": "2g"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.06 kg", "note": "ground; 1g"}], "instructions": ["1. Peel carrots and parsnips; cut into batons approx 5–6 cm long and 1–1,5 cm wide — Even sizing critical; parsnip cores can be woody in large roots — remove if necessary", "2. Blanch carrots and parsnips separately in well-salted boiling water; carrots 4 minutes, parsnips 3 minutes; refresh in cold water — Parsnips cook faster than carrots; blanch separately to control texture; blanching reduces Rational time and improves glaze absorption", "3. Drain and dry blanched vegetables thoroughly — Surface moisture prevents glaze from adhering", "4. Place blanched vegetables in GN tray with butter, honey, thyme, stock, salt and pepper — Arrange in a single layer where possible for even glazing", "5. Roast and glaze in Rational; see Cooking / Holding section — Stock evaporates; butter and honey reduce to a sticky glaze coating the vegetables", "6. Remove from oven; toss gently to coat all pieces in glaze; taste and adjust seasoning — All finishing completed in kitchen before dispatch"], "cooking_stages": [{"stage": "Glazing", "mode": "Combi", "temp": "190°C", "time": "16–20 min", "humidity": "0.2", "notes": "Light humidity early helps glaze develop without burning; check at 15 min; glaze should be sticky and lightly caramelised"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 90 min", "humidity": "N/A", "notes": "Glazed carrots and parsnips hold very well in chafing dish; glaze continues to set and deepen in flavour during holding; excellent buffet dish"}, {"stage": "Regeneration", "mode": "Combi", "temp": "175°C", "time": "8–10 min", "humidity": "0.2", "notes": "From chilled; cover loosely for first 5 min then uncover to re-set glaze surface"}], "transport": "GN tray with lid; hot insulated transport. Fully glazed and seasoned in kitchen. Glaze travels with the vegetables — do not drain.", "rational": "See fallback rows above. Foil cover for first portion of cooking replaces humidity function.", "buffet": "Excellent. One of the most stable hot sides in chafing dish service. Glaze protects vegetables from drying out; flavour improves in holding. Carrots and parsnips retain pleasant texture for full 90 minute window if blanched and cut correctly. Maximum recommended service window: 90 minutes.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen per instructions above. Add a small knob of butter to tray before regenerating if glaze looks dry after chilling."}, "Grillkäse with Roasted Vegetables & Herb Dressing": {"diet": "Vegetarian", "allergens": "Milk", "category": "Main - Vegetarian", "ingredients": [{"name": "Grillkäse", "qty": "0.1 kg", "total": "3 kg", "note": "firm frying cheese; Slice into approx 1,5 cm planks or leave as block depending on purchase format; do not crumble"}, {"name": "Zucchini", "qty": "0.095 kg", "total": "2.85 kg", "note": "courgette; Gross; yields approx 0,071 kg roasted; dominant vegetable component"}, {"name": "Red bell pepper", "qty": "0.055 kg", "total": "1.65 kg", "note": "Gross; yields approx 0,044 kg roasted; deseed and cut into strips approx 2 cm wide"}, {"name": "Cherry tomatoes", "qty": "0.03 kg", "total": "0.9 kg", "note": "Gross; yields approx 0,026 kg roasted; halve before roasting; do not increase proportion — high moisture"}, {"name": "Olive Oil", "qty": "0.01 l", "total": "0.3 l", "note": "for roasting vegetables; For tossing vegetables before roasting"}, {"name": "Olive Oil", "qty": "0.005 l", "total": "0.15 l", "note": "for searing cheese; Light coating on cheese surface before searing"}, {"name": "Parsley", "qty": "0.01 kg", "total": "0.3 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,007 kg usable; finely chopped; base of herb dressing"}, {"name": "Garlic", "qty": "0.003 kg", "total": "0.09 kg", "note": "clove; 1 small clove; minced fine; for herb dressing"}, {"name": "Lemon Juice", "qty": "0.008 l", "total": "0.24 l", "note": "fresh; Approx 0,020 kg whole lemon to yield 0,008 kg juice; for herb dressing"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.012 l", "total": "0.36 l", "note": "Extra virgin olive oil for dressing; For herb dressing"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season vegetables before roasting; taste dressing before combining"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Cut zucchini into half-moons 1,5 cm thick; deseed and slice red pepper into 2 cm strips; halve cherry tomatoes — Even sizing for uniform roasting", "2. Toss zucchini and red pepper with olive oil, salt and pepper; spread in single layer on GN tray — Cherry tomatoes added separately in step 3 — they roast faster and must not be combined from the start", "3. After 12 minutes of roasting add halved cherry tomatoes to tray; continue roasting — Staggered addition prevents tomatoes collapsing fully before other vegetables are done", "4. Remove roasted vegetables from oven; rest on tray; decant away from excess liquid if pooling — Do not transport in standing liquid", "5. Whisk together chopped parsley, minced garlic, lemon juice, extra virgin olive oil, salt and pepper — Herb dressing should be loose and spoonable; not emulsified — it is a loose green oil dressing", "6. Brush or rub Grillkäse lightly with olive oil; sear in Rational or on hot griddle pan until golden on both sides — See Cooking / Holding for Rational method; surface colour is essential — pale Grillkäse is visually unappealing and texturally flat", "7. Combine roasted vegetables and seared Grillkäse in GN tray; spoon herb dressing over the top; toss gently — All components combined fully in kitchen before dispatch; no assembly on site", "8. Taste and adjust seasoning; transfer to clean transport GN tray — Final seasoning completed in kitchen"], "cooking_stages": [{"stage": "Roasting vegetables", "mode": "Combi", "temp": "200°C", "time": "22–26 min total", "humidity": "0.1", "notes": "Add cherry tomatoes at 12 min mark; low humidity promotes colour and reduces moisture pooling"}, {"stage": "Searing Grillkäse", "mode": "Combi grill / convection", "temp": "230°C", "time": "4–5 min per side", "humidity": "", "notes": "Zero humidity; high dry heat only; watch closely — Grillkäse colours quickly; alternative is hot griddle pan on hob"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 60 min", "humidity": "N/A", "notes": "CRITICAL — maximum 60 minutes; beyond this Grillkäse texture degrades significantly; surface softens and becomes rubbery; plan dispatch timing accordingly"}, {"stage": "Regeneration", "mode": "Not recommended", "temp": "-", "time": "-", "humidity": "-", "notes": "Grillkäse does not regenerate well after cook-chill; texture becomes tough and rubbery on reheating; produce fresh for each service"}], "transport": "GN tray with lid; hot insulated transport. All components fully combined with herb dressing in kitchen before loading. Time dispatch carefully — 60 minute maximum service window from loading.", "rational": "See fallback rows above. Griddle pan sear on hob is a reliable alternative to Rational for the cheese if colour consistency is difficult to achieve in older convection models.", "buffet": "Limited — 60 minutes maximum. Grillkäse is the constraining factor. Roasted vegetables hold well beyond this window; the cheese does not. Coordinate production and dispatch timing to minimise time between searing and service. Do not produce this dish for cook-chill.", "regen": "Not suitable for cook-chill. Produce fresh for each service day only."}, "Roasted Beetroot & Orange with Toasted Walnuts": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Beetroot", "qty": "0.11 kg", "total": "3.3 kg", "note": "whole fresh unpeeled; Gross; yields approx 0,086 kg after roasting, peeling and trim; roast whole then peel — better flavour and less colour bleed than peeling raw; [estimate — validate in kitchen]"}, {"name": "Oranges (segments/supremes)", "qty": "0.06 kg", "total": "1.8 kg", "note": "Orange fresh for segments and zest; Gross; yields approx 0,033 kg usable segments after peeling and pith removal; also zest before peeling; [estimate — validate in kitchen]"}, {"name": "Walnuts (roasted)", "qty": "0.015 kg", "total": "0.45 kg", "note": "Walnuts raw shelled; Toast in dry pan or oven before use; roughly chop or leave as halves"}, {"name": "Parsley", "qty": "0.006 kg", "total": "0.18 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,004 kg usable; roughly chopped; added at final stage"}, {"name": "Orange juice", "qty": "0.008 l", "total": "0.24 l", "note": "from segmenting orange above; Collect juice released during segmenting; use in dressing"}, {"name": "Red wine vinegar", "qty": "0.005 kg", "total": "0.15 kg", "note": "For dressing; balances sweetness of beetroot and orange"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.014 l", "total": "0.42 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Orange zest", "qty": "0.002 kg", "total": "0.06 kg", "note": "Zest orange before segmenting; adds intensity to dressing"}, {"name": "Honey", "qty": "0.003 kg", "total": "0.09 kg", "note": "For dressing; rounds sweetness; not suitable for strict vegan guests — flag if required"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Wash beetroot; leave whole and unpeeled; wrap individually in foil or place in covered GN tray with a small amount of water — Roasting whole in skin retains moisture and flavour; reduces colour bleeding onto other ingredients during cooking", "2. Roast beetroot in Rational until tender throughout; see Cooking / Holding section — Test with a skewer — should pass through centre with no resistance", "3. Allow beetroot to cool until handleable; peel under cold running water; the skin slips off easily — Use gloves; beetroot juice stains permanently", "4. Cut peeled beetroot into wedges or cubes approx 2–3 cm; place in GN tray — Cut size should be consistent for presentation and portioning", "5. Zest orange before peeling; set zest aside for dressing; segment orange removing all pith and membrane; collect any juice released — Supreming the orange gives clean segments without pith bitterness", "6. Toast walnuts in dry pan over medium heat for 3–4 minutes until fragrant and lightly coloured; cool before using — Watch carefully; walnuts burn quickly; cool fully before adding to salad or they will wilt other components", "7. Whisk together orange juice, orange zest, red wine vinegar, olive oil, honey, salt and pepper — Taste and adjust — beetroot is sweet; dressing needs sufficient acidity to balance", "8. Combine beetroot and orange segments in GN tray; spoon dressing over; scatter parsley and toasted walnuts; toss gently — All components combined fully in kitchen; dressing is not separated for this dish — beetroot is a robust ingredient and pre-dressing improves flavour", "9. Cover GN tray with film; refrigerate until dispatch — Flavour improves with 30–60 minutes resting after dressing"], "cooking_stages": [{"stage": "Roasting beetroot (whole)", "mode": "Combi steam", "temp": "180°C", "time": "50–70 min", "humidity": "0.6", "notes": "Time varies significantly by size; medium beetroot approx 55–60 min; large up to 70 min; test with skewer"}, {"stage": "Cooling", "mode": "Ambient then refrigeration", "temp": "-", "time": "Until below 8°C", "humidity": "N/A", "notes": "Cool before peeling and cutting; can be roasted day before and refrigerated overnight"}, {"stage": "Cold holding (assembled and dressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 24 hrs", "humidity": "N/A", "notes": "This dish improves with resting; make ahead is actively recommended; cover tightly to prevent fridge odour transfer"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only"}], "transport": "GN tray with film cover or lid; chilled transport. Dish fully dressed and assembled in kitchen. Walnuts and parsley combined before dispatch — no on-site additions.", "rational": "See fallback row above. Foil-covered GN tray replicates steam environment for whole beetroot roasting effectively.", "buffet": "Excellent for a cold salad. Beetroot is robust and holds texture and colour well. Orange segments soften slightly over time but remain pleasant for up to 90 minutes on cold buffet. Walnuts will soften gradually after contact with dressing — acceptable within service window. Some red colour bleeding into dressing is normal and expected. Maximum recommended service window: 90 minutes.", "regen": "Not applicable — cold dish. Beetroot can be roasted and refrigerated up to 48 hours in advance before assembling the final dish."}, "Roasted Rosemary Potatoes": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Potatoes", "qty": "0.195 kg", "total": "5.85 kg", "note": "waxy variety — Charlotte Nicola or similar; Gross; yields approx 0,152 kg peeled and cut; roasting loss to approx 0,130 kg finished; waxy variety holds shape in holding better than floury; [estimate — validate in kitchen]"}, {"name": "Olive oil", "qty": "0.012 l", "total": "0.36 l", "note": "For roasting; coat pieces evenly"}, {"name": "Rosemary (fresh)", "qty": "0.004 kg", "total": "0.12 kg", "note": "Fresh rosemary; Gross; yields approx 0,003 kg usable; strip leaves; chop roughly; add before roasting"}, {"name": "Garlic cloves", "qty": "0.005 kg", "total": "0.15 kg", "note": "2 medium cloves; sliced thin or left whole; roast alongside potatoes"}, {"name": "Salt", "qty": "0.003 kg", "total": "0.09 kg", "note": "3g; season before roasting; potatoes require generous salting"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Peel potatoes; cut into even pieces approx 3–4 cm — Even sizing critical for uniform roasting; too small and potatoes dry out in holding", "2. Parboil in well-salted water for 6–8 minutes until just starting to soften at edges but raw in centre; drain — Parboiling is mandatory — it creates the starchy surface layer that gives roast potatoes their texture; do not skip", "3. Drain and steam-dry in colander for 2–3 minutes; shake to roughen edges slightly — Roughened edges increase surface area for crisping; moisture on surface prevents colour development", "4. Toss with olive oil, chopped rosemary, garlic, salt and pepper — Coat evenly; oil must cover all surfaces", "5. Spread in a single layer on GN tray; do not crowd — Crowding causes steaming; potatoes will not develop colour", "6. Roast in Rational; see Cooking / Holding section — Check at 25 minutes; potatoes should be golden with crisp edges"], "cooking_stages": [{"stage": "Roasting", "mode": "Combi", "temp": "210°C", "time": "28–35 min", "humidity": "", "notes": "Zero humidity critical — any steam will soften the surface and prevent crisping; rotate tray halfway"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 75 min", "humidity": "N/A", "notes": "Honest note — roast potatoes lose surface crispness in a chafing dish within 20–30 minutes; interior remains good; this is an inherent limitation of the format and cannot be fully resolved"}, {"stage": "Regeneration", "mode": "Combi", "temp": "200°C", "time": "12–15 min", "humidity": "", "notes": "From chilled; zero humidity; uncovered; this is the best method to partially restore surface texture after cook-chill"}], "transport": "GN tray with lid; hot insulated transport. Fully seasoned in kitchen. Accept that surface texture will soften during transport and holding — this is unavoidable in this delivery format.", "rational": "See fallback rows above. Convection at zero humidity is the correct method throughout.", "buffet": "Moderate. Interior texture and flavour remain excellent throughout service window. Surface crispness is lost within 20–30 minutes in chafing dish — unavoidable in cook-and-deliver format. Potatoes remain fully acceptable in flavour and texture; manage guest expectation through dish naming rather than presentation (do not call them \"crispy\"). Maximum recommended service window: 75 minutes.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen uncovered at high convection heat per instructions above."}, "Sauerbraten Goulash": {"diet": "Meat", "allergens": "", "category": "Main - Meat", "ingredients": [{"name": "Sauerbraten Goulash", "qty": "0.25 kg", "total": "6 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Carrot Salad": {"diet": "Vegan", "allergens": "", "category": "Salad", "ingredients": [{"name": "Carrots", "qty": "0.12 kg", "total": "3 kg", "note": ""}, {"name": "Pumpkin Seeds", "qty": "0.02 kg", "total": "0.5 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Chickpea Masala": {"diet": "Vegan", "allergens": "Milk", "category": "Side", "ingredients": [{"name": "Chickpea Masala", "qty": "0.2 kg", "total": "2 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Roasted Broccoli": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Broccoli", "qty": "0.21 kg", "total": "5.25 kg", "note": "whole heads fresh; Gross; yields approx 0,151 kg after stem trim and floret separation; roasting loss to approx 0,130 kg finished; [estimate — validate in kitchen]"}, {"name": "Olive oil", "qty": "0.012 l", "total": "0.3 l", "note": "For roasting; coat florets evenly"}, {"name": "Garlic cloves", "qty": "0.004 kg", "total": "0.1 kg", "note": "2 small cloves; sliced thin; toss with florets before roasting"}, {"name": "Lemon Juice", "qty": "0.005 l", "total": "0.125 l", "note": "fresh; Approx 0,013 kg whole lemon to yield 0,005 kg juice; finish in kitchen after roasting"}, {"name": "Lemon zest", "qty": "0.002 kg", "total": "0.05 kg", "note": "Zest of approx 0,5 lemon gross; added after roasting in kitchen"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.05 kg", "note": "2g; season before roasting"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.025 kg", "note": "ground; 1g"}, {"name": "Chilli flakes", "qty": "0.001 kg", "total": "0.025 kg", "note": "optional; 1g; mild background heat only; omit entirely for sensitive audiences; flag on menu if included"}], "instructions": ["1. Cut broccoli into even florets approx 4–5 cm; include tender parts of stem cut into similar-sized pieces — Even sizing critical; stem pieces roast well and reduce waste", "2. Dry florets thoroughly; any surface moisture prevents colour development — Wash and dry well in advance or spin dry; wet broccoli steams instead of roasting", "3. Toss florets with olive oil, sliced garlic, salt, pepper and chilli flakes if using — Coat evenly; florets must be well oiled on all surfaces", "4. Spread in a single layer on GN tray; florets should not overlap — Overlapping causes steaming; broccoli must have direct heat contact for colour and texture", "5. Roast in Rational; see Cooking / Holding section — Broccoli should have charred edges and deep green colour; not pale or soft", "6. Remove from oven; squeeze lemon juice over florets; add lemon zest; toss gently — All finishing completed in kitchen before dispatch", "7. Taste and adjust salt; decant to clean GN tray if excess liquid in base — Do not transport in standing liquid"], "cooking_stages": [{"stage": "Roasting", "mode": "Combi", "temp": "220°C", "time": "16–20 min", "humidity": "", "notes": "Zero humidity essential; high dry heat gives charred edges and roasted flavour; rotate tray halfway"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 75 min", "humidity": "N/A", "notes": "Broccoli softens progressively in holding; charred edges soften first but flavour remains good; do not exceed 75 minutes — texture degrades noticeably beyond this point"}, {"stage": "Regeneration", "mode": "Combi", "temp": "210°C", "time": "6–8 min", "humidity": "", "notes": "From chilled; zero humidity; uncovered; high heat briefly restores some roasted character"}], "transport": "GN tray with lid; hot insulated transport. Fully finished with lemon in kitchen. Decant away from standing liquid before loading.", "rational": "See fallback rows above. Convection at zero humidity is the correct method throughout.", "buffet": "Moderate. Broccoli is one of the less forgiving vegetables in chafing dish holding — it softens and loses colour faster than root vegetables or courgette. Flavour remains good throughout. Maximum recommended service window: 75 minutes. Prioritise dispatching this dish close to service time where possible.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Regen uncovered at high heat per instructions above. Texture after regen is acceptable but softer than fresh-roasted — validate in kitchen before committing to cook-chill production for this dish."}, "South American Style Beef Stew": {"diet": "Meat", "allergens": "Mustard, Sesame", "category": "Main - Meat", "ingredients": [{"name": "South American Style Beef Stew", "qty": "0.2 kg", "total": "3 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Steamed Jasmine Rice": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Jasmine rice", "qty": "0.05 kg", "total": "1.25 kg", "note": "dry; Dry weight; cooks to approx 0,150 kg finished; rinse thoroughly before cooking to remove excess starch"}, {"name": "Salt", "qty": "0.001 kg", "total": "0.025 kg", "note": "1g; add to cooking water or steam chamber"}, {"name": "Water", "qty": "0.1 l", "total": "2.5 l", "note": "For absorption method; ratio 1:2 rice to water by weight"}], "instructions": ["1. Rinse jasmine rice under cold water until water runs clear; approx 3–4 rinses — Removes excess surface starch; prevents clumping and gummy texture in holding", "2. Combine rinsed rice and water in GN tray; add salt; cover tightly with lid or foil — 1:2 ratio by weight; do not stir once covered", "3. Steam or bake in Rational; see Cooking / Holding section — Do not uncover during cooking; steam must remain trapped"], "cooking_stages": [{"stage": "Cooking", "mode": "Combi steam", "temp": "100°C", "time": "18–20 min", "humidity": "1", "notes": "Full steam; GN tray covered tightly; do not open during cooking"}, {"stage": "Resting", "mode": "Covered", "temp": "-", "time": "5 min", "humidity": "N/A", "notes": "Keep covered after removing from Rational; mandatory rest before fluffing"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 90 min", "humidity": "N/A", "notes": "Cover GN tray in chafing dish to retain moisture; rice dries out quickly if left uncovered; stir gently every 30 minutes if possible during service"}], "transport": "GN tray with lid; hot insulated transport. Rice fully cooked, rested and fluffed in kitchen. Cover must remain on tray throughout transport to retain moisture.", "rational": "Hob absorption method is a reliable fallback; see above. Covered foil regen method works well for this dish.", "buffet": "Good if kept covered. Rice dries out rapidly when exposed — keep GN tray covered in chafing dish and lift lid only for service. Texture remains acceptable for 90 minutes if moisture is retained. Jasmine rice holds better than basmati in chafing dish conditions due to slightly higher starch content. Maximum recommended service window: 90 minutes covered.", "regen": "Cook-chill suitable. Chill to below 3°C within 90 minutes of cooking. Add water before regenerating. Do not regen more than once."}, "Little Gem & Avocado with Lime & Coriander Dressing": {"diet": "Vegetarian", "allergens": "", "category": "Side", "ingredients": [{"name": "Little Gem lettuce", "qty": "0.065 kg", "total": "1.95 kg", "note": "whole heads; Gross; yields approx 0,051 kg after outer leaves and base trim; separate leaves or cut into quarters lengthways"}, {"name": "Avocado", "qty": "0.055 kg", "total": "1.65 kg", "note": "ripe fresh; Gross; yields approx 0,037 kg usable flesh after skin and stone; [estimate — validate in kitchen]; slice or cube just before dispatch — not in advance"}, {"name": "Fresh coriander", "qty": "0.008 kg", "total": "0.24 kg", "note": "Gross; yields approx 0,005 kg usable; leaves and fine stems only; roughly chopped; both in dressing and scattered through salad"}, {"name": "Lime juice", "qty": "0.012 l", "total": "0.36 l", "note": "fresh; Approx 0,030 kg whole lime to yield 0,012 kg juice; primary acid in dressing; also applied directly to avocado to prevent browning"}, {"name": "Lime zest", "qty": "0.002 kg", "total": "0.06 kg", "note": "Zest of approx 0,5 lime gross; for dressing"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.016 l", "total": "0.48 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Dijon mustard", "qty": "0.002 kg", "total": "0.06 kg", "note": "Emulsifier; background only"}, {"name": "Honey", "qty": "0.003 kg", "total": "0.09 kg", "note": "Balances lime acidity; not suitable for strict vegan guests — flag if required"}, {"name": "Salt", "qty": "0.001 kg", "total": "0.03 kg", "note": "1g"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Separate Little Gem leaves or cut heads into quarters lengthways; wash and dry thoroughly — Quarters give better visual presentation on a cold buffet; individual leaves work for smaller portions", "2. Whisk together lime juice, lime zest, Dijon mustard, honey, olive oil, half the chopped coriander, salt and pepper — Reserve remaining coriander for scattering over salad in GN tray", "3. Halve and stone avocado as close to dispatch time as possible; slice or cube; toss immediately with a small amount of lime juice — Avocado browning is the primary risk in this dish; lime juice applied directly to cut surfaces significantly slows oxidation", "4. Arrange Little Gem in GN tray; place avocado pieces on top; scatter remaining coriander — Do not toss — avocado bruises easily and loses shape; arrange gently", "5. Do not dress before transport; dressing travels separately in sealed container — Dressing applied immediately before service begins per protocol", "6. Pack lime coriander dressing in sealed container; label and load alongside GN tray — Avocado treated with lime juice in kitchen will hold acceptable colour for up to 3 hours chilled"], "cooking_stages": [{"stage": "Cold holding (assembled, undressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 3 hrs", "humidity": "N/A", "notes": "3 hour maximum from cutting avocado to service; avocado is the limiting factor regardless of lime treatment; do not prep more than 3 hours before dispatch"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; dressing applied at service point"}], "transport": "GN tray with film cover pressed directly onto avocado surface where possible; chilled transport. Dressing in separate sealed container loaded alongside. Avocado treated with lime juice in kitchen — no on-site treatment required or possible.", "rational": "Not applicable.", "buffet": "Limited by avocado. Little Gem holds well for 60–75 minutes on cold buffet. Avocado will begin to brown and soften from approximately 30–40 minutes after cutting despite lime treatment — this is unavoidable. Schedule this salad for service windows of 45 minutes maximum after dressing. Use ripe but firm avocado — overripe avocado browns and collapses faster. Do not dress more than 5 minutes before guests arrive.", "regen": "Not applicable — cold dish."}, "Shredded Carrot Salad": {"diet": "Vegetarian", "allergens": "", "category": "Salad", "ingredients": [{"name": "Carrots", "qty": "0.105 kg", "total": "3.15 kg", "note": "whole fresh; Gross; yields approx 0,091 kg peeled and grated; coarse grate or julienne"}, {"name": "Parsley", "qty": "0.008 kg", "total": "0.24 kg", "note": "Fresh flat-leaf; Gross; yields approx 0,005 kg usable; roughly chopped; folded through at final stage"}, {"name": "Lemon Juice", "qty": "0.008 l", "total": "0.24 l", "note": "fresh; Approx 0,020 kg whole lemon to yield 0,008 kg juice; primary acid in dressing"}, {"name": "Extra virgin olive oil (dressing)", "qty": "0.012 l", "total": "0.36 l", "note": "Extra virgin olive oil; For dressing"}, {"name": "Honey", "qty": "0.004 kg", "total": "0.12 kg", "note": "Balances acidity; complements natural sweetness of carrot; not suitable for strict vegan guests — flag if required"}, {"name": "Dijon mustard", "qty": "0.002 kg", "total": "0.06 kg", "note": "Emulsifier; background flavour"}, {"name": "Cumin", "qty": "0.002 kg", "total": "0.06 kg", "note": "Ground; 2g; warm spice note; pairs well with carrot; do not omit"}, {"name": "Salt", "qty": "0.002 kg", "total": "0.06 kg", "note": "2g; season dressing; carrots absorb salt well — taste after 10 min resting"}, {"name": "Black Pepper", "qty": "0.001 kg", "total": "0.03 kg", "note": "ground; 1g"}], "instructions": ["1. Peel carrots; coarse grate or julienne on mandoline — Coarse grate gives better texture in holding than fine grate; fine grate becomes mushy quickly after dressing", "2. Whisk together lemon juice, olive oil, honey, Dijon mustard, cumin, salt and pepper until emulsified — Taste and adjust acid and sweetness before adding to carrots", "3. Pour dressing over grated carrots; toss thoroughly to coat — Bound salad — fully dressed in kitchen; no separation for transport", "4. Fold chopped parsley through dressed carrots — Add parsley after dressing to prevent bruising", "5. Rest dressed salad in refrigerator for minimum 15 minutes before tasting; adjust seasoning — Carrots release a small amount of liquid as they rest; flavour integration improves significantly with resting", "6. Transfer to GN tray; cover with film; refrigerate until dispatch — Can be made up to 12 hours in advance; flavour improves with resting time"], "cooking_stages": [{"stage": "Cold holding (dressed)", "mode": "Refrigeration", "temp": "2–4°C", "time": "Up to 12 hrs", "humidity": "N/A", "notes": "Texture remains good up to 12 hours; beyond this carrots soften noticeably"}, {"stage": "Service", "mode": "Cold buffet (unheated)", "temp": "-", "time": "-", "humidity": "N/A", "notes": "No chafing dish; cold buffet service only; travels and serves fully dressed"}], "transport": "GN tray with film cover; chilled transport. Fully dressed and rested in kitchen before loading. No components travel separately.", "rational": "Not applicable.", "buffet": "Good. Coarse-grated carrot is robust on a cold buffet. Some liquid pooling at base of GN tray is normal — stir gently before placing on buffet. Texture remains pleasant for 75–90 minutes. Maximum recommended service window: 90 minutes.", "regen": "Not applicable — cold dish."}, "“South American-style” Beef Stew": {"diet": "Meat", "allergens": "", "category": "Main - Meat", "ingredients": [{"name": "“South American-style” Beef Stew", "qty": "0.25 kg", "total": "6 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Boiled Potatoes": {"diet": "Vegan", "allergens": "", "category": "Side", "ingredients": [{"name": "Potatoes", "qty": "0.257 kg", "total": "6.43 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Spring Spätzle with Green Asparagus": {"diet": "Vegetarian", "allergens": "Milk", "category": "Side", "ingredients": [{"name": "Hard Cheese", "qty": "0.02 kg", "total": "0.6 kg", "note": ""}, {"name": "Parsley", "qty": "0.002 kg", "total": "0.06 kg", "note": ""}, {"name": "Asparagus Ragout (Sub Recipe)", "qty": "0.25 kg", "total": "7.5 kg", "note": ""}, {"name": "Cooking Cream", "qty": "0.0703 kg", "total": "2.11 kg", "note": ""}, {"name": "Green Asparagus", "qty": "0.0703 kg", "total": "2.11 kg", "note": ""}, {"name": "White Asparagus", "qty": "0.0703 kg", "total": "2.11 kg", "note": ""}, {"name": "Milk", "qty": "0.0353 kg", "total": "1.06 kg", "note": ""}, {"name": "Salt", "qty": "0.00142 kg", "total": "0.0425 kg", "note": ""}, {"name": "Black Pepper", "qty": "0.00105 kg", "total": "0.0316 kg", "note": ""}, {"name": "Parsley", "qty": "0.00142 kg", "total": "0.0425 kg", "note": ""}, {"name": "Spätzle", "qty": "0.25 kg", "total": "7.5 kg", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "Tomato salad with greens": {"diet": "Vegan", "allergens": "", "category": "Salad", "ingredients": [{"name": "Tomato", "qty": "0.08 kg", "total": "4 kg", "note": ""}, {"name": "Arugula", "qty": "0.01 kg", "total": "0.5 kg", "note": ""}, {"name": "Baby Spinach", "qty": "0.01 kg", "total": "0.5 kg", "note": ""}, {"name": "Romaine Lettuce", "qty": "0.01 kg", "total": "0.5 kg", "note": ""}, {"name": "Red Onion", "qty": "0.008 kg", "total": "0.4 kg", "note": ""}, {"name": "Balsamic Vinegar", "qty": "0.01 l", "total": "0.5 l", "note": ""}], "instructions": [], "cooking_stages": [], "transport": "", "rational": "", "buffet": "", "regen": ""}, "White Asparagus with Breadcrumb Butter and Ham": {"diet": "Meat", "allergens": "", "category": "Main - Meat", "ingredients": [{"name": "White Asparagus", "qty": "0.36 kg", "total": "9 kg", "note": "whole fresh; Gross; yields approx 0,259 kg after peeling and base trim; further cooking loss to approx 0,250 kg finished; white asparagus has significant peel and woody base waste — validate yield in kitchen"}, {"name": "Butter", "qty": "0.015 kg", "total": "0.375 kg", "note": "for cooking liquid; Added to cooking water; improves flavour and colour of spears during cooking"}, {"name": "Butter", "qty": "0.02 kg", "total": "0.5 kg", "note": "for basting sauce; Melted into basting sauce for GN tray; keeps spears moist in chafing dish"}, {"name": "Breadcrumbs", "qty": "0.012 kg", "total": "0.3 kg", "note": "fine dried; Toasted in butter until golden; scattered over spears in kitchen before dispatch"}, {"name": "Butter", "qty": "0.008 kg", "total": "0.2 kg", "note": "for toasting breadcrumbs; Separate butter portion for toasting breadcrumbs in pan"}, {"name": "Lemon Juice", "qty": "0.006 l", "total": "0.15 l", "note": "fresh; Approx 0,015 kg whole lemon to yield 0,006 kg juice; added to cooking water and to basting sauce"}, {"name": "Sugar", "qty": "0.002 kg", "total": "0.05 kg", "note": "white; 2g; added to cooking water; reduces bitterness of white asparagus"}, {"name": "Salt", "qty": "0.003 kg", "total": "0.075 kg", "note": "3g; season cooking water generously; white asparagus requires well-salted water"}, {"name": "Black Forest Ham", "qty": "0.08 kg", "total": "2 kg", "note": ""}], "instructions": ["1. Peel white asparagus from just below the tip to the base using a vegetable peeler; remove woody base (approx 2–3 cm) — Peel thoroughly — white asparagus skin is fibrous and unpleasant if under-peeled; peel twice if spears are thick", "2. Sort spears by thickness into two groups if sizes vary significantly; cook thicker spears 1–2 minutes longer — Even cooking within each batch is critical; mixed sizes in one batch will result in under and overcooked spears", "3. Bring well-salted water to boil with butter, lemon juice and sugar; the sugar and butter are mandatory for white asparagus — This cooking liquid is standard for white asparagus in German kitchen practice; do not skip", "4. Cook asparagus in simmering water until tender but retaining slight resistance; approx 10–14 minutes depending on thickness — Do not fully cook through — they will continue to soften in the chafing dish basting sauce; undercook by approximately 20%", "5. Remove spears carefully; drain; arrange in GN tray in a single layer — Handle gently — white asparagus breaks easily when cooked", "6. Melt basting butter in a small pan; add a squeeze of lemon juice; pour over spears in GN tray — Butter basting sauce should coat the base of the tray to a depth of approx 3–4 mm; this is the moisture mitigation for chafing dish holding", "7. Toast breadcrumbs in butter in a dry pan over medium heat until golden and crisp; season lightly with salt — Watch carefully; breadcrumbs burn in seconds; stir constantly; cool slightly before scattering", "8. Scatter toasted breadcrumbs over asparagus spears in GN tray just before loading for transport — Breadcrumbs will soften during transport and holding — this is acceptable and traditional in this preparation; they absorb butter and become a soft golden coating", "9. Cover GN tray with lid; load for transport immediately — All finishing completed in kitchen before dispatch"], "cooking_stages": [{"stage": "Cooking (hob)", "mode": "Simmering water", "temp": "95–98°C", "time": "10–14 min", "humidity": "N/A", "notes": "Hob method; not a Rational application for initial cooking; monitor closely — white asparagus overcooks quickly"}, {"stage": "Alternative cooking", "mode": "Combi steam", "temp": "98°C", "time": "10–13 min", "humidity": "1", "notes": "Full steam in Rational is an excellent alternative to hob; lay spears flat in GN tray with cooking liquid poured over; cover tray"}, {"stage": "Hot holding", "mode": "Chafing dish", "temp": "Min 65°C", "time": "Max 60 min", "humidity": "N/A", "notes": "Butter basting sauce in tray is the key mitigation; spears sit in shallow butter and continue to baste during holding; cover GN tray in chafing dish; maximum 60 minutes — beyond this spears become too soft regardless of mitigation"}, {"stage": "Regeneration", "mode": "Combi steam", "temp": "90°C", "time": "6–8 min", "humidity": "1", "notes": "From chilled; full steam; cover tray; add a small amount of fresh butter before regenerating; gentle heat only — white asparagus is extremely sensitive to overheating"}], "transport": "GN tray with lid; hot insulated transport. Spears arranged in single layer with butter basting sauce covering tray base. Breadcrumbs scattered over top in kitchen before loading. Bread and butter accompaniment is outside recipe scope — handle as separate pre-packed item alongside GN tray if required.", "rational": "Hob cooking is the primary method regardless of Rational model. Covered foil regen with added butter and water works well for this dish.", "buffet": "Limited — 60 minutes maximum. Butter basting sauce significantly extends holding quality versus dry holding. Spears will continue to soften throughout service window; this is unavoidable. Use firm, even-sized spears and undercook by 20% to maximise holding window. Cover GN tray in chafing dish at all times. This is one of the most delicate hot dishes in the menu range — coordinate dispatch timing carefully.", "regen": "Cook-chill suitable with caution. Chill carefully to avoid bruising spears. Regen gently per instructions above. Texture after regen is softer than fresh-cooked — validate in kitchen before committing to cook-chill production for this dish. Fresh production preferred where kitchen schedule allows."}};
-const BOM = [{"name": "Arugula", "unit": "kg", "qty": "0.863"}, {"name": "Avocado", "unit": "kg", "qty": "4.5"}, {"name": "Baby Spinach", "unit": "Kg", "qty": "0.75"}, {"name": "Balsamic dressing", "unit": "kg", "qty": "0.72"}, {"name": "Balsamico Dressing", "unit": "btl", "qty": "0.75"}, {"name": "Beef Goulash", "unit": "kg", "qty": "6"}, {"name": "Black Pepper", "unit": "kg", "qty": "0.111"}, {"name": "Broccoli", "unit": "kg", "qty": "9.6"}, {"name": "Butterhead lettuce (fresh, whole head)", "unit": "kg", "qty": "4.48"}, {"name": "Butter", "unit": "kg", "qty": "1.14"}, {"name": "Canned Peaches", "unit": "kg", "qty": "0.96"}, {"name": "Capers", "unit": "kg", "qty": "0.62"}, {"name": "Carrots", "unit": "kg", "qty": "2.76"}, {"name": "Cherry Cheesecake Muffin", "unit": "bx", "qty": "2.71"}, {"name": "Cherry Tomatoes", "unit": "kg", "qty": "5.09"}, {"name": "Chicken Breast", "unit": "kg", "qty": "56.4"}, {"name": "Chicken Sausages, Thuringian Style", "unit": "pc", "qty": "180"}, {"name": "Chicken thighs (boneless, with skin)", "unit": "kg", "qty": "4.5"}, {"name": "Chili", "unit": "kg", "qty": "0.03"}, {"name": "Chives", "unit": "kg", "qty": "0.42"}, {"name": "Cider vinegar", "unit": "kg", "qty": "0.48"}, {"name": "Coconut Milk Drink", "unit": "l", "qty": "2.1"}, {"name": "Croissant", "unit": "pc", "qty": "130"}, {"name": "Cucumber", "unit": "Kg", "qty": "1.12"}, {"name": "Dijon Mustard", "unit": "kg", "qty": "0.24"}, {"name": "Double cream", "unit": "kg", "qty": "3.6"}, {"name": "Dr. Oetker Vegetable Gold Seasoning", "unit": "kg", "qty": "0.0652"}, {"name": "Dried oregano", "unit": "kg", "qty": "0.03"}, {"name": "Eggplant", "unit": "kg", "qty": "6.21"}, {"name": "Feta cheese", "unit": "kg", "qty": "2.4"}, {"name": "Franzbrötchen", "unit": "pc", "qty": "120"}, {"name": "Fresh basil", "unit": "kg", "qty": "0.16"}, {"name": "Fresh coriander", "unit": "kg", "qty": "0.2"}, {"name": "Fresh dill", "unit": "kg", "qty": "0.24"}, {"name": "Fresh mint", "unit": "kg", "qty": "0.24"}, {"name": "Fresh strawberries", "unit": "kg", "qty": "2.4"}, {"name": "Fried onions", "unit": "kg", "qty": "0.6"}, {"name": "Frozen Mango Cubes", "unit": "kg", "qty": "2.6"}, {"name": "Garlic", "unit": "kg", "qty": "0.87"}, {"name": "Ginger", "unit": "kg", "qty": "0.3"}, {"name": "Goji Berries", "unit": "kg", "qty": "0.15"}, {"name": "Green beans - fresh", "unit": "kg", "qty": "18"}, {"name": "Green Beans", "unit": "kg", "qty": "2"}, {"name": "Honey", "unit": "kg", "qty": "0.52"}, {"name": "Hummus", "unit": "kg", "qty": "1.5"}, {"name": "Lemon Juice", "unit": "kg", "qty": "0.48"}, {"name": "Lemon zest", "unit": "kg", "qty": "0.3"}, {"name": "Lettuce", "unit": "kg", "qty": "2"}, {"name": "Lime juice", "unit": "kg", "qty": "0.4"}, {"name": "Lime zest", "unit": "kg", "qty": "0.08"}, {"name": "Madras Curry", "unit": "kg", "qty": "16.2"}, {"name": "Makhani Sauce", "unit": "kg", "qty": "66.5"}, {"name": "Mango Lime Raw Cake", "unit": "pc", "qty": "96"}, {"name": "Mango Puree", "unit": "pc", "qty": "9.65"}, {"name": "Milk Rice", "unit": "pc", "qty": "6.43"}, {"name": "Milk", "unit": "kg", "qty": "3.84"}, {"name": "Mixed salad leaves", "unit": "kg", "qty": "4.52"}, {"name": "Muffins", "unit": "bx", "qty": "7.82"}, {"name": "Nutmeg", "unit": "kg", "qty": "0.06"}, {"name": "Olive Bread Bun", "unit": "pc", "qty": "50"}, {"name": "Olive oil or neutral oil", "unit": "kg", "qty": "0.36"}, {"name": "Olive oil", "unit": "kg", "qty": "3.48"}, {"name": "Olive Oil", "unit": "l", "qty": "0.075"}, {"name": "Olives", "unit": "kg", "qty": "0.9"}, {"name": "Paella", "unit": "Kg", "qty": "7.14"}, {"name": "Pain au Chocolat", "unit": "pc", "qty": "110"}, {"name": "Pain aux Raisins", "unit": "pc", "qty": "40"}, {"name": "Pak choi", "unit": "kg", "qty": "8.4"}, {"name": "Panini", "unit": "pc", "qty": "70"}, {"name": "Parmesan", "unit": "kg", "qty": "0.9"}, {"name": "Parsley", "unit": "kg", "qty": "1.16"}, {"name": "Peas (frozen)", "unit": "kg", "qty": "6.9"}, {"name": "Pistachio Croissant", "unit": "pc", "qty": "65"}, {"name": "Pomegranate Seeds", "unit": "Kg", "qty": "0.562"}, {"name": "Pork Roast with Onion mustard sauce", "unit": "kg", "qty": "8.23"}, {"name": "Potato (pre-sliced)", "unit": "kg", "qty": "6.78"}, {"name": "Potatoes", "unit": "kg", "qty": "12"}, {"name": "Pretzels", "unit": "pc", "qty": "45"}, {"name": "Radishes", "unit": "kg", "qty": "3.9"}, {"name": "Raspberry Purée", "unit": "kg", "qty": "0.9"}, {"name": "Raw Cake", "unit": "pkt", "qty": "1.67"}, {"name": "Raw Chocolate Coconut Cake", "unit": "pcs", "qty": "20"}, {"name": "Red bell pepper", "unit": "kg", "qty": "7.26"}, {"name": "Red chilli", "unit": "kg", "qty": "0.16"}, {"name": "Red wine vinegar", "unit": "kg", "qty": "0.2"}, {"name": "Rice vinegar", "unit": "kg", "qty": "0.24"}, {"name": "Rice", "unit": "kg", "qty": "106"}, {"name": "Romaine Lettuce", "unit": "Kg", "qty": "1.69"}, {"name": "Rosemary (fresh)", "unit": "kg", "qty": "0.045"}, {"name": "Salame", "unit": "kg", "qty": "3"}, {"name": "Salt", "unit": "kg", "qty": "0.838"}, {"name": "Scrambled Eggs", "unit": "kg", "qty": "12"}, {"name": "Semmelknödel", "unit": "pc", "qty": "60"}, {"name": "Sesame oil", "unit": "kg", "qty": "0.3"}, {"name": "Sesame Seeds", "unit": "kg", "qty": "0.3"}, {"name": "Sour Cream", "unit": "kg", "qty": "1.5"}, {"name": "Soy sauce", "unit": "kg", "qty": "0.48"}, {"name": "Spring onion", "unit": "kg", "qty": "1.08"}, {"name": "Spätzlekäse", "unit": "kg", "qty": "2.25"}, {"name": "Spätzle", "unit": "kg", "qty": "9.03"}, {"name": "Sugar", "unit": "kg", "qty": "0.18"}, {"name": "Thai Phanaeng Curry", "unit": "kg", "qty": "7.5"}, {"name": "Thyme", "unit": "kg", "qty": "0.09"}, {"name": "Tomato Sauce", "unit": "kg", "qty": "1.61"}, {"name": "Vegan Mayo", "unit": "kg", "qty": "2.5"}, {"name": "Vegan Meatballs", "unit": "kg", "qty": "10.8"}, {"name": "Water", "unit": "kg", "qty": "1.5"}, {"name": "Waxy potato", "unit": "kg", "qty": "5.55"}, {"name": "White Chia Seeds", "unit": "kg", "qty": "0.36"}, {"name": "White pepper", "unit": "kg", "qty": "0.33"}, {"name": "Zucchini", "unit": "kg", "qty": "11.2"}];
+// ─── Firebase init ────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyAAli1-_46ehgM7hzaLLNybkP4MIUw0XZQ",
+  authDomain:        "stock-count-d0abf.firebaseapp.com",
+  projectId:         "stock-count-d0abf",
+  storageBucket:     "stock-count-d0abf.firebasestorage.app",
+  messagingSenderId: "1038826498876",
+  appId:             "1:1038826498876:web:fb1f017d91d5ac1188cc39"
+});
+const db = firebase.firestore();
 
-// ─── State ────────────────────────────────────────────────────────────────────
-const S = { day: 0, evId: null, checks: {}, mtgIdx: 0, bomMode: false };
+// ─── App state ────────────────────────────────────────────────────────────────
+let EVENTS = [], RECIPES = {}, BOM = [], DAY_NAMES = [], WEEK_LABEL = '';
+const S = { day: 0, evId: null, mtgIdx: 0, bomMode: false };
+const checks = {};          // local mirror
+const clUnsubMap = {};      // per-event Firestore listeners
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
-document.getElementById('week-label').textContent = WEEK_LABEL;
-document.getElementById('bom-week-label').textContent = WEEK_LABEL;
-buildDayTabs();
-setDay(0);
+// ─── Bootstrap: load all kitchen data ─────────────────────────────────────────
+async function loadData() {
+  try {
+    const [metaSnap, evSnap, recSnap, bomSnap] = await Promise.all([
+      db.doc('kitchen/meta').get(),
+      db.doc('kitchen/events').get(),
+      db.doc('kitchen/recipes').get(),
+      db.doc('kitchen/bom').get(),
+    ]);
 
+    if (!metaSnap.exists) {
+      showError('No kitchen data found in Firebase. Run sync_to_firebase.py first.');
+      return;
+    }
+
+    const meta = metaSnap.data();
+    WEEK_LABEL = meta.weekLabel || '';
+    DAY_NAMES  = meta.dayNames  || [];
+
+    EVENTS = evSnap.exists ? (evSnap.data().data || []) : [];
+    BOM    = bomSnap.exists ? (bomSnap.data().items || []) : [];
+
+    const recList = recSnap.exists ? (recSnap.data().data || []) : [];
+    RECIPES = {};
+    recList.forEach(r => { const {name, ...rest} = r; RECIPES[name] = rest; });
+
+    document.getElementById('week-label').textContent = WEEK_LABEL;
+    document.getElementById('bom-week-label').textContent = WEEK_LABEL;
+    document.getElementById('sync-status').textContent = '● Live';
+    document.getElementById('sync-status').classList.add('live');
+
+    buildDayTabs();
+    setDay(0);
+    hide('loading');
+
+    // Listen for live checklist updates from all events
+    EVENTS.forEach(ev => subscribeChecklist(ev.id));
+
+  } catch (err) {
+    showError(`Firebase error: ${err.message}. Check Firestore rules allow read.`);
+  }
+}
+
+// ─── Checklist — Firebase real-time ──────────────────────────────────────────
+function subscribeChecklist(evId) {
+  if (clUnsubMap[evId]) return;
+  clUnsubMap[evId] = db.doc(`checklists/${evId}`).onSnapshot(snap => {
+    if (snap.exists) {
+      const remote = snap.data().checks || {};
+      checks[evId] = remote;
+      if (S.evId === evId) renderContent();
+      renderSidebar();
+    }
+  });
+}
+
+async function saveCheck(evId, key, val) {
+  checks[evId] = checks[evId] || {};
+  checks[evId][key] = val;
+  renderSidebar();
+  renderContent();
+  try {
+    await db.doc(`checklists/${evId}`).set({
+      checks: checks[evId],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch (e) { console.warn('Checklist save failed', e); }
+}
+
+// ─── UI builders ──────────────────────────────────────────────────────────────
 function buildDayTabs() {
   const c = document.getElementById('daytabs');
+  c.innerHTML = '';
   DAY_NAMES.forEach((d, i) => {
     const t = document.createElement('div');
-    t.className = 'daytab'; t.textContent = d.split(' ')[0] + ' ' + d.split(' ')[1];
+    t.className = 'daytab';
+    t.textContent = d.split(' ')[0] + ' ' + d.split(' ')[1];
     t.onclick = () => { S.bomMode = false; setDay(i); };
     c.appendChild(t);
   });
-  // BOM tab
   const bom = document.createElement('div');
   bom.className = 'daytab bom-tab'; bom.textContent = '📦 BOM';
-  bom.onclick = () => openBom();
+  bom.onclick = openBom;
   c.appendChild(bom);
 }
 
 function setDay(d) {
   S.day = d; S.bomMode = false;
-  document.querySelectorAll('.daytab').forEach((t,i) => {
-    t.classList.toggle('active', i === d);
-  });
-  document.getElementById('main').style.display = 'flex';
-  document.getElementById('bom-view').style.display = 'none';
+  document.querySelectorAll('.daytab').forEach((t, i) => t.classList.toggle('active', i === d));
+  show('main'); hide('bom-view');
   renderSidebar();
-  // auto-select first event on this day
   const first = EVENTS.find(e => e.day === d);
   if (first) selEv(first.id); else document.getElementById('content').innerHTML = '';
 }
@@ -279,19 +358,17 @@ function setDay(d) {
 function openBom() {
   S.bomMode = true;
   document.querySelectorAll('.daytab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.daytab.bom-tab')[0].classList.add('active');
-  document.getElementById('main').style.display = 'none';
-  document.getElementById('bom-view').style.display = 'block';
+  document.querySelector('.daytab.bom-tab').classList.add('active');
+  hide('main'); show('bom-view');
   renderBom();
 }
 
-// ─── Sidebar ─────────────────────────────────────────────────────────────────
 function renderSidebar() {
   const dayEvs = EVENTS.filter(e => e.day === S.day);
   const sb = document.getElementById('sidebar');
   sb.innerHTML = '';
   dayEvs.forEach(ev => {
-    const p = pct(ev.id);
+    const p = pct(ev);
     const div = document.createElement('div');
     div.className = 'ev-card' + (ev.id === S.evId ? ' active' : '');
     div.innerHTML = `
@@ -299,42 +376,36 @@ function renderSidebar() {
       <div class="ev-meta">${ev.date}</div>
       <div class="ev-meta">${ev.menu.length} recipes</div>
       <div class="ev-pct" style="color:${p===100?'var(--green)':p>0?'var(--yellow)':'var(--muted)'}">
-        ${p}% complete
-      </div>
+        ${p}% complete</div>
       <div class="pct-bar"><div class="pct-fill" style="width:${p}%"></div></div>`;
     div.onclick = () => selEv(ev.id);
     sb.appendChild(div);
   });
 }
 
-function selEv(id) {
-  S.evId = id;
-  renderSidebar();
-  renderContent();
-}
+function selEv(id) { S.evId = id; renderSidebar(); renderContent(); }
 
-// ─── Content ─────────────────────────────────────────────────────────────────
 function renderContent() {
   const ev = EVENTS.find(e => e.id === S.evId);
   if (!ev) return;
-  const c = document.getElementById('content');
+  const c = checks[ev.id] || {};
 
-  // Equipment section
   const eqHtml = ev.equip.length
-    ? ev.equip.map((e,i) => `
-        <label class="equip-tag ${ch(ev.id,'eq',i)?'done':''}">
-          <input type="checkbox" ${ch(ev.id,'eq',i)?'checked':''} onchange="togEq('${ev.id}',${i})">
-          ${e}
-        </label>`).join('')
+    ? ev.equip.map((e, i) => {
+        const done = !!c[`eq-${i}`];
+        return `<label class="equip-tag ${done?'done':''}">
+          <input type="checkbox" ${done?'checked':''} onchange="togEq('${ev.id}',${i})"> ${e}
+        </label>`;
+      }).join('')
     : '<span class="empty-note">No equipment specified</span>';
 
-  // Menu table
-  const menuHtml = ev.menu.map((m,i) => {
+  const menuHtml = ev.menu.map((m, i) => {
+    const done = !!c[`mn-${i}`];
     const dc = dietClass(m.diet);
-    const done = ch(ev.id,'mn',i);
     return `<tr class="${done?'done':''}">
-      <td><input type="checkbox" ${done?'checked':''} onchange="togMn('${ev.id}',${i})" style="accent-color:var(--green);cursor:pointer"></td>
-      <td><span class="recipe-link" onclick="openRecipe('${esc(m.name)}')">${m.name}</span></td>
+      <td><input type="checkbox" ${done?'checked':''} onchange="togMn('${ev.id}',${i})"
+        style="accent-color:var(--green);cursor:pointer"></td>
+      <td><span class="recipe-link" onclick="openRecipe(${JSON.stringify(m.name)})">${m.name}</span></td>
       <td><span class="diet-badge diet-${dc}">${m.diet||'—'}</span></td>
       <td style="font-weight:700;color:var(--accent)">${m.portions||'—'}</td>
       <td style="color:var(--muted)">${m.category||'—'}</td>
@@ -343,19 +414,17 @@ function renderContent() {
     </tr>`;
   }).join('');
 
-  c.innerHTML = `
+  document.getElementById('content').innerHTML = `
     <h2>${ev.client}</h2>
     <p class="sub">${ev.date}</p>
-
     <div class="section-card">
-      <h3>🎒 Equipment & Kit</h3>
+      <h3>🎒 Equipment &amp; Kit</h3>
       <div class="bulk-btns">
         <button class="bulk-btn" onclick="chkAll('${ev.id}','eq')">✓ Check All</button>
         <button class="bulk-btn" onclick="unchkAll('${ev.id}','eq')">✗ Uncheck All</button>
       </div>
       <div class="equip-list">${eqHtml}</div>
     </div>
-
     <div class="section-card">
       <h3>🍽 Menu</h3>
       <div class="bulk-btns">
@@ -373,113 +442,103 @@ function renderContent() {
 }
 
 // ─── Checks ───────────────────────────────────────────────────────────────────
-function ch(id, type, i) {
-  const k = `${id}-${type}-${i}`;
-  return S.checks[k] || false;
-}
-function pct(id) {
-  const ev = EVENTS.find(e => e.id === id);
-  if (!ev) return 0;
+function pct(ev) {
+  const c = checks[ev.id] || {};
   const total = ev.equip.length + ev.menu.length;
   if (!total) return 0;
   let done = 0;
-  ev.equip.forEach((_,i) => { if(ch(id,'eq',i)) done++; });
-  ev.menu.forEach((_,i) => { if(ch(id,'mn',i)) done++; });
-  return Math.round(done/total*100);
+  ev.equip.forEach((_, i) => { if (c[`eq-${i}`]) done++; });
+  ev.menu.forEach((_, i)  => { if (c[`mn-${i}`]) done++; });
+  return Math.round(done / total * 100);
 }
-function togEq(id, i) {
-  S.checks[`${id}-eq-${i}`] = !ch(id,'eq',i);
-  renderSidebar(); renderContent();
-}
-function togMn(id, i) {
-  S.checks[`${id}-mn-${i}`] = !ch(id,'mn',i);
-  renderSidebar(); renderContent();
-}
+function togEq(id, i) { const c = checks[id]||{}; saveCheck(id, `eq-${i}`, !c[`eq-${i}`]); }
+function togMn(id, i) { const c = checks[id]||{}; saveCheck(id, `mn-${i}`, !c[`mn-${i}`]); }
 function chkAll(id, type) {
   const ev = EVENTS.find(e => e.id === id);
   const arr = type === 'eq' ? ev.equip : ev.menu;
-  arr.forEach((_,i) => S.checks[`${id}-${type}-${i}`] = true);
+  const upd = checks[id] || {};
+  arr.forEach((_, i) => upd[`${type}-${i}`] = true);
+  checks[id] = upd;
   renderSidebar(); renderContent();
+  db.doc(`checklists/${id}`).set({ checks: upd, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(console.warn);
 }
 function unchkAll(id, type) {
   const ev = EVENTS.find(e => e.id === id);
   const arr = type === 'eq' ? ev.equip : ev.menu;
-  arr.forEach((_,i) => S.checks[`${id}-${type}-${i}`] = false);
+  const upd = checks[id] || {};
+  arr.forEach((_, i) => upd[`${type}-${i}`] = false);
+  checks[id] = upd;
   renderSidebar(); renderContent();
+  db.doc(`checklists/${id}`).set({ checks: upd, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(console.warn);
 }
 
 // ─── Recipe modal ─────────────────────────────────────────────────────────────
 function openRecipe(name) {
   const r = RECIPES[name];
-  const overlay = document.getElementById('modal-overlay');
   const body = document.getElementById('modal-body');
-  if (!r) { body.innerHTML = `<h2>${name}</h2><p class="empty-note">No recipe detail found.</p>`; }
-  else {
-    const allergenTags = r.allergens
+  if (!r) {
+    body.innerHTML = `<h2>${name}</h2><p class="empty-note">No recipe detail found.</p>`;
+  } else {
+    const aTags = r.allergens
       ? r.allergens.split(',').map(a => `<span class="modal-tag allergen">⚠ ${a.trim()}</span>`).join('')
       : '';
-    const dcl = `diet-badge diet-${dietClass(r.diet)}`;
-    const ingredientsHtml = r.ingredients.length ? `
-      <table class="ing-table">
-        <thead><tr><th>Ingredient</th><th>Per Portion</th><th>Total</th><th>Note</th></tr></thead>
-        <tbody>${r.ingredients.map(ing => `
-          <tr>
-            <td>${ing.name}</td>
-            <td style="white-space:nowrap">${ing.qty}</td>
-            <td style="color:var(--accent);white-space:nowrap">${ing.total}</td>
-            <td class="note">${ing.note}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>` : '<p class="empty-note">No ingredient data.</p>';
+    const dc = dietClass(r.diet);
 
-    const stepsHtml = r.instructions.length ? `
-      <ol class="step-list">${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>`
+    const ingHtml = (r.ingredients||[]).length
+      ? `<table class="ing-table"><thead><tr><th>Ingredient</th><th>Per Portion</th><th>Total</th><th>Note</th></tr></thead><tbody>
+          ${(r.ingredients||[]).map(g => `<tr>
+            <td>${g.name}</td>
+            <td style="white-space:nowrap">${g.qty}</td>
+            <td style="color:var(--accent);white-space:nowrap">${g.total}</td>
+            <td class="note">${g.note||''}</td>
+          </tr>`).join('')}
+        </tbody></table>`
+      : '<p class="empty-note">No ingredient data.</p>';
+
+    const stepsHtml = (r.instructions||[]).length
+      ? `<ol class="step-list">${(r.instructions||[]).map(s => `<li>${s}</li>`).join('')}</ol>`
       : '<p class="empty-note">No prep steps recorded.</p>';
 
-    const cookHtml = r.cooking_stages.length ? `
-      <table class="cooking-table">
-        <thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Humidity</th><th>Notes</th></tr></thead>
-        <tbody>${r.cooking_stages.map(s => `
-          <tr>
+    const cookHtml = (r.cooking_stages||[]).length
+      ? `<table class="cooking-table"><thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Humidity</th><th>Notes</th></tr></thead><tbody>
+          ${(r.cooking_stages||[]).map(s => `<tr>
             <td>${s.stage}</td><td>${s.mode}</td><td>${s.temp}</td>
-            <td>${s.time}</td><td>${s.humidity}</td><td style="color:var(--muted)">${s.notes}</td>
+            <td>${s.time}</td><td>${s.humidity}</td><td style="color:var(--muted)">${s.notes||''}</td>
           </tr>`).join('')}
-        </tbody>
-      </table>` : '<p class="empty-note">No cooking stage data.</p>';
-
-    const logGrid = `
-      <div class="logistics-grid">
-        <div class="log-item"><div class="log-label">🚚 Transport</div>
-          <div class="log-val">${r.transport || '<em class="empty-note">—</em>'}</div></div>
-        <div class="log-item"><div class="log-label">📊 Buffet Stability</div>
-          <div class="log-val">${r.buffet || '<em class="empty-note">—</em>'}</div></div>
-        <div class="log-item"><div class="log-label">🔥 Rational/Regen</div>
-          <div class="log-val">${r.rational || '<em class="empty-note">—</em>'}</div></div>
-        <div class="log-item"><div class="log-label">♻ Regeneration</div>
-          <div class="log-val">${r.regen || '<em class="empty-note">—</em>'}</div></div>
-      </div>`;
+        </tbody></table>`
+      : '<p class="empty-note">No cooking stage data.</p>';
 
     body.innerHTML = `
       <h2>${name}</h2>
       <div class="modal-meta">
-        <span class="${dcl}">${r.diet||'Unknown diet'}</span>
-        <span class="modal-tag" style="background:var(--surface2);color:var(--muted)">${r.category}</span>
-        ${allergenTags}
+        <span class="diet-badge diet-${dc}">${r.diet||'Unknown'}</span>
+        <span class="modal-tag" style="background:var(--surface2);color:var(--muted)">${r.category||''}</span>
+        ${aTags}
       </div>
-      <div class="modal-section"><h4>📦 Ingredients</h4>${ingredientsHtml}</div>
+      <div class="modal-section"><h4>📦 Ingredients</h4>${ingHtml}</div>
       <div class="modal-section"><h4>📋 Preparation Steps</h4>${stepsHtml}</div>
       <div class="modal-section"><h4>🌡 Cooking Stages</h4>${cookHtml}</div>
-      <div class="modal-section"><h4>🚚 Logistics & Holding</h4>${logGrid}</div>`;
+      <div class="modal-section"><h4>🚚 Logistics &amp; Holding</h4>
+        <div class="logistics-grid">
+          <div class="log-item"><div class="log-label">🚚 Transport</div>
+            <div class="log-val">${r.transport||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">📊 Buffet Stability</div>
+            <div class="log-val">${r.buffet||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">🔥 Rational/Regen</div>
+            <div class="log-val">${r.rational||'<em class="empty-note">—</em>'}</div></div>
+          <div class="log-item"><div class="log-label">♻ Regeneration</div>
+            <div class="log-val">${r.regen||'<em class="empty-note">—</em>'}</div></div>
+        </div>
+      </div>`;
   }
-  overlay.classList.add('open');
+  document.getElementById('modal-overlay').classList.add('open');
 }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOut(e) { if(e.target === document.getElementById('modal-overlay')) closeModal(); }
+function closeModalOut(e) { if (e.target.id === 'modal-overlay') closeModal(); }
 
 // ─── BOM ──────────────────────────────────────────────────────────────────────
 function renderBom() {
-  const tb = document.getElementById('bom-tbody');
-  tb.innerHTML = BOM.map((b,i) => `
+  document.getElementById('bom-tbody').innerHTML = BOM.map((b, i) => `
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
       <td>${b.name}</td>
@@ -488,21 +547,16 @@ function renderBom() {
     </tr>`).join('');
 }
 function filterBom(q) {
-  const rows = document.querySelectorAll('#bom-tbody tr');
-  const lq = q.toLowerCase();
-  rows.forEach(r => {
-    r.style.display = r.cells[1].textContent.toLowerCase().includes(lq) ? '' : 'none';
+  document.querySelectorAll('#bom-tbody tr').forEach(r => {
+    r.style.display = r.cells[1].textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
   });
 }
 
-// ─── Meeting mode ──────────────────────────────────────────────────────────────
+// ─── Meeting mode ─────────────────────────────────────────────────────────────
 function openMeeting() {
   S.mtgIdx = 0;
-  const m = document.getElementById('meeting');
-  m.classList.add('open');
-  // Build sidebar list
-  const list = document.getElementById('mtg-ev-list');
-  list.innerHTML = EVENTS.map((ev,i) => `
+  document.getElementById('meeting').classList.add('open');
+  document.getElementById('mtg-ev-list').innerHTML = EVENTS.map((ev, i) => `
     <div class="mtg-ev-item${i===0?' active':''}" onclick="jumpMtg(${i})">
       ${ev.date.split(' ')[0]} · ${ev.client}
     </div>`).join('');
@@ -514,37 +568,29 @@ function closeMeeting() {
   document.removeEventListener('keydown', mtgKeys);
 }
 function mtgKeys(e) {
-  if(e.key==='Escape') closeMeeting();
-  if(e.key==='ArrowRight'||e.key==='ArrowDown') nextEvent();
-  if(e.key==='ArrowLeft'||e.key==='ArrowUp') prevEvent();
+  if (e.key === 'Escape') closeMeeting();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextEvent();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevEvent();
 }
-function nextEvent() { if(S.mtgIdx < EVENTS.length-1) { S.mtgIdx++; renderMeeting(); } }
-function prevEvent() { if(S.mtgIdx > 0) { S.mtgIdx--; renderMeeting(); } }
+function nextEvent() { if (S.mtgIdx < EVENTS.length-1) { S.mtgIdx++; renderMeeting(); } }
+function prevEvent() { if (S.mtgIdx > 0) { S.mtgIdx--; renderMeeting(); } }
 function jumpMtg(i) { S.mtgIdx = i; renderMeeting(); }
 function renderMeeting() {
   const ev = EVENTS[S.mtgIdx];
   document.getElementById('mtg-counter').textContent = `${S.mtgIdx+1} / ${EVENTS.length}`;
-  // sidebar highlight
-  document.querySelectorAll('.mtg-ev-item').forEach((el,i) => {
-    el.classList.toggle('active', i===S.mtgIdx);
-  });
-  const main = document.getElementById('mtg-main');
-  const cards = ev.menu.map(m => {
-    const dc = dietClass(m.diet);
-    return `<div class="mtg-recipe-card">
-      <div class="rc-portions">${m.portions}</div>
-      <div class="rc-name">${m.name}</div>
-      <div class="rc-meta">
-        <span class="diet-badge diet-${dc}">${m.diet||'—'}</span>
-        &nbsp;${m.category||''}
-      </div>
-      ${m.allergens ? `<div class="rc-meta" style="margin-top:6px;color:#fdba74;font-size:.75rem">⚠ ${m.allergens}</div>` : ''}
-    </div>`;
-  }).join('');
-  main.innerHTML = `
+  document.querySelectorAll('.mtg-ev-item').forEach((el, i) => el.classList.toggle('active', i===S.mtgIdx));
+  document.getElementById('mtg-main').innerHTML = `
     <h2>${ev.client}</h2>
     <p class="mtg-date">${ev.date} &nbsp;·&nbsp; ${ev.menu.length} recipes</p>
-    <div class="mtg-recipes">${cards}</div>`;
+    <div class="mtg-recipes">${ev.menu.map(m => {
+      const dc = dietClass(m.diet);
+      return `<div class="mtg-recipe-card">
+        <div class="rc-portions">${m.portions}</div>
+        <div class="rc-name">${m.name}</div>
+        <div class="rc-meta"><span class="diet-badge diet-${dc}">${m.diet||'—'}</span> ${m.category||''}</div>
+        ${m.allergens ? `<div class="rc-meta" style="margin-top:6px;color:#fdba74;font-size:.75rem">⚠ ${m.allergens}</div>` : ''}
+      </div>`;
+    }).join('')}</div>`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -557,7 +603,16 @@ function dietClass(d) {
   if (l.includes('pescatarian')) return 'Pescatarian';
   return 'other';
 }
-function esc(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function show(id) { document.getElementById(id).style.display = id === 'main' ? 'flex' : 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+function showError(msg) {
+  hide('loading');
+  const b = document.getElementById('error-banner');
+  b.textContent = msg; b.style.display = 'block';
+}
+
+// ─── Start ────────────────────────────────────────────────────────────────────
+loadData();
 </script>
 </body>
 </html>
