@@ -595,6 +595,37 @@ body {
 .menu-pkg-badge { font-size: 11px; color: var(--sub); background: var(--s3); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; }
 .menu-item-right { text-align: right; flex-shrink: 0; }
 
+
+/* ── PER-DISH OMS ── */
+.oms-dish-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: rgba(240,192,64,.06);
+  border: 1px solid rgba(240,192,64,.18);
+  border-radius: 8px;
+}
+.oms-dish-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); flex-shrink: 0; }
+.oms-dish-input {
+  width: 56px;
+  background: var(--s3);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 15px; font-weight: 900;
+  text-align: center;
+  padding: 4px 6px;
+  font-family: inherit;
+}
+.oms-dish-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(240,192,64,.25); }
+.oms-dish-op { font-size: 12px; color: var(--sub); flex-shrink: 0; }
+.oms-dish-total { font-size: 18px; font-weight: 900; color: var(--accent); min-width: 28px; text-align: center; }
+.oms-dish-unit { font-size: 10px; color: var(--dim); }
+.menu-item { flex-direction: column; align-items: stretch; }
+.menu-item-right { display: none; }
+
 </style>
 </head>
 <body>
@@ -5491,7 +5522,7 @@ let currentScreen = 'home';
 let currentDay = 0;
 let currentEvent = null;
 let checklistState = {};
-let omsValues = {}; // eventId -> OMS base number
+let omsValues = {}; // eventId -> {dishName -> omsBase}
 let fbListeners = [];
 
 /* ── UTILS ── */
@@ -5773,16 +5804,6 @@ function openEvent(idx){
     infoItems.forEach(function(item){ hero+='<div class="edh-info-card"><div class="edh-info-label">'+esc(item.k)+':</div><div class="edh-info-value">'+esc(item.v)+'</div></div>'; });
     hero+='</div>';
   }
-  // OMS input (show if event uses OMS-based portions)
-  if(eventHasOMS(ev)){
-    const omsVal=omsValues[eid]||'';
-    hero+='<div class="oms-bar">';
-    hero+='<div class="oms-label">&#9202; OMS count at 7am</div>';
-    hero+='<div style="display:flex;align-items:center;gap:8px">';
-    hero+='<input class="oms-input" type="number" min="0" id="oms-input-'+eid+'" value="'+esc(String(omsVal))+'" placeholder="0" data-eid="'+eid+'" oninput="updateOMS(this)">';
-    hero+='<span class="oms-hint">portions base</span>';
-    hero+='</div></div>';
-  }
   hero+='</div>';
   document.getElementById('event-hero').innerHTML=hero;
 
@@ -5817,16 +5838,31 @@ function openEvent(idx){
   }
   // Menu
   panels+='<div class="sub-panel'+(hasEquip?'':' active')+'" id="sp-menu"><div class="menu-list">';
-  const omsBase=omsValues[eid]||0;
+  if(!omsValues[eid]) omsValues[eid]={};
   (ev.menu||[]).forEach(function(item){
+    const p=parseOMSOffset(item.portions);
+    const dishKey=item.name;
+    const dishOMS=omsValues[eid][dishKey]||0;
     panels+='<div class="menu-item">';
     panels+='<div class="menu-item-left">';
     panels+='<div class="menu-item-name">'+esc(item.name)+'</div>';
     panels+='<div class="menu-item-badges">';
     if(item.diet&&item.diet!=='—') panels+='<span class="diet '+dietClass(item.diet)+'">'+esc(item.diet)+'</span>';
     if(item.packaging) panels+='<span class="menu-pkg-badge">'+esc(item.packaging)+'</span>';
-    panels+='</div></div>';
-    panels+='<div class="menu-item-right">'+formatPortionsDisplay(item.portions, omsBase)+'<div style="font-size:10px;color:var(--dim);margin-top:2px">portions</div></div>';
+    panels+='</div>';
+    if(p&&p.type==='oms'){
+      panels+='<div class="oms-dish-row">';
+      panels+='<span class="oms-dish-label">OMS</span>';
+      panels+='<input class="oms-dish-input" type="number" min="0" value="'+esc(String(dishOMS||''))+'" placeholder="0" data-eid="'+eid+'" data-dish="'+esc(dishKey)+'" data-offset="'+p.offset+'" oninput="updateDishOMS(this)">';
+      panels+='<span class="oms-dish-op">+'+(p.offset)+'=</span>';
+      panels+='<span class="oms-dish-total" id="odt-'+safeId(eid+dishKey)+'">'+((dishOMS?dishOMS+p.offset:'?'))+'</span>';
+      panels+='<span class="oms-dish-unit">portions</span>';
+      panels+='</div>';
+    }
+    panels+='</div>';
+    panels+='<div class="menu-item-right">';
+    if(!p||p.type!=='oms') panels+=formatPortionsDisplay(item.portions, 0);
+    panels+='</div>';
     panels+='</div>';
   });
   panels+='</div></div>';
@@ -5857,7 +5893,8 @@ function openEvent(idx){
         panels+='<div>';
         panels+='<div class="recipe-section-title">Ingredients</div>';
         panels+='<table class="dt"><thead><tr><th>Ingredient</th><th>Qty/Portion</th><th>Unit</th><th>Total</th></tr></thead><tbody>';
-        const recipePortions=calcPortions(rd.portions, omsBase);
+        const dishOMS2=(omsValues[eid]&&omsValues[eid][rname])||0;
+      const recipePortions=calcPortions(rd.portions, dishOMS2);
         rd.ingredients.forEach(function(ing){
           const tot=recipePortions?calcIngTotal(ing,recipePortions):(ing.total_or_notes||'');
           const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
@@ -6215,46 +6252,29 @@ function closeEditModal(e){
   document.getElementById('edit-modal').classList.remove('show');
 }
 
-function updateOMS(input){
+function updateDishOMS(input){
   const eid=input.dataset.eid;
+  const dish=input.dataset.dish;
+  const offset=parseInt(input.dataset.offset)||0;
   const val=parseInt(input.value)||0;
-  omsValues[eid]=val;
-  // Re-render menu and recipes panels in place
-  if(currentEvent){
-    const ev=currentEvent;
-    const omsBase=val;
-    // Re-render menu panel
-    const menuPanel=document.getElementById('sp-menu');
-    if(menuPanel){
-      let h='<div class="menu-list">';
-      (ev.menu||[]).forEach(function(item){
-        h+='<div class="menu-item">';
-        h+='<div class="menu-item-left">';
-        h+='<div class="menu-item-name">'+esc(item.name)+'</div>';
-        h+='<div class="menu-item-badges">';
-        if(item.diet&&item.diet!=='—') h+='<span class="diet '+dietClass(item.diet)+'">'+esc(item.diet)+'</span>';
-        if(item.packaging) h+='<span class="menu-pkg-badge">'+esc(item.packaging)+'</span>';
-        h+='</div></div>';
-        h+='<div class="menu-item-right">'+formatPortionsDisplay(item.portions, omsBase)+'<div style="font-size:10px;color:var(--dim);margin-top:2px">portions</div></div>';
-        h+='</div>';
-      });
-      h+='</div>';
-      menuPanel.innerHTML=h;
-    }
-    // Re-render each recipe's ingredient table
-    if(ev.recipes) Object.keys(ev.recipes).forEach(function(rname){
-      const rd=ev.recipes[rname];
-      if(!rd.ingredients||!rd.ingredients.length) return;
-      const rid=safeId(eid+'-'+rname);
-      const tbody=document.querySelector('#rc-'+rid+' .dt tbody');
-      if(!tbody) return;
-      const recipePortions=calcPortions(rd.portions, omsBase);
-      tbody.innerHTML=rd.ingredients.map(function(ing){
-        const tot=recipePortions?calcIngTotal(ing,recipePortions):(ing.total_or_notes||'');
-        const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
-        return '<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="'+(isNote?'sub':'highlight')+'">'+esc(tot)+'</td></tr>';
-      }).join('');
-    });
+  if(!omsValues[eid]) omsValues[eid]={};
+  omsValues[eid][dish]=val;
+  const total=val+offset;
+  // Update total display
+  const totalEl=document.getElementById('odt-'+safeId(eid+dish));
+  if(totalEl) totalEl.textContent=val?total:'?';
+  // Re-scale this recipe's ingredient totals
+  if(currentEvent&&currentEvent.recipes&&currentEvent.recipes[dish]){
+    const rd=currentEvent.recipes[dish];
+    if(!rd.ingredients||!rd.ingredients.length) return;
+    const rid=safeId(eid+'-'+dish);
+    const tbody=document.querySelector('#rc-'+rid+' .dt tbody');
+    if(!tbody) return;
+    tbody.innerHTML=rd.ingredients.map(function(ing){
+      const tot=val?calcIngTotal(ing,total):(ing.total_or_notes||'');
+      const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
+      return '<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="'+(isNote?'sub':'highlight')+'">'+esc(tot)+'</td></tr>';
+    }).join('');
   }
 }
 
