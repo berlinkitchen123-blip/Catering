@@ -73,32 +73,99 @@ body {
 .topbar-spacer { flex: 1; }
 .topbar-week { font-size: 11px; color: var(--sub); background: var(--s3); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
 
-/* ── BOTTOM NAV ── */
-.bottom-nav {
-  background: var(--s1);
-  border-top: 1px solid var(--border);
-  height: 60px;
-  display: flex;
+/* ── HAMBURGER BUTTON ── */
+.hamburger {
+  width: 36px; height: 36px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 5px; cursor: pointer;
+  border-radius: 8px;
+  transition: .15s;
   flex-shrink: 0;
 }
-.bnav-item {
-  flex: 1;
+.hamburger:hover { background: var(--s3); }
+.hamburger span {
+  display: block; width: 20px; height: 2px;
+  background: var(--sub);
+  border-radius: 2px;
+  transition: .2s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); background: var(--accent); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background: var(--accent); }
+
+/* ── DRAWER OVERLAY ── */
+.drawer-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 150;
+  backdrop-filter: blur(2px);
+}
+.drawer-overlay.show { display: block; }
+
+/* ── SIDE DRAWER ── */
+.drawer {
+  position: fixed;
+  top: 0; right: 0;
+  width: 280px; height: 100vh;
+  background: var(--s1);
+  border-left: 1px solid var(--border);
+  z-index: 200;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-logo { font-size: 18px; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+.drawer-week { font-size: 12px; color: var(--sub); }
+.drawer-nav { flex: 1; overflow-y: auto; padding: 10px 0; }
+.drawer-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
+  gap: 14px;
+  padding: 13px 20px;
   cursor: pointer;
+  color: var(--sub);
+  font-size: 14px;
+  font-weight: 600;
   transition: .15s;
-  color: var(--dim);
-  user-select: none;
+  border-left: 3px solid transparent;
   position: relative;
 }
-.bnav-item:hover { color: var(--sub); }
-.bnav-item.active { color: var(--accent); }
-.bnav-icon { font-size: 20px; line-height: 1; }
-.bnav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.bnav-dot { position: absolute; top: 10px; right: calc(50% - 14px); width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
+.drawer-item:hover { background: var(--s2); color: var(--text); }
+.drawer-item.active { background: var(--s2); color: var(--accent); border-left-color: var(--accent); }
+.drawer-item-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.drawer-item-label { flex: 1; }
+.drawer-item-badge {
+  font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 10px;
+  background: var(--s3); color: var(--dim);
+}
+.drawer-item.active .drawer-item-badge { background: var(--accent2); color: var(--accent); }
+.drawer-divider { height: 1px; background: var(--border); margin: 8px 20px; }
+.drawer-section-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); padding: 10px 20px 4px; }
+.drawer-footer { padding: 14px 20px; border-top: 1px solid var(--border); }
+.drawer-lock {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 13px; font-weight: 700;
+  color: var(--sub);
+  transition: .15s;
+}
+.drawer-lock:hover { border-color: var(--border2); color: var(--text); }
+.drawer-lock.unlocked { border-color: rgba(74,222,128,.3); color: var(--green); }
+/* ── keep bnav-dot for drawer ── */
+.bnav-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
 .bnav-dot.unlocked { background: var(--green); }
 
 /* ── SCREENS (full scroll area) ── */
@@ -539,7 +606,23 @@ body {
   <div class="topbar-breadcrumb" id="topbar-breadcrumb"></div>
   <div class="topbar-spacer"></div>
   <div class="topbar-week" id="topbar-week"></div>
+  <div class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </div>
 </div>
+
+<!-- SIDE DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">B&amp;B Kitchen</div>
+    <div class="drawer-week" id="drawer-week"></div>
+  </div>
+  <div class="drawer-nav" id="drawer-nav"></div>
+  <div class="drawer-footer">
+    <div class="drawer-lock" id="drawer-lock-btn"></div>
+  </div>
+</nav>
 
 <!-- SCREEN STACK -->
 <div class="screen-stack" id="screen-stack">
@@ -571,7 +654,7 @@ body {
       </div>
       <button class="btn-primary" onclick="openNewEventForm()">+ New Event</button>
     </div>
-    <div style="padding:0 14px 80px" id="creator-list"></div>
+    <div style="padding:0 14px 20px" id="creator-list"></div>
   </div>
   <!-- ORDERS (Creator) -->
   <div class="screen" id="screen-orders">
@@ -602,8 +685,6 @@ body {
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav" id="bottom-nav"></nav>
 
 <!-- PASSWORD MODAL -->
 <div class="pw-overlay" id="pw-overlay">
@@ -5489,25 +5570,70 @@ const BNAV = [
   {id:'orders', icon:'&#128203;', label:'Orders', creatorOnly:true},
   {id:'ingredients', icon:'&#129378;', label:'Quantities', creatorOnly:true},
 ];
-function buildBottomNav(){
-  const nav=document.getElementById('bottom-nav');
+function buildBottomNav(){ buildDrawer(); } // alias
+function buildDrawer(){
+  const nav=document.getElementById('drawer-nav');
   nav.innerHTML='';
-  BNAV.forEach(function(item){
-    if(item.creatorOnly && !creatorUnlocked) return;
+
+  // Main items
+  const mainItems=[
+    {id:'home', icon:'&#127968;', label:'Events'},
+    {id:'bom',  icon:'&#128230;', label:'BOM'},
+  ];
+  mainItems.forEach(function(item){
     const el=document.createElement('div');
-    el.className='bnav-item'+(currentScreen===item.id||
-      (currentScreen==='home'&&item.id==='home')||
-      (currentScreen==='event'&&item.id==='home')
-      ?' active':'');
-    let dot='';
-    if(item.isLock) dot='<div class="bnav-dot'+(creatorUnlocked?' unlocked':'')+'"></div>';
-    el.innerHTML=dot+'<div class="bnav-icon">'+item.icon+'</div><div class="bnav-label">'+item.label+'</div>';
-    el.onclick=(function(id){ return function(){ handleNavClick(id); }; })(item.id);
+    const isActive=currentScreen===item.id||(currentScreen==='home'&&item.id==='home')||(currentScreen==='event'&&item.id==='home');
+    el.className='drawer-item'+(isActive?' active':'');
+    el.innerHTML='<div class="drawer-item-icon">'+item.icon+'</div><div class="drawer-item-label">'+item.label+'</div>';
+    el.onclick=(function(id){ return function(){ handleNavClick(id); closeDrawer(); }; })(item.id);
     nav.appendChild(el);
   });
+
+  if(creatorUnlocked){
+    // Creator section
+    const div=document.createElement('div');
+    div.className='drawer-divider'; nav.appendChild(div);
+    const lbl=document.createElement('div');
+    lbl.className='drawer-section-label'; lbl.textContent='Creator';
+    nav.appendChild(lbl);
+    const creatorItems=[
+      {id:'creator-editor', icon:'&#9998;', label:'Manage Events'},
+      {id:'orders',         icon:'&#128203;', label:'Client Orders'},
+      {id:'ingredients',    icon:'&#129378;', label:'Order Quantities'},
+    ];
+    creatorItems.forEach(function(item){
+      const el=document.createElement('div');
+      const isActive=currentScreen===item.id;
+      el.className='drawer-item'+(isActive?' active':'');
+      el.innerHTML='<div class="drawer-item-icon">'+item.icon+'</div><div class="drawer-item-label">'+item.label+'</div>';
+      el.onclick=(function(id){ return function(){ handleNavClick(id); closeDrawer(); }; })(item.id);
+      nav.appendChild(el);
+    });
+  }
+
+  // Footer lock button
+  const lockBtn=document.getElementById('drawer-lock-btn');
+  if(lockBtn){
+    lockBtn.className='drawer-lock'+(creatorUnlocked?' unlocked':'');
+    lockBtn.innerHTML=creatorUnlocked
+      ? '&#128275; <span>Lock Creator</span>'
+      : '&#128274; <span>Creator Access</span>';
+    lockBtn.onclick=function(){ if(creatorUnlocked){ lockCreator(); closeDrawer(); } else { closeDrawer(); setTimeout(openPw, 200); } };
+  }
+}
+function toggleDrawer(){
+  const d=document.getElementById('drawer');
+  const o=document.getElementById('drawer-overlay');
+  const h=document.getElementById('hamburger-btn');
+  const isOpen=d.classList.contains('open');
+  if(isOpen){ closeDrawer(); } else { d.classList.add('open'); o.classList.add('show'); h.classList.add('open'); }
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('hamburger-btn').classList.remove('open');
 }
 function handleNavClick(id){
-  if(id==='creator'){ if(creatorUnlocked){ lockCreator(); } else { openPw(); } return; }
   if(id==='home'){ showScreen('home'); return; }
   showScreen(id);
 }
@@ -5555,7 +5681,7 @@ function lockCreator(){
   creatorUnlocked=false;
   document.getElementById('orders-body').innerHTML='';
   document.getElementById('ingredients-body').innerHTML='';
-  buildBottomNav(); showScreen('home');
+  buildDrawer(); showScreen('home');
 }
 document.getElementById('pw-input').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
 document.getElementById('pw-overlay').addEventListener('click',function(e){ if(e.target===document.getElementById('pw-overlay')) closePw(); });
@@ -6134,6 +6260,7 @@ function updateOMS(input){
 
 /* ── INIT ── */
 document.getElementById('topbar-week').textContent = WEEK;
+document.getElementById('drawer-week').textContent = WEEK;
 buildDayStrip();
 renderHomeDay(0);
 buildBomScreen();
