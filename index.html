@@ -292,6 +292,7 @@ body {
 
 /* ── RECIPE LIST ── */
 .recipe-list { display: flex; flex-direction: column; gap: 6px; }
+.recipe-section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: 6px; }
 .recipe-card {
   background: var(--s2);
   border: 1px solid var(--border);
@@ -5614,60 +5615,49 @@ function openEvent(idx){
       if(rd.diet) panels+='<span class="diet '+dietClass(rd.diet)+'">'+esc(rd.diet)+'</span>';
       if(rd.allergens) panels+='<span class="pill pill-red" style="font-size:11px">&#9888;</span>';
       panels+='</div><div class="rch-arrow">&#8250;</div></div>';
-      panels+='<div class="recipe-card-body">';
-      // Inner tabs for recipe
-      const innerTabs=[];
-      if(rd.ingredients&&rd.ingredients.length) innerTabs.push('ingredients');
-      if(rd.steps&&rd.steps.length) innerTabs.push('steps');
-      if(rd.cooking&&rd.cooking.length) innerTabs.push('cooking');
-      if(rd.logistics&&Object.keys(rd.logistics).length) innerTabs.push('logistics');
-      if(rd.allergens) innerTabs.unshift('info');
-      if(innerTabs.length){
-        panels+='<div class="recipe-inner-tabs">';
-        innerTabs.forEach(function(t,ti){
-          const labels={info:'ℹ Info',ingredients:'Ingredients',steps:'Prep',cooking:'Cooking',logistics:'Logistics'};
-          panels+='<div class="rit'+(ti===0?' active':'')+'" data-rid="'+rid+'" data-rtab="'+t+'" onclick="switchRecipeTab(this)">'+labels[t]+'</div>';
-        });
+      panels+='<div class="recipe-card-body" style="padding:12px 14px;display:flex;flex-direction:column;gap:14px">';
+      // Info row (allergens + meta)
+      if(rd.allergens||rd.category||rd.portions){
+        panels+='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">';
+        if(rd.allergens) panels+='<span class="pill pill-red" style="font-size:11px">&#9888; '+esc(rd.allergens)+'</span>';
+        if(rd.category) panels+='<span class="pill pill-dim" style="font-size:11px">'+esc(rd.category)+'</span>';
         panels+='</div>';
-        // Info panel
-        if(rd.allergens||rd.category){
-          panels+='<div class="rit-panel'+(innerTabs[0]==='info'?' active':'')+'" id="rp-'+rid+'-info">';
-          if(rd.allergens) panels+='<div style="margin-bottom:8px"><span style="color:var(--sub);font-size:12px">Allergens: </span><span class="pill pill-red">&#9888; '+esc(rd.allergens)+'</span></div>';
-          if(rd.category) panels+='<div><span style="color:var(--sub);font-size:12px">Category: </span>'+esc(rd.category)+'</div>';
-          panels+='</div>';
-        }
-        // Ingredients
-        if(rd.ingredients&&rd.ingredients.length){
-          panels+='<div class="rit-panel'+(innerTabs[0]==='ingredients'?' active':'')+'" id="rp-'+rid+'-ingredients">';
-          panels+='<table class="dt"><thead><tr><th>Ingredient</th><th>Qty/Portion</th><th>Unit</th><th>Total</th></tr></thead><tbody>';
-          rd.ingredients.forEach(function(ing){ panels+='<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="highlight">'+esc(ing.total_or_notes||'')+'</td></tr>'; });
-          panels+='</tbody></table></div>';
-        }
-        // Steps
-        if(rd.steps&&rd.steps.length){
-          panels+='<div class="rit-panel'+(innerTabs[0]==='steps'?' active':'')+'" id="rp-'+rid+'-steps">';
-          panels+='<table class="dt"><thead><tr><th style="width:50px">Step</th><th>Action</th><th>Notes</th></tr></thead><tbody>';
-          rd.steps.forEach(function(s){ panels+='<tr><td class="highlight">'+esc(s.step)+'</td><td>'+esc(s.action)+'</td><td class="sub">'+esc(s.notes)+'</td></tr>'; });
-          panels+='</tbody></table></div>';
-        }
-        // Cooking
-        if(rd.cooking&&rd.cooking.length){
-          panels+='<div class="rit-panel'+(innerTabs[0]==='cooking'?' active':'')+'" id="rp-'+rid+'-cooking">';
-          panels+='<table class="dt"><thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Hum.</th></tr></thead><tbody>';
-          rd.cooking.forEach(function(c){ panels+='<tr><td>'+esc(c.stage)+'</td><td>'+esc(c.mode)+'</td><td class="highlight">'+esc(c.temp)+'</td><td class="highlight">'+esc(c.time)+'</td><td class="sub">'+esc(c.humidity)+'</td></tr>'; });
-          panels+='</tbody></table></div>';
-        }
-        // Logistics
-        if(rd.logistics&&Object.keys(rd.logistics).length){
-          panels+='<div class="rit-panel'+(innerTabs[0]==='logistics'?' active':'')+'" id="rp-'+rid+'-logistics">';
-          panels+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">';
-          Object.keys(rd.logistics).forEach(function(k){
-            panels+='<div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 12px">';
-            panels+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--sub);margin-bottom:4px">'+esc(k)+'</div>';
-            panels+='<div style="font-size:13px">'+esc(rd.logistics[k])+'</div></div>';
-          });
-          panels+='</div></div>';
-        }
+      }
+      // Ingredients
+      if(rd.ingredients&&rd.ingredients.length){
+        panels+='<div>';
+        panels+='<div class="recipe-section-title">Ingredients</div>';
+        panels+='<table class="dt"><thead><tr><th>Ingredient</th><th>Qty/Portion</th><th>Unit</th><th>Total</th></tr></thead><tbody>';
+        rd.ingredients.forEach(function(ing){ panels+='<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="highlight">'+esc(ing.total_or_notes||'')+'</td></tr>'; });
+        panels+='</tbody></table></div>';
+      }
+      // Prep steps
+      if(rd.steps&&rd.steps.length){
+        panels+='<div>';
+        panels+='<div class="recipe-section-title">Preparation</div>';
+        panels+='<table class="dt"><thead><tr><th style="width:44px">Step</th><th>Action</th><th>Notes</th></tr></thead><tbody>';
+        rd.steps.forEach(function(s){ panels+='<tr><td class="highlight">'+esc(s.step)+'</td><td>'+esc(s.action)+'</td><td class="sub">'+esc(s.notes)+'</td></tr>'; });
+        panels+='</tbody></table></div>';
+      }
+      // Cooking
+      if(rd.cooking&&rd.cooking.length){
+        panels+='<div>';
+        panels+='<div class="recipe-section-title">Cooking</div>';
+        panels+='<table class="dt"><thead><tr><th>Stage</th><th>Mode</th><th>Temp</th><th>Time</th><th>Hum.</th></tr></thead><tbody>';
+        rd.cooking.forEach(function(c){ panels+='<tr><td>'+esc(c.stage)+'</td><td>'+esc(c.mode)+'</td><td class="highlight">'+esc(c.temp)+'</td><td class="highlight">'+esc(c.time)+'</td><td class="sub">'+esc(c.humidity)+'</td></tr>'; });
+        panels+='</tbody></table></div>';
+      }
+      // Logistics
+      if(rd.logistics&&Object.keys(rd.logistics).length){
+        panels+='<div>';
+        panels+='<div class="recipe-section-title">Logistics</div>';
+        panels+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">';
+        Object.keys(rd.logistics).forEach(function(k){
+          panels+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px">';
+          panels+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--sub);margin-bottom:3px">'+esc(k)+'</div>';
+          panels+='<div style="font-size:13px">'+esc(rd.logistics[k])+'</div></div>';
+        });
+        panels+='</div></div>';
       }
       panels+='</div></div>';
     });
