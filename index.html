@@ -380,6 +380,103 @@ body {
   .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
   .checklist { display: grid; grid-template-columns: 1fr 1fr; }
 }
+
+/* ── CREATOR EDITOR ── */
+.creator-event-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.creator-event-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.creator-event-name { font-size: 15px; font-weight: 800; flex: 1; }
+.creator-event-meta { font-size: 12px; color: var(--sub); }
+.btn-edit {
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  color: var(--sub);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-edit:hover { color: var(--fg); border-color: var(--blue); }
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-primary:hover { opacity: .85; }
+.btn-secondary {
+  background: var(--s3);
+  color: var(--fg);
+  border: 1px solid var(--border2);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-secondary:hover { border-color: var(--blue); }
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal-title { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
+/* ── FORM FIELDS ── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--sub); margin-bottom: 5px; }
+.form-input {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-size: 14px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.form-input:focus { outline: none; border-color: var(--blue); }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+.form-section-title { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin: 16px 0 8px; }
+.menu-edit-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.menu-edit-row .form-input { flex: 1; }
+.btn-remove { background: #2a1010; border: 1px solid #4a2020; color: var(--red); padding: 8px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+.btn-add-row { background: none; border: 1px dashed var(--border2); color: var(--sub); padding: 8px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; width: 100%; margin-top: 4px; }
+.btn-add-row:hover { border-color: var(--blue); color: var(--blue); }
+.custom-badge { background: #162540; color: var(--blue); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+
 </style>
 </head>
 <body>
@@ -414,6 +511,17 @@ body {
     </div>
     <div style="padding:0 20px 20px" id="bom-body"></div>
   </div>
+  <!-- CREATOR EDITOR -->
+  <div class="screen" id="screen-creator-editor">
+    <div class="page-hero" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div class="page-title">&#9998; Creator</div>
+        <div class="page-sub" id="creator-sub">Manage events &amp; caterings</div>
+      </div>
+      <button class="btn-primary" onclick="openNewEventForm()">+ New Event</button>
+    </div>
+    <div style="padding:0 14px 80px" id="creator-list"></div>
+  </div>
   <!-- ORDERS (Creator) -->
   <div class="screen" id="screen-orders">
     <div class="page-hero">
@@ -429,6 +537,17 @@ body {
       <div class="page-sub" id="ingredients-sub"></div>
     </div>
     <div style="padding:0 20px 20px" id="ingredients-body"></div>
+  </div>
+  <!-- EVENT EDIT MODAL -->
+  <div id="edit-modal" class="modal-overlay" onclick="closeEditModal(event)">
+    <div class="modal-box">
+      <div class="modal-title" id="edit-modal-title">Edit Event</div>
+      <div id="edit-form-body"></div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn-secondary" style="flex:1" onclick="closeEditModal()">Cancel</button>
+        <button class="btn-primary" style="flex:2" onclick="saveEditForm()">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5229,7 +5348,10 @@ const _D = {
     }
   ]
 };
-const WEEK = _D.week, DAYS = _D.days, EVENTS = _D.events;
+const WEEK = _D.week;
+let EVENTS = (_D.events||[]).slice();
+let DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
+let customEvents = [];
 
 const CREATOR_PW = 'bb24';
 let creatorUnlocked = false;
@@ -5272,6 +5394,7 @@ const BNAV = [
   {id:'home', icon:'&#127968;', label:'Events'},
   {id:'bom',  icon:'&#128230;', label:'BOM'},
   {id:'creator', icon:'&#128274;', label:'Creator', isLock:true},
+  {id:'creator-editor', icon:'&#9998;', label:'Manage', creatorOnly:true},
   {id:'orders', icon:'&#128203;', label:'Orders', creatorOnly:true},
   {id:'ingredients', icon:'&#129378;', label:'Quantities', creatorOnly:true},
 ];
@@ -5329,8 +5452,8 @@ function checkPw(){
   const v=document.getElementById('pw-input').value;
   if(v===CREATOR_PW){
     creatorUnlocked=true; closePw();
-    buildOrdersScreen(); buildIngredientsScreen();
-    buildBottomNav(); showScreen('orders');
+    buildOrdersScreen(); buildIngredientsScreen(); buildCreatorEditor();
+    buildBottomNav(); showScreen('creator-editor');
   } else {
     const inp=document.getElementById('pw-input');
     inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
@@ -5700,6 +5823,174 @@ function buildIngredientsScreen(){
   document.getElementById('ingredients-body').innerHTML=h;
 }
 
+
+/* ── FIREBASE CUSTOM EVENTS ── */
+function loadCustomEvents(){
+  try {
+    db.collection('custom_events').orderBy('createdAt','desc').onSnapshot(function(snap){
+      customEvents = [];
+      snap.forEach(function(doc){
+        customEvents.push(Object.assign({_id: doc.id, _custom: true}, doc.data()));
+      });
+      // Rebuild EVENTS and DAYS
+      EVENTS = _D.events.slice().concat(customEvents);
+      DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
+      buildDayStrip();
+      renderHomeDay(currentDay);
+      if(creatorUnlocked) buildCreatorEditor();
+    });
+  } catch(e){ console.warn('Firebase custom events error', e); }
+}
+
+/* ── CREATOR EDITOR ── */
+function buildCreatorEditor(){
+  document.getElementById('creator-sub').textContent = WEEK;
+  let h = '';
+  EVENTS.forEach(function(ev, i){
+    const isCustom = !!ev._custom;
+    h += '<div class="creator-event-card">';
+    h += '<div class="creator-event-header">';
+    h += '<div>';
+    h += '<div class="creator-event-name">' + esc(ev.client) + (isCustom ? ' <span class="custom-badge">Custom</span>' : '') + '</div>';
+    h += '<div class="creator-event-meta">' + esc(ev.date) + ' &nbsp;·&nbsp; ' + esc(ev.guests) + ' guests &nbsp;·&nbsp; ' + esc(ev.event_type||'') + '</div>';
+    h += '</div>';
+    h += '<button class="btn-edit" data-evidx="' + i + '" onclick="openEditEvent(+this.dataset.evidx)">Edit</button>';
+    h += '</div>';
+    h += '</div>';
+  });
+  if(!h) h = '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">No events yet</div></div>';
+  document.getElementById('creator-list').innerHTML = h;
+}
+
+let editingIdx = -1;
+let editingMenuRows = [];
+
+function openEditEvent(idx){
+  editingIdx = idx;
+  const ev = EVENTS[idx];
+  editingMenuRows = (ev.menu||[]).map(function(m){ return Object.assign({},m); });
+  document.getElementById('edit-modal-title').textContent = 'Edit: ' + ev.client;
+  renderEditForm(ev);
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function openNewEventForm(){
+  editingIdx = -1;
+  editingMenuRows = [{name:'',portions:'',diet:'',packaging:''}];
+  document.getElementById('edit-modal-title').textContent = '+ New Event';
+  renderEditForm(null);
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function renderEditForm(ev){
+  const v = function(f){ return esc(ev ? (ev[f]||'') : ''); };
+  let h = '';
+  h += '<div class="form-row">';
+  h += '<div class="form-group"><div class="form-label">Client Name</div><input class="form-input" id="ef-client" value="' + v('client') + '" placeholder="Client name"></div>';
+  h += '<div class="form-group" style="max-width:90px"><div class="form-label">Guests</div><input class="form-input" id="ef-guests" value="' + v('guests') + '" placeholder="0" type="number"></div>';
+  h += '</div>';
+  h += '<div class="form-row">';
+  h += '<div class="form-group"><div class="form-label">Date</div><input class="form-input" id="ef-date" value="' + v('date') + '" placeholder="e.g. Monday 15/06/2026"></div>';
+  h += '<div class="form-group"><div class="form-label">Event Type</div><input class="form-input" id="ef-type" value="' + v('event_type') + '" placeholder="e.g. Buffet"></div>';
+  h += '</div>';
+  h += '<div class="form-group"><div class="form-label">Location</div><input class="form-input" id="ef-location" value="' + v('location') + '" placeholder="Address"></div>';
+  h += '<div class="form-row">';
+  h += '<div class="form-group"><div class="form-label">Contact</div><input class="form-input" id="ef-contact" value="' + v('contact') + '" placeholder="Name"></div>';
+  h += '<div class="form-group"><div class="form-label">Phone</div><input class="form-input" id="ef-phone" value="' + v('phone') + '" placeholder="+49..."></div>';
+  h += '</div>';
+  h += '<div class="form-group"><div class="form-label">Notes</div><textarea class="form-input" id="ef-notes" rows="2" placeholder="Internal notes...">' + esc(ev ? (ev.notes||'') : '') + '</textarea></div>';
+  h += '<div class="form-section-title">Menu Items</div>';
+  h += '<div id="ef-menu-rows">';
+  editingMenuRows.forEach(function(m, i){ h += renderMenuRow(m, i); });
+  h += '</div>';
+  h += '<button class="btn-add-row" onclick="addMenuRow()">+ Add menu item</button>';
+  document.getElementById('edit-form-body').innerHTML = h;
+}
+
+function renderMenuRow(m, i){
+  return '<div class="menu-edit-row" id="ef-mrow-' + i + '">' +
+    '<input class="form-input" placeholder="Dish name" value="' + esc(m.name||'') + '" oninput="editingMenuRows[' + i + '].name=this.value">' +
+    '<input class="form-input" style="max-width:60px" placeholder="Qty" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
+    '<input class="form-input" style="max-width:70px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
+    '<button class="btn-remove" onclick="removeMenuRow(' + i + ')">✕</button>' +
+    '</div>';
+}
+
+function addMenuRow(){
+  editingMenuRows.push({name:'',portions:'',diet:'',packaging:''});
+  const container = document.getElementById('ef-menu-rows');
+  const i = editingMenuRows.length - 1;
+  const div = document.createElement('div');
+  div.innerHTML = renderMenuRow({}, i);
+  container.appendChild(div.firstChild);
+}
+
+function removeMenuRow(i){
+  editingMenuRows.splice(i, 1);
+  // Re-render menu rows section
+  const container = document.getElementById('ef-menu-rows');
+  container.innerHTML = '';
+  editingMenuRows.forEach(function(m, j){
+    container.insertAdjacentHTML('beforeend', renderMenuRow(m, j));
+  });
+}
+
+function saveEditForm(){
+  const client = document.getElementById('ef-client').value.trim();
+  const date = document.getElementById('ef-date').value.trim();
+  if(!client || !date){ alert('Client name and date are required.'); return; }
+  const evData = {
+    client: client,
+    date: date,
+    guests: document.getElementById('ef-guests').value.trim() || '0',
+    event_type: document.getElementById('ef-type').value.trim() || 'Event',
+    location: document.getElementById('ef-location').value.trim() || '—',
+    contact: document.getElementById('ef-contact').value.trim() || '—',
+    phone: document.getElementById('ef-phone').value.trim() || '—',
+    notes: document.getElementById('ef-notes').value.trim(),
+    menu: editingMenuRows.filter(function(m){ return m.name; }),
+    equipment: [], schedule: {}, recipes: {}, bom_summary: [], order_qtys: []
+  };
+  closeEditModal();
+  // Save to Firebase
+  try {
+    if(editingIdx >= 0 && EVENTS[editingIdx]._custom){
+      // Update existing custom event
+      db.collection('custom_events').doc(EVENTS[editingIdx]._id).set(
+        Object.assign(evData, {createdAt: EVENTS[editingIdx].createdAt || new Date().toISOString()})
+      );
+    } else if(editingIdx >= 0) {
+      // Override static event — store in overrides collection
+      db.collection('event_overrides').doc(
+        (EVENTS[editingIdx].date + '-' + EVENTS[editingIdx].client).toLowerCase().replace(/[^a-z0-9]+/g,'-')
+      ).set(evData);
+      // Update local copy immediately
+      Object.assign(EVENTS[editingIdx], evData);
+      buildCreatorEditor();
+      buildOrdersScreen(); buildIngredientsScreen();
+      renderHomeDay(currentDay);
+    } else {
+      // New custom event
+      evData.createdAt = new Date().toISOString();
+      db.collection('custom_events').add(evData);
+    }
+  } catch(e){
+    console.warn('Firebase save error', e);
+    // Still update locally
+    if(editingIdx < 0){
+      EVENTS.push(evData);
+      DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
+      buildDayStrip(); renderHomeDay(currentDay);
+    }
+    buildCreatorEditor();
+  }
+}
+
+function closeEditModal(e){
+  if(e && e.target !== document.getElementById('edit-modal')) return;
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
 /* ── INIT ── */
 document.getElementById('topbar-week').textContent = WEEK;
 buildDayStrip();
@@ -5707,6 +5998,7 @@ renderHomeDay(0);
 buildBomScreen();
 buildBottomNav();
 showScreen('home');
+try{ loadCustomEvents(); }catch(e){ console.warn('CE load error',e); }
 </script>
 </body>
 </html>
