@@ -335,8 +335,8 @@ function renderEventCard(ev, eid) {
     h += '<div class="checklist">';
     ev.equipment.forEach((item, idx) => {
       const key = eid + '-eq-' + idx;
-      h += '<label class="check-item" id="ci-' + key + '" onclick="toggleCheck('' + key + '','' + eid + '')">';
-      h += '<input type="checkbox" id="' + key + '" onclick="event.stopPropagation()"><span>' + item + '</span></label>';
+      h += '<label class="check-item" id="ci-' + key + '" data-key="' + key + '" data-eid="' + eid + '" onclick="toggleCheck(this.dataset.key,this.dataset.eid)">' +
+             '<input type="checkbox" id="' + key + '" onclick="event.stopPropagation()"><span>' + item + '</span></label>';
     });
     h += '</div>';
   }
