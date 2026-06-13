@@ -2199,10 +2199,14 @@ function evDoGYGPrint() {
   if(!d) return;
   var rows=d.rows, ev=d.ev, enriched=d.enriched, company=d.company, dateStr=d.dateStr, service=d.service, packedOn=d.packedOn;
 
-  function getQty(id){
-    var el = document.getElementById('gygqty_'+id);
-    return el ? Math.max(0, Math.min(20, parseInt(el.value)||0)) : 0;
-  }
+  /* Collect all qty values BEFORE removing the overlay from the DOM */
+  var qtyMap = {};
+  rows.forEach(function(r){
+    var el = document.getElementById('gygqty_'+r.id);
+    qtyMap[r.id] = el ? Math.max(0, Math.min(20, parseInt(el.value)||0)) : 0;
+  });
+
+  function getQty(id){ return qtyMap[id] || 0; }
 
   document.getElementById('gyg-qty-overlay').remove();
 
