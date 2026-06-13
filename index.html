@@ -1785,9 +1785,9 @@ function refreshIngredientSection(){
     h += '<div id="ei-rows-'+i+'">';
     rows.forEach(function(r, j){
       h += '<div class="menu-edit-row" style="margin-bottom:4px">' +
-        '<input class="form-input" style="flex:2" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="updateIngredient('+i+','+j+','product',this.value)">' +
-        '<input class="form-input" style="max-width:55px" placeholder="Qty" value="'+esc(r.qty||'')+'" oninput="updateIngredient('+i+','+j+','qty',this.value)">' +
-        '<input class="form-input" style="max-width:65px" placeholder="Unit" value="'+esc(r.unit||'')+'" oninput="updateIngredient('+i+','+j+','unit',this.value)">' +
+        '<input class="form-input" style="flex:2" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="updateIngredient('+i+','+j+',\'product\',this.value)">' +
+        '<input class="form-input" style="max-width:55px" placeholder="Qty" value="'+esc(r.qty||'')+'" oninput="updateIngredient('+i+','+j+',\'qty\',this.value)">' +
+        '<input class="form-input" style="max-width:65px" placeholder="Unit" value="'+esc(r.unit||'')+'" oninput="updateIngredient('+i+','+j+',\'unit\',this.value)">' +
         '<button class="btn-remove" onclick="removeIngredientRow('+i+','+j+')">✕</button>' +
         '</div>';
     });
