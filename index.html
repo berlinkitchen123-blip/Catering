@@ -932,9 +932,9 @@ body {
 
 <!-- MASTER EDIT OVERLAY -->
 <div id="master-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+  <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
     <div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)" id="me-name">Dish name</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Edit diet and allergens</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Edit diet, allergens &amp; ingredients</div>
     <input type="hidden" id="me-idx">
     <div class="form-group" style="margin-bottom:12px">
       <div class="form-label">Diet</div>
@@ -952,10 +952,13 @@ body {
       <div class="form-label">Allergens (comma separated)</div>
       <input class="form-input" id="me-allergens" placeholder="e.g. Gluten, Milk, Eggs">
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
       <input type="checkbox" id="me-gf" style="width:16px;height:16px;cursor:pointer">
       <label for="me-gf" style="font-size:13px;font-weight:600;cursor:pointer">Gluten Free</label>
     </div>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">Ingredients / Recipe</div>
+    <div id="me-ing-rows" style="margin-bottom:6px"></div>
+    <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:16px">+ Add ingredient</button>
     <div style="display:flex;gap:10px">
       <button onclick="closeMasterEdit()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
       <button onclick="saveMasterEdit()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Save Changes</button>
@@ -1977,6 +1980,7 @@ function renderMasterList(q, diet){
 }
 
 /* ── MASTER EDIT ── */
+var masterEditIngredients = [];
 function openMasterEdit(idx){
   const x = MASTER[idx];
   if(!x) return;
@@ -1985,7 +1989,39 @@ function openMasterEdit(idx){
   document.getElementById('me-allergens').value = x.allergens || '';
   document.getElementById('me-gf').checked = !!x.gluten_free;
   document.getElementById('me-idx').value = idx;
+  // Load existing ingredients from recipeDb
+  masterEditIngredients = (window._recipeDb && window._recipeDb[x.name])
+    ? window._recipeDb[x.name].map(function(r){ return Object.assign({},r); })
+    : [];
+  renderMasterIngRows();
   document.getElementById('master-edit-overlay').style.display='flex';
+}
+function renderMasterIngRows(){
+  const container = document.getElementById('me-ing-rows');
+  if(!container) return;
+  if(!masterEditIngredients.length){
+    container.innerHTML = '<div style="font-size:11px;color:var(--sub);padding:4px 0 8px">No ingredients yet — click below to add</div>';
+    return;
+  }
+  container.innerHTML = masterEditIngredients.map(function(r, j){
+    return '<div class="menu-edit-row" style="margin-bottom:4px">' +
+      '<input class="form-input" style="flex:2" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="masterEditIngredients['+j+'].product=this.value">' +
+      '<input class="form-input" style="max-width:55px" placeholder="Qty" value="'+esc(r.qty||'')+'" oninput="masterEditIngredients['+j+'].qty=this.value">' +
+      '<input class="form-input" style="max-width:65px" placeholder="Unit" value="'+esc(r.unit||'')+'" oninput="masterEditIngredients['+j+'].unit=this.value">' +
+      '<button class="btn-remove" onclick="removeMasterIngRow('+j+')">✕</button>' +
+      '</div>';
+  }).join('');
+}
+function addMasterIngRow(){
+  masterEditIngredients.push({product:'',qty:'',unit:''});
+  renderMasterIngRows();
+  // Focus last ingredient input
+  const rows = document.querySelectorAll('#me-ing-rows .form-input');
+  if(rows.length) rows[rows.length-3].focus();
+}
+function removeMasterIngRow(j){
+  masterEditIngredients.splice(j,1);
+  renderMasterIngRows();
 }
 function closeMasterEdit(){
   document.getElementById('master-edit-overlay').style.display='none';
@@ -1999,12 +2035,20 @@ function saveMasterEdit(){
   MASTER[idx].diet = diet;
   MASTER[idx].allergens = allergens;
   MASTER[idx].gluten_free = gf ? 'Yes' : '';
-  // Persist to Firebase
+  const dishName = MASTER[idx].name;
+  const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
+  // Save diet/allergens to master_overrides
   try {
-    db.collection('master_overrides').doc(MASTER[idx].name).set({
+    db.collection('master_overrides').doc(dishName).set({
       diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : ''
     });
-  } catch(e){ console.warn('master save error', e); }
+  } catch(e){ console.warn('master_overrides save error', e); }
+  // Save ingredients to recipe_ingredients
+  try {
+    db.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
+    if(!window._recipeDb) window._recipeDb = {};
+    window._recipeDb[dishName] = ings;
+  } catch(e){ console.warn('recipe_ingredients save error', e); }
   closeMasterEdit();
   filterMaster();
 }
