@@ -1900,18 +1900,54 @@ function evGetAllergenIcons(allergenStr) {
   return found;
 }
 
+/* Pure CSS text badge — no emoji, works reliably in print windows */
 function evGetDietBadge(diet) {
   var d = (diet||'').toLowerCase();
-  var style = 'display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:9999px;border:1.5px solid currentColor;box-shadow:0 1px 2px rgba(0,0,0,0.08);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;transform:scale(1.25);transform-origin:center';
-  if(d.includes('vegan'))
-    return '<div style="'+style+';color:#15803d;background:#f0fdf4"><span style="font-size:14px">&#127807;</span> Vegan</div>';
-  if(d.includes('vegetar'))
-    return '<div style="'+style+';color:#16a34a;background:#f0fdf4"><span style="font-size:14px">&#127807;</span> Veggie</div>';
-  if(d.includes('fish')||d.includes('fisch'))
-    return '<div style="'+style+';color:#2563eb;background:#eff6ff"><span style="font-size:14px">&#128031;</span> Fish</div>';
-  if(d.includes('meat')||d.includes('fleisch')||d.includes('beef'))
-    return '<div style="'+style+';color:#991b1b;background:#fef2f2"><span style="font-size:14px">&#129361;</span> Meat</div>';
-  return '<div style="'+style+';color:#374151;background:#f9fafb"><span style="font-size:14px">&#127859;</span> '+esc(diet.toUpperCase())+'</div>';
+  var label, color, bg;
+  if(d.includes('vegan'))                                         { label='VEGAN';      color='#15803d'; bg='#f0fdf4'; }
+  else if(d.includes('vegetar')||d.includes('pescatar'))         { label='VEGGIE';     color='#16a34a'; bg='#f0fdf4'; }
+  else if(d.includes('fish')||d.includes('fisch'))               { label='FISH';       color='#1d4ed8'; bg='#eff6ff'; }
+  else if(d.includes('meat')||d.includes('fleisch')||
+          d.includes('beef')||d.includes('chicken')||
+          d.includes('poultry')||d.includes('halal'))            { label='MEAT';       color='#991b1b'; bg='#fef2f2'; }
+  else if(d)                                                      { label=diet.toUpperCase().substring(0,12); color='#374151'; bg='#f9fafb'; }
+  else                                                            { return ''; }
+  return (
+    '<div style="display:inline-flex;align-items:center;padding:5px 16px;border-radius:9999px;'+
+    'border:1.5px solid '+color+';background:'+bg+';color:'+color+';font-size:12px;font-weight:900;'+
+    'text-transform:uppercase;letter-spacing:0.1em;font-family:Inter,Arial,sans-serif">'+label+'</div>'
+  );
+}
+
+/*
+ * Look up diet / allergens / category from MASTER array by item name.
+ * BEO menu items only carry {name, portions, packaging} — everything
+ * else must come from the master menu.
+ */
+function evLookupItem(item) {
+  var rawName = (item.name||item.item_name_de||item.item_name_en||'').trim();
+  var lc = rawName.toLowerCase();
+  var found = null;
+
+  /* 1. Exact match */
+  for(var i=0; i<MASTER.length; i++){
+    if((MASTER[i].name||'').trim().toLowerCase() === lc){ found=MASTER[i]; break; }
+  }
+  /* 2. Contains match */
+  if(!found){
+    for(var i=0; i<MASTER.length; i++){
+      var mn = (MASTER[i].name||'').toLowerCase();
+      if(mn && (lc.includes(mn) || mn.includes(lc))){ found=MASTER[i]; break; }
+    }
+  }
+
+  return {
+    name:      rawName,
+    diet:      item.diet||item.diet_de||(found&&found.diet)||'',
+    allergens: item.allergens||item.allergens_de||(found&&found.allergens)||'',
+    /* Never use packaging as category — it contains gastronorm sizes like "1 GN 1/1" */
+    category:  item.category||(found&&found.category)||''
+  };
 }
 
 function isGYGEvent(ev) {
@@ -1922,17 +1958,12 @@ function isGYGEvent(ev) {
 
 /*
  * A6 LABEL — pixel-perfect match to CateringItemLabel in App.tsx
- * 105mm × 148.5mm:
- *   TOP   : #024930 header (80px), BELLABONA PNG logo white
- *   MIDDLE: white flex-1, diet badge (scale-125) + dish name (30px serif) + thin rule
- *   BOTTOM: #FFF1F6 section (min 90px), "ALLERGENS" label + icons row
+ * 105mm × 148.5mm
  */
 function evBuildA6Label(item, packedOn) {
-  var name = item.name||item.item_name_de||item.item_name_en||'';
-  var diet = item.diet||item.diet_de||'';
-  var allergens = item.allergens||item.allergens_de||'';
-  var dietBadge = evGetDietBadge(diet);
-  var allergenIcons = evGetAllergenIcons(allergens);
+  var e   = evLookupItem(item);
+  var dietBadge    = evGetDietBadge(e.diet);
+  var allergenIcons = evGetAllergenIcons(e.allergens);
 
   var allergenSection;
   if(allergenIcons.length){
@@ -1946,17 +1977,14 @@ function evBuildA6Label(item, packedOn) {
 
   return (
     '<div style="width:105mm;height:148.5mm;background:#fff;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;font-family:Inter,Arial,sans-serif">'+
-      /* TOP: Dark green header with BELLABONA PNG logo (white) */
       '<div style="background:#024930;height:80px;min-height:80px;display:flex;align-items:center;justify-content:center;border-bottom:2px solid #FEACCF;flex-shrink:0">'+
         '<img src="'+BRAND_LOGO_B64+'" style="height:28px;width:auto;filter:brightness(0) invert(1)" alt="BELLABONA">'+
       '</div>'+
-      /* MIDDLE: white, flex-1, centered column */
       '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 32px 8px;background:#fff;overflow:hidden">'+
-        '<div style="margin-bottom:16px">'+dietBadge+'</div>'+
-        '<h2 style="font-family:Georgia,\'Times New Roman\',serif;font-size:30px;font-weight:700;color:#024930;text-transform:uppercase;text-align:center;line-height:1.2;margin:0 0 16px">'+esc(name)+'</h2>'+
+        (dietBadge ? '<div style="margin-bottom:16px">'+dietBadge+'</div>' : '')+
+        '<h2 style="font-family:Georgia,\'Times New Roman\',serif;font-size:30px;font-weight:700;color:#024930;text-transform:uppercase;text-align:center;line-height:1.2;margin:0 0 16px">'+esc(e.name)+'</h2>'+
         '<div style="width:64px;height:1px;background:#e5e7eb"></div>'+
       '</div>'+
-      /* BOTTOM: pink allergen section */
       '<div style="background:#FFF1F6;min-height:90px;border-top:1px solid #FEACCF;padding:16px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">'+
         allergenSection+
       '</div>'+
@@ -1973,7 +2001,6 @@ function evPrintLabels(idx) {
   if(isGYGEvent(ev)){
     evPrintGYGFormat(ev, packedOn);
   } else {
-    /* A6 labels: 4 per A4 page in 2×2 grid */
     var pages = [];
     for(var i=0;i<items.length;i+=4) pages.push(items.slice(i,i+4));
     var html = pages.map(function(group){
@@ -1987,12 +2014,7 @@ function evPrintLabels(idx) {
 }
 
 /*
- * GYG FORMAT — pixel-perfect match to 11-page PDF
- *
- * Page 1 : Cover        — pink bg, GETYOURGUIDE 54pt, GERMANY 22.5pt, LUNCH|DATE 27pt, BELLABONA bottom-right 27pt
- * Page 2 : Menu         — pink bg, category headers (spaced tracking 0.4em, 18pt, borders), items 2-col, footer date+BELLABONA
- * Page 3 : Rating       — pink bg, GETYOURGUIDE top-left 60pt, RATE YOUR LUNCH/WITH US 54pt centered, QR 240×240pt, BELLABONA bottom-right 36pt
- * Pages 4+: Dish labels — rotating palette, category header spaced 36pt, dish name 45pt, allergens 18pt, BELLABONA bottom-right 27pt
+ * GYG FORMAT — pixel-perfect 11-page layout
  */
 function evPrintGYGFormat(ev, packedOn) {
   var items = ev.menu||[];
@@ -2000,11 +2022,13 @@ function evPrintGYGFormat(ev, packedOn) {
   var dateStr = ev.date||packedOn;
   var service = ((ev.event_type||'LUNCH').toUpperCase().includes('BRUNCH')) ? 'BRUNCH' : 'LUNCH';
   var qrB64 = (service==='BRUNCH') ? GYG_BRUNCH_QR_B64 : REVIEW_QR_B64;
-  var PINK = '#FEACCF';
-  var GREEN = '#024930';
-  var inter = "font-family:Inter,Arial,sans-serif";
+  var PINK='#FEACCF', GREEN='#024930';
+  var inter="font-family:Inter,Arial,sans-serif";
 
-  /* ─── PAGE 1: COVER ─────────────────────────────────────────────── */
+  /* Enrich all items from MASTER first */
+  var enriched = items.map(evLookupItem);
+
+  /* PAGE 1: COVER */
   var cover =
     '<div style="width:210mm;height:297mm;background:'+PINK+';position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;page-break-after:always;break-after:page;'+inter+'">'+
       '<div style="text-align:center;color:'+GREEN+'">'+
@@ -2019,39 +2043,36 @@ function evPrintGYGFormat(ev, packedOn) {
       '<div style="position:absolute;bottom:21mm;right:21mm;font-size:36px;font-weight:900;color:'+GREEN+';letter-spacing:-0.03em">BELLABONA</div>'+
     '</div>';
 
-  /* ─── PAGE 2: MENU ───────────────────────────────────────────────── */
-  /* Categorise items */
+  /* PAGE 2: MENU — categorised from enriched items */
   var cats = {'MAIN DISHES':[],'SUPPLEMENT':[],'SIDE':[],'DESSERTS':[]};
-  items.forEach(function(item){
-    var cat = (item.category||item.packaging||'').toUpperCase();
-    var name = ((item.name||item.item_name_de||item.item_name_en||'')+' '+(item.diet||item.diet_de||'')).toLowerCase();
-    if(cat.includes('MAIN')||cat.includes('MEAT')||cat.includes('VEGAN')&&!cat.includes('SIDE')){
-      cats['MAIN DISHES'].push(item);
+  enriched.forEach(function(e){
+    var cat = (e.category||'').toUpperCase();
+    var nameLc = (e.name+' '+(e.diet||'')).toLowerCase();
+    if(cat.includes('MAIN')||cat.includes('MEAT')||cat.includes('FISH')||
+       (!cat && !nameLc.match(/salad|side|rice|couscous|pita|farro|cake|dessert|baklava|pudding|soup/))){
+      cats['MAIN DISHES'].push(e);
     } else if(cat.includes('SUPPLEMENT')){
-      cats['SUPPLEMENT'].push(item);
-    } else if(cat.includes('SIDE')||name.includes('salad')||name.includes('farro')||name.includes('rice')||name.includes('couscous')||name.includes('pita')){
-      cats['SIDE'].push(item);
-    } else if(cat.includes('DESSERT')||name.includes('cake')||name.includes('dessert')||name.includes('baklava')||name.includes('pudding')){
-      cats['DESSERTS'].push(item);
+      cats['SUPPLEMENT'].push(e);
+    } else if(cat.includes('SIDE')||nameLc.match(/salad|rice|couscous|pita|farro/)){
+      cats['SIDE'].push(e);
+    } else if(cat.includes('DESSERT')||nameLc.match(/cake|dessert|baklava|pudding/)){
+      cats['DESSERTS'].push(e);
     } else {
-      cats['MAIN DISHES'].push(item);
+      cats['MAIN DISHES'].push(e);
     }
   });
 
   var catHtml = Object.keys(cats).filter(function(k){ return cats[k].length>0; }).map(function(catName){
-    var rows = cats[catName].map(function(item){
-      var iName = item.name||item.item_name_de||item.item_name_en||'';
-      var iDiet = (item.diet||item.diet_de||'').toUpperCase();
-      var iAllerg = item.allergens||item.allergens_de||'';
+    var rows = cats[catName].map(function(e){
       return (
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(2,73,48,0.08);padding:12px 16px;last-child:border-bottom:none">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(2,73,48,0.08);padding:12px 16px">'+
           '<div style="flex:1;padding-right:24px">'+
-            '<div style="font-size:9px;font-weight:900;opacity:0.7;line-height:1;margin-bottom:2px;text-transform:uppercase;color:'+GREEN+'">'+esc(iDiet)+'</div>'+
-            '<div style="font-size:20px;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;color:'+GREEN+';line-height:1.1">'+esc(iName)+'</div>'+
+            '<div style="font-size:9px;font-weight:900;opacity:0.7;line-height:1;margin-bottom:2px;text-transform:uppercase;color:'+GREEN+'">'+esc(e.diet||'')+'</div>'+
+            '<div style="font-size:20px;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;color:'+GREEN+';line-height:1.1">'+esc(e.name)+'</div>'+
           '</div>'+
           '<div style="text-align:right;max-width:200px;flex-shrink:0">'+
             '<div style="font-size:8px;font-weight:900;text-transform:uppercase;opacity:0.5;line-height:1;margin-bottom:2px;color:'+GREEN+'">Allergens:</div>'+
-            '<div style="font-size:12px;font-weight:700;opacity:0.9;text-transform:uppercase;line-height:1.3;color:'+GREEN+'">'+esc(iAllerg||'None')+'</div>'+
+            '<div style="font-size:12px;font-weight:700;opacity:0.9;text-transform:uppercase;line-height:1.3;color:'+GREEN+'">'+esc(e.allergens||'None')+'</div>'+
           '</div>'+
         '</div>'
       );
@@ -2075,26 +2096,20 @@ function evPrintGYGFormat(ev, packedOn) {
       '</div>'+
     '</div>';
 
-  /* ─── PAGE 3: RATING ─────────────────────────────────────────────── */
+  /* PAGE 3: RATING */
   var rating =
     '<div style="width:210mm;height:297mm;background:'+PINK+';position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:96px;box-sizing:border-box;page-break-after:always;break-after:page;'+inter+';color:'+GREEN+'">'+
-      /* GETYOURGUIDE top-left */
       '<div style="position:absolute;top:28px;left:56px;font-size:80px;font-weight:900;letter-spacing:-0.05em;line-height:1;text-transform:uppercase">'+esc(company)+'</div>'+
-      /* RATE YOUR LUNCH WITH US centered */
       '<div style="text-align:center;margin-bottom:40px">'+
         '<div style="font-size:72px;font-weight:900;letter-spacing:-0.02em;line-height:0.95;text-transform:uppercase;max-width:420px;margin:0 auto">'+
           'RATE YOUR '+esc(service)+'<br>WITH US'+
         '</div>'+
       '</div>'+
-      /* QR code 240×240pt = 320px */
-      '<div>'+
-        '<img src="'+qrB64+'" style="width:320px;height:320px;display:block" alt="Review QR">'+
-      '</div>'+
-      /* BELLABONA bottom-right */
+      '<div><img src="'+qrB64+'" style="width:320px;height:320px;display:block" alt="Review QR"></div>'+
       '<div style="position:absolute;bottom:43px;right:43px;font-size:48px;font-weight:900;letter-spacing:-0.03em">BELLABONA</div>'+
     '</div>';
 
-  /* ─── PAGES 4+: INDIVIDUAL DISH PAGES ───────────────────────────── */
+  /* PAGES 4+: INDIVIDUAL DISH PAGES */
   var palette = [
     {bg:'#FEACCF',tx:'#024930'},{bg:'#024930',tx:'#FEACCF'},{bg:'#FFD700',tx:'#024930'},
     {bg:'#FF7F50',tx:'#ffffff'},{bg:'#4682B4',tx:'#ffffff'},{bg:'#2E8B57',tx:'#F0FFF0'},
@@ -2102,39 +2117,34 @@ function evPrintGYGFormat(ev, packedOn) {
     {bg:'#483D8B',tx:'#E6E6FA'},{bg:'#BC8F8F',tx:'#2F4F4F'},{bg:'#DDA0DD',tx:'#4B0082'}
   ];
 
-  var dishPages = items.map(function(item, idx){
+  var dishPages = enriched.map(function(e, idx){
     var col = palette[idx % palette.length];
-    var iName = item.name||item.item_name_de||item.item_name_en||'';
-    var iDiet = (item.diet||item.diet_de||'').toUpperCase();
-    var iAllerg = item.allergens||item.allergens_de||'';
-    var cat = (item.category||item.packaging||'').toUpperCase();
-    if(!cat){
-      if(iDiet.includes('MEAT')||iDiet.includes('FLEISCH')) cat = 'MEAT MAIN';
-      else if(iDiet.includes('VEGAN')) cat = 'VEGAN MAIN';
-      else if(iDiet.includes('VEGETAR')) cat = 'VEGETARIAN MAIN';
-      else if(iDiet.includes('FISH')||iDiet.includes('FISCH')) cat = 'FISH MAIN';
-      else cat = iDiet;
+    /* Build category label: prefer master category, else derive from diet */
+    var cat = (e.category||'').toUpperCase();
+    if(!cat || cat==='CATEGORY'){
+      var d = (e.diet||'').toLowerCase();
+      if(d.includes('vegan'))                         cat='VEGAN MAIN';
+      else if(d.includes('vegetar'))                  cat='VEGETARIAN MAIN';
+      else if(d.includes('fish')||d.includes('fisch'))cat='FISH MAIN';
+      else if(d.includes('meat')||d.includes('halal')||d.includes('chicken')||d.includes('beef')) cat='MEAT MAIN';
+      else                                            cat='MAIN';
     }
     return (
       '<div style="width:210mm;height:297mm;background:'+col.bg+';position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:53px;box-sizing:border-box;page-break-after:always;break-after:page;overflow:hidden;'+inter+'">'+
-        /* Category header — absolute top with 4px borders */
         '<div style="position:absolute;top:24px;left:0;right:0;padding:0 53px;box-sizing:border-box">'+
           '<div style="border-top:4px solid '+col.tx+';border-bottom:4px solid '+col.tx+';padding:32px 0;text-align:center">'+
             '<h2 style="margin:0;font-size:48px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:'+col.tx+'">'+esc(cat)+'</h2>'+
           '</div>'+
         '</div>'+
-        /* Dish name centered */
         '<div style="text-align:center;width:100%;max-width:95%;margin-top:48px">'+
           '<div style="display:inline-block;border-bottom:6px solid '+col.tx+';padding-bottom:32px;margin-bottom:32px">'+
-            '<h1 style="font-size:60px;font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;line-height:1.05;color:'+col.tx+';margin:0">'+esc(iName)+'</h1>'+
+            '<h1 style="font-size:60px;font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;line-height:1.05;color:'+col.tx+';margin:0">'+esc(e.name)+'</h1>'+
           '</div>'+
-          /* Allergen section */
           '<div style="margin-top:4px">'+
             '<p style="font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:'+col.tx+';margin:0 0 12px">ALLERGENS | CONTAINS:</p>'+
-            '<p style="font-size:24px;font-weight:700;opacity:0.8;text-transform:uppercase;color:'+col.tx+';line-height:1.35;margin:0;max-width:426px;margin:0 auto">'+esc(iAllerg||'None')+'</p>'+
+            '<p style="font-size:24px;font-weight:700;opacity:0.8;text-transform:uppercase;color:'+col.tx+';line-height:1.35;margin:0 auto;max-width:426px">'+esc(e.allergens||'None')+'</p>'+
           '</div>'+
         '</div>'+
-        /* BELLABONA bottom-right */
         '<div style="position:absolute;bottom:43px;right:43px;font-size:36px;font-weight:900;letter-spacing:-0.03em;color:'+col.tx+';opacity:0.85">BELLABONA</div>'+
       '</div>'
     );
