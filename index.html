@@ -725,23 +725,6 @@ body {
   <div class="topbar-week" id="topbar-week"></div>
   <div class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
-  </div>  <!-- MASTER DATA -->
-  <div class="screen" id="screen-master">
-    <div class="page-hero" style="padding-bottom:12px">
-      <div class="page-title">&#128218; Master Menu Data</div>
-      <div class="page-sub">All dishes · diet · allergens</div>
-    </div>
-    <div style="padding:0 14px 12px;position:sticky;top:0;background:var(--bg);z-index:30;border-bottom:1px solid var(--border)">
-      <input class="form-input" id="master-search" placeholder="&#128269; Search dish name..." oninput="filterMaster()" style="width:100%;margin-bottom:8px">
-      <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px" id="master-diet-filters">
-        <button class="diet-filter-btn active" data-diet="" onclick="setDietFilter(this)">All</button>
-        <button class="diet-filter-btn" data-diet="Meat" onclick="setDietFilter(this)">&#127859; Meat</button>
-        <button class="diet-filter-btn" data-diet="Vegetarian" onclick="setDietFilter(this)">&#127807; Veg</button>
-        <button class="diet-filter-btn" data-diet="Vegan" onclick="setDietFilter(this)">&#127823; Vegan</button>
-        <button class="diet-filter-btn" data-diet="Fish" onclick="setDietFilter(this)">&#127920; Fish</button>
-      </div>
-    </div>
-    <div id="master-list" style="padding:10px 14px 80px"></div>
   </div>
 </div>
 
@@ -764,6 +747,24 @@ body {
   <div class="screen active" id="screen-home">
     <div class="day-strip" id="day-strip"></div>
     <div class="event-grid" id="event-grid"></div>
+  </div>
+  <!-- MASTER DATA (Creator only) -->
+  <div class="screen" id="screen-master">
+    <div class="page-hero" style="padding-bottom:12px">
+      <div class="page-title">&#128218; Master Menu Data</div>
+      <div class="page-sub" id="master-sub">All dishes · diet · allergens</div>
+    </div>
+    <div style="padding:0 14px 12px;position:sticky;top:0;background:var(--bg);z-index:30;border-bottom:1px solid var(--border)">
+      <input class="form-input" id="master-search" placeholder="&#128269; Search dish name..." oninput="filterMaster()" style="width:100%;margin-bottom:8px">
+      <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px" id="master-diet-filters">
+        <button class="diet-filter-btn active" data-diet="" onclick="setDietFilter(this)">All</button>
+        <button class="diet-filter-btn" data-diet="Meat" onclick="setDietFilter(this)">&#127859; Meat</button>
+        <button class="diet-filter-btn" data-diet="Vegetarian" onclick="setDietFilter(this)">&#127807; Veg</button>
+        <button class="diet-filter-btn" data-diet="Vegan" onclick="setDietFilter(this)">&#127823; Vegan</button>
+        <button class="diet-filter-btn" data-diet="Fish" onclick="setDietFilter(this)">&#127920; Fish</button>
+      </div>
+    </div>
+    <div id="master-list" style="padding:10px 14px 80px"></div>
   </div>
   <!-- EVENT DETAIL -->
   <div class="screen" id="screen-event">
@@ -929,6 +930,39 @@ body {
 </div>
 
 
+<!-- MASTER EDIT OVERLAY -->
+<div id="master-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+    <div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)" id="me-name">Dish name</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Edit diet and allergens</div>
+    <input type="hidden" id="me-idx">
+    <div class="form-group" style="margin-bottom:12px">
+      <div class="form-label">Diet</div>
+      <select id="me-diet" class="form-input">
+        <option value="">— Select —</option>
+        <option value="Vegan">Vegan</option>
+        <option value="Vegetarian">Vegetarian</option>
+        <option value="Meat">Meat</option>
+        <option value="Fish">Fish</option>
+        <option value="Pescatarian">Pescatarian</option>
+        <option value="Mixed">Mixed</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <div class="form-label">Allergens (comma separated)</div>
+      <input class="form-input" id="me-allergens" placeholder="e.g. Gluten, Milk, Eggs">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+      <input type="checkbox" id="me-gf" style="width:16px;height:16px;cursor:pointer">
+      <label for="me-gf" style="font-size:13px;font-weight:600;cursor:pointer">Gluten Free</label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeMasterEdit()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
+      <button onclick="saveMasterEdit()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- PASSWORD MODAL -->
 <div class="pw-overlay" id="pw-overlay">
   <div class="pw-box">
@@ -1051,7 +1085,6 @@ function buildDrawer(){
   const mainItems=[
     {id:'home', icon:'&#127968;', label:'Events'},
     {id:'bom',  icon:'&#128230;', label:'BOM'},
-  {id:'master', icon:'&#128218;', label:'Master Data'},
   ];
   mainItems.forEach(function(item){
     const el=document.createElement('div');
@@ -1073,6 +1106,7 @@ function buildDrawer(){
       {id:'creator-editor', icon:'&#9998;', label:'Manage Events'},
       {id:'orders',         icon:'&#128203;', label:'Client Orders'},
       {id:'ingredients',    icon:'&#129378;', label:'Order Quantities'},
+      {id:'master',         icon:'&#128218;', label:'Master Data'},
     ];
     creatorItems.forEach(function(item){
       const el=document.createElement('div');
@@ -1119,12 +1153,17 @@ function showScreen(id, animate){
     if(animate==='forward'){ target.classList.add('active','slide-in'); }
     else { target.classList.add('active'); }
   }
+  // Guard: master requires creator
+  if(id==='master' && !creatorUnlocked){ openPw(); return; }
   // Topbar
   const back=document.getElementById('topbar-back');
   const bc=document.getElementById('topbar-breadcrumb');
   if(id==='event' && currentEvent){
     back.classList.add('show');
     bc.innerHTML='<span>'+esc(currentEvent.date.split(' ')[0])+'</span><span class="sep">&#8250;</span><span class="current">'+esc(currentEvent.client)+'</span>';
+  } else if(id==='master'){
+    back.classList.add('show');
+    bc.innerHTML='<span class="current">Master Data</span>';
   } else {
     back.classList.remove('show');
     bc.innerHTML='';
@@ -1132,7 +1171,8 @@ function showScreen(id, animate){
   buildBottomNav();
 }
 function goBack(){
-  showScreen('home');
+  if(currentScreen==='master') showScreen('creator-editor');
+  else showScreen('home');
 }
 
 /* ── PASSWORD ── */
@@ -1143,6 +1183,7 @@ function checkPw(){
   if(v===CREATOR_PW){
     creatorUnlocked=true; closePw();
     buildOrdersScreen(); buildIngredientsScreen(); buildCreatorEditor();
+    loadMasterOverrides();
     buildBottomNav(); showScreen('creator-editor');
   } else {
     const inp=document.getElementById('pw-input');
@@ -1491,12 +1532,14 @@ function buildBomScreen(){
 function buildOrdersScreen(){
   document.getElementById('orders-sub').textContent = WEEK;
   let h='';
-  EVENTS.forEach(function(ev){
-    h+='<div class="bom-section"><div class="bom-section-header">';
-    h+='<div class="bom-section-title">'+esc(ev.client)+'</div>';
+  EVENTS.forEach(function(ev, i){
+    h+='<div class="bom-section"><div class="bom-section-header" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+    h+='<div class="bom-section-title" style="flex:1;min-width:0">'+esc(ev.client)+'</div>';
     h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
     h+='<span class="pill pill-blue">&#128101; '+esc(ev.guests)+'</span>';
-    h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span></div>';
+    h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span>';
+    h+='<button class="btn-edit" data-evidx="'+i+'" onclick="openEditEvent(+this.dataset.evidx)">Edit</button>';
+    h+='</div>';
     h+='<div class="bom-section-body">';
     if(ev.location&&ev.location!=='—') h+='<p style="margin:10px 0 4px;font-size:13px">&#128205; <strong>'+esc(ev.location)+'</strong></p>';
     if(ev.contact&&ev.contact!=='—') h+='<p style="font-size:13px;color:var(--sub);margin-bottom:10px">&#128100; '+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' · '+esc(ev.phone):'')+'</p>';
@@ -1515,18 +1558,30 @@ function buildIngredientsScreen(){
   document.getElementById('ingredients-sub').textContent = WEEK;
   let h='';
   EVENTS.forEach(function(ev){
-    if(!ev.order_qtys||!ev.order_qtys.length) return;
+    var hasQtys = ev.order_qtys && ev.order_qtys.length;
+    var hasMenu = ev.menu && ev.menu.length;
+    if(!hasQtys && !hasMenu) return;
     h+='<div class="bom-section"><div class="bom-section-header">';
     h+='<div class="bom-section-title">'+esc(ev.client)+'</div>';
     h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
     h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span></div>';
-    h+='<div class="bom-section-body"><table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th></tr></thead><tbody>';
-    let lr='';
-    ev.order_qtys.forEach(function(item){
-      if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
-      h+='<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
-    });
-    h+='</tbody></table></div></div>';
+    h+='<div class="bom-section-body">';
+    if(hasQtys){
+      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th></tr></thead><tbody>';
+      let lr='';
+      ev.order_qtys.forEach(function(item){
+        if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
+        h+='<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
+      });
+      h+='</tbody></table>';
+    } else {
+      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Dish</th><th>Portions</th><th>Diet</th><th>Packaging</th></tr></thead><tbody>';
+      ev.menu.forEach(function(m){
+        h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td></tr>';
+      });
+      h+='</tbody></table>';
+    }
+    h+='</div></div>';
   });
   if(!h) h='<div class="empty"><div class="empty-icon">&#129378;</div><div class="empty-text">No order data</div></div>';
   document.getElementById('ingredients-body').innerHTML=h;
@@ -1534,6 +1589,23 @@ function buildIngredientsScreen(){
 
 
 /* ── FIREBASE CUSTOM EVENTS ── */
+function loadMasterOverrides(){
+  try {
+    db.collection('master_overrides').get().then(function(snap){
+      snap.forEach(function(doc){
+        const data = doc.data();
+        const idx = MASTER.findIndex(function(x){ return x.name === doc.id; });
+        if(idx>=0){
+          if(data.diet !== undefined) MASTER[idx].diet = data.diet;
+          if(data.allergens !== undefined) MASTER[idx].allergens = data.allergens;
+          if(data.gluten_free !== undefined) MASTER[idx].gluten_free = data.gluten_free;
+        }
+      });
+      renderMasterList('', masterDietFilter);
+    });
+  } catch(e){ console.warn('master overrides load error', e); }
+}
+
 function loadCustomEvents(){
   try {
     db.collection('custom_events').orderBy('createdAt','desc').onSnapshot(function(snap){
@@ -1779,14 +1851,52 @@ function renderMasterList(q, diet){
     list.innerHTML = '<div class="empty"><div class="empty-icon">&#128269;</div><div class="empty-text">No matches</div></div>';
     return;
   }
-  list.innerHTML = items.slice(0,200).map(function(x){
-    return '<div class="master-item">' +
+  const masterIndices = items.slice(0,200).map(function(x){ return MASTER.indexOf(x); });
+  list.innerHTML = items.slice(0,200).map(function(x, i){
+    const idx = MASTER.indexOf(x);
+    return '<div class="master-item" style="display:flex;align-items:center;gap:8px">' +
+      '<div style="flex:1">' +
       '<div class="master-item-name">'+esc(x.name)+'</div>' +
       '<div class="master-item-right">' +
         (x.diet ? '<span class="diet '+dietClass(x.diet)+'">'+esc(x.diet)+'</span>' : '') +
         (x.allergens ? '<div class="master-allergen">&#9888; '+esc(x.allergens)+'</div>' : '') +
-      '</div></div>';
+      '</div></div>' +
+      (creatorUnlocked ? '<button onclick="openMasterEdit('+idx+')" style="flex-shrink:0;padding:6px 10px;border:1.5px solid var(--border2);border-radius:8px;background:var(--s2);font-size:12px;cursor:pointer;color:var(--sub)">&#9998;</button>' : '') +
+      '</div>';
   }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
+}
+
+/* ── MASTER EDIT ── */
+function openMasterEdit(idx){
+  const x = MASTER[idx];
+  if(!x) return;
+  document.getElementById('me-name').textContent = x.name;
+  document.getElementById('me-diet').value = x.diet || '';
+  document.getElementById('me-allergens').value = x.allergens || '';
+  document.getElementById('me-gf').checked = !!x.gluten_free;
+  document.getElementById('me-idx').value = idx;
+  document.getElementById('master-edit-overlay').style.display='flex';
+}
+function closeMasterEdit(){
+  document.getElementById('master-edit-overlay').style.display='none';
+}
+function saveMasterEdit(){
+  const idx = parseInt(document.getElementById('me-idx').value);
+  const diet = document.getElementById('me-diet').value.trim();
+  const allergens = document.getElementById('me-allergens').value.trim();
+  const gf = document.getElementById('me-gf').checked;
+  if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
+  MASTER[idx].diet = diet;
+  MASTER[idx].allergens = allergens;
+  MASTER[idx].gluten_free = gf ? 'Yes' : '';
+  // Persist to Firebase
+  try {
+    db.collection('master_overrides').doc(MASTER[idx].name).set({
+      diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : ''
+    });
+  } catch(e){ console.warn('master save error', e); }
+  closeMasterEdit();
+  filterMaster();
 }
 
 /* ── AUTOCOMPLETE ── */
