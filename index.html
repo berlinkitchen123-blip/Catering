@@ -2155,7 +2155,8 @@ function evPrintGYGFormat(ev, packedOn) {
     );
   }).map(function(page){ return Array(labelQty).fill(page).join(''); }).join('');
 
-  evOpenLabelPrint(cover+menu+rating+dishPages, esc(company)+' — GYG Print', 'A4');
+  var allPages = Array(labelQty).fill(cover+menu+rating).join('') + dishPages;
+  evOpenLabelPrint(allPages, esc(company)+' — GYG Print', 'A4');
 }
 
 function evOpenLabelPrint(html, title, pageSize) {
