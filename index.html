@@ -193,7 +193,7 @@ body {
   top: 0;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  padding: 14px 20px;
+  padding: 12px 16px;
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -201,24 +201,26 @@ body {
 }
 .day-chip {
   flex-shrink: 0;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 18px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--sub);
   cursor: pointer;
   transition: .15s;
+  text-align: center;
+  min-width: 62px;
 }
-.day-chip:hover { border-color: var(--border2); color: var(--text); }
-.day-chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
-.day-chip .dc-date { font-size: 11px; font-weight: 600; opacity: .7; margin-top: 1px; }
+.day-chip:hover { border-color: var(--border2); color: var(--text); background: var(--s2); }
+.day-chip.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 4px 16px rgba(240,192,64,.3); }
+.day-chip .dc-date { font-size: 12px; font-weight: 600; opacity: .75; margin-top: 2px; }
 
 .event-grid {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 .event-card {
   background: var(--s2);
@@ -229,44 +231,56 @@ body {
   overflow: hidden;
   position: relative;
 }
-.event-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
+.event-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,0,0,.5); }
 .event-card:active { transform: translateY(0); }
-.event-card-accent { height: 4px; }
-.event-card-body { padding: 18px 20px; }
-.ec-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.ec-client { font-size: 22px; font-weight: 800; line-height: 1.1; }
-.ec-arrow { color: var(--sub); font-size: 22px; margin-top: 4px; flex-shrink: 0; }
-.ec-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.event-card-accent { height: 6px; }
+.event-card-body { padding: 16px 18px; }
+.ec-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.ec-client { font-size: 26px; font-weight: 900; line-height: 1.1; letter-spacing: -.5px; }
+.ec-arrow { color: var(--sub); font-size: 24px; margin-top: 4px; flex-shrink: 0; }
+.ec-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .pill {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 20px;
-  font-size: 11px; font-weight: 700;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
 }
-.pill-blue { background: #162540; color: var(--blue); }
-.pill-purple { background: #201535; color: var(--purple); }
-.pill-green { background: #0f2a18; color: var(--green); }
-.pill-orange { background: #2a1a0a; color: var(--orange); }
-.pill-red { background: #2a1010; color: var(--red); }
-.pill-dim { background: var(--s3); color: var(--sub); }
-.ec-info { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12px; color: var(--sub); border-top: 1px solid var(--border); padding-top: 12px; }
-.ec-info-item { display: flex; align-items: center; gap: 5px; }
+.pill-blue { background: #162540; color: var(--blue); border: 1px solid #1e3560; }
+.pill-purple { background: #201535; color: var(--purple); border: 1px solid #301f4a; }
+.pill-green { background: #0f2a18; color: var(--green); border: 1px solid #1a4028; }
+.pill-orange { background: #2a1a0a; color: var(--orange); border: 1px solid #3a2510; }
+.pill-red { background: #2a1010; color: var(--red); border: 1px solid #4a2020; }
+.pill-dim { background: var(--s3); color: var(--sub); border: 1px solid var(--border); }
+.ec-info { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--sub); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+.ec-info-item { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+.ec-menu-preview { margin-top: 10px; padding: 10px 12px; background: rgba(255,255,255,.03); border-radius: 8px; border: 1px solid var(--border); }
+.ec-menu-row { font-size: 12px; color: var(--sub); padding: 3px 0; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid rgba(255,255,255,.04); }
+.ec-menu-row:last-child { border-bottom: none; }
+.ec-menu-row-name { flex: 1; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ec-menu-row-qty { font-size: 13px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+.ec-more-dishes { font-size: 11px; color: var(--dim); padding-top: 4px; font-weight: 600; }
 .ec-progress { margin-top: 12px; }
-.ec-progress-label { font-size: 11px; color: var(--dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
-.ec-progress-bar { height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; }
-.ec-progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: .4s; }
+.ec-progress-label { font-size: 12px; color: var(--sub); margin-bottom: 5px; display: flex; justify-content: space-between; font-weight: 700; }
+.ec-progress-bar { height: 6px; background: var(--s3); border-radius: 3px; overflow: hidden; }
+.ec-progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: .4s; }
 
 /* ── EVENT DETAIL SCREEN ── */
 .event-detail-hero {
-  padding: 12px 16px 10px;
+  padding: 16px 18px 12px;
   background: var(--s1);
   border-bottom: 1px solid var(--border);
 }
-.edh-client { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
-.edh-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-.edh-info { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.edh-info-card { display: flex; align-items: center; gap: 5px; padding: 2px 0; }
-.edh-info-label { font-size: 11px; font-weight: 600; color: var(--dim); }
-.edh-info-value { font-size: 12px; font-weight: 600; color: var(--sub); }
+.edh-client { font-size: 24px; font-weight: 900; margin-bottom: 8px; letter-spacing: -.4px; }
+.edh-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.edh-info { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.edh-info-card {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.edh-info-label { font-size: 10px; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: .04em; }
+.edh-info-value { font-size: 13px; font-weight: 700; color: var(--text); }
 
 /* Sub-tabs */
 .sub-tabs {
@@ -409,16 +423,16 @@ body {
 .do { background: #2c2010; color: #fbbf24; border: 1px solid #4a3a10; }
 
 /* ── SCHED CARDS ── */
-.sched-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.sched-card { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r2); padding: 14px; }
-.sched-val { font-size: 20px; font-weight: 800; color: var(--accent); }
-.sched-key { font-size: 11px; color: var(--sub); margin-top: 3px; font-weight: 600; }
+.sched-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.sched-card { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; border-left: 3px solid var(--accent); }
+.sched-val { font-size: 22px; font-weight: 900; color: var(--accent); line-height: 1.2; }
+.sched-key { font-size: 12px; color: var(--sub); margin-top: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 
 /* ── BOM / ORDERS ── */
-.bom-section { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; overflow: hidden; }
-.bom-section-header { padding: 14px 18px; background: var(--s3); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.bom-section-title { font-size: 15px; font-weight: 800; flex: 1; }
-.bom-section-body { padding: 0 18px 14px; }
+.bom-section { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+.bom-section-header { padding: 16px 18px; background: var(--s3); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--border2); }
+.bom-section-title { font-size: 16px; font-weight: 900; flex: 1; letter-spacing: -.2px; }
+.bom-section-body { padding: 4px 18px 16px; }
 
 /* ── SECTION LABEL ── */
 .sec-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--sub); margin: 16px 0 8px; }
@@ -441,8 +455,8 @@ body {
 
 /* ── EMPTY ── */
 .empty { text-align: center; padding: 60px 20px; color: var(--dim); }
-.empty-icon { font-size: 48px; margin-bottom: 12px; }
-.empty-text { font-size: 14px; }
+.empty-icon { font-size: 56px; margin-bottom: 14px; }
+.empty-text { font-size: 16px; font-weight: 600; }
 
 /* ── PAGE TITLES ── */
 .page-hero { padding: 20px 20px 0; }
@@ -1269,27 +1283,53 @@ function renderHomeCard(ev){
   const ck=checkedCount(ev);
   const pct=ck.total>0?Math.round(ck.done/ck.total*100):0;
   const evIdx=EVENTS.indexOf(ev);
+  const menu=ev.menu||[];
+  const dishCount=menu.length;
   let h='<div class="event-card" data-evidx="'+evIdx+'" onclick="openEvent(+this.dataset.evidx)">';
-  h+='<div class="event-card-accent" style="background:'+accent+'"></div>';
+  h+='<div class="event-card-accent" style="background:linear-gradient(90deg,'+accent+','+accent+'88)"></div>';
   h+='<div class="event-card-body">';
-  h+='<div class="ec-top"><div class="ec-client">'+esc(ev.client)+'</div><div class="ec-arrow">&#8250;</div></div>';
+  // Top row: client name + arrow
+  h+='<div class="ec-top">';
+  h+='<div><div class="ec-client">'+esc(ev.client)+'</div>';
+  if(ev.date) h+='<div style="font-size:12px;color:var(--sub);font-weight:700;margin-top:2px">&#128197; '+esc(ev.date)+'</div>';
+  h+='</div>';
+  h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
+  h+='<div class="ec-arrow">&#8250;</div>';
+  if(dishCount>0) h+='<div style="font-size:11px;font-weight:800;color:var(--accent);background:rgba(240,192,64,.12);border:1px solid rgba(240,192,64,.25);border-radius:6px;padding:2px 8px">'+dishCount+' dishes</div>';
+  h+='</div></div>';
+  // Pills row
   h+='<div class="ec-pills">';
-  h+='<span class="pill pill-blue">&#128101; '+esc(ev.guests)+'</span>';
+  h+='<span class="pill pill-blue">&#128101; '+esc(ev.guests)+' guests</span>';
   h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span>';
   if(ev.schedule&&ev.schedule['Delivery']) h+='<span class="pill pill-green">&#128666; '+esc(ev.schedule['Delivery'])+'</span>';
-  if(ev.schedule&&ev.schedule['Food ready by']) h+='<span class="pill pill-orange">&#9200; '+esc(ev.schedule['Food ready by'])+'</span>';
+  if(ev.schedule&&ev.schedule['Food ready by']) h+='<span class="pill pill-orange">&#9200; Ready '+esc(ev.schedule['Food ready by'])+'</span>';
   h+='</div>';
-  // Info row
-  if(ev.location&&ev.location!=='—'){
-    h+='<div class="ec-info"><div class="ec-info-item">&#128205; '+esc(ev.location)+'</div>';
-    if(ev.contact&&ev.contact!=='—') h+='<div class="ec-info-item">&#128100; '+esc(ev.contact)+'</div>';
+  // Menu preview — first 3 dishes
+  if(dishCount>0){
+    h+='<div class="ec-menu-preview">';
+    const preview=menu.slice(0,3);
+    preview.forEach(function(m){
+      const dietC=dietClass(m.diet||'');
+      h+='<div class="ec-menu-row">';
+      h+='<span class="diet '+dietC+'" style="font-size:10px;padding:2px 6px;flex-shrink:0">'+esc(m.diet||'—')+'</span>';
+      h+='<span class="ec-menu-row-name">'+esc(m.name)+'</span>';
+      h+='<span class="ec-menu-row-qty">'+esc(m.portions||'—')+'</span>';
+      h+='</div>';
+    });
+    if(dishCount>3) h+='<div class="ec-more-dishes">+ '+(dishCount-3)+' more dishes</div>';
     h+='</div>';
   }
+  // Info row
+  h+='<div class="ec-info">';
+  if(ev.location&&ev.location!=='—') h+='<div class="ec-info-item">&#128205; '+esc(ev.location)+'</div>';
+  if(ev.contact&&ev.contact!=='—') h+='<div class="ec-info-item">&#128100; '+esc(ev.contact)+'</div>';
+  if(ev.schedule&&ev.schedule['Event start']) h+='<div class="ec-info-item">&#9200; '+esc(ev.schedule['Event start'])+'</div>';
+  h+='</div>';
   // Progress bar
   if(ck.total>0){
     h+='<div class="ec-progress">';
-    h+='<div class="ec-progress-label"><span style="color:var(--sub)">Equipment</span><span style="color:'+(pct===100?'var(--green)':'var(--sub)')+'">'+ck.done+'/'+ck.total+'</span></div>';
-    h+='<div class="ec-progress-bar"><div class="ec-progress-fill" style="width:'+pct+'%"></div></div>';
+    h+='<div class="ec-progress-label"><span>&#128230; Equipment checklist</span><span style="color:'+(pct===100?'var(--green)':'var(--accent)')+'">'+ck.done+'/'+ck.total+' &nbsp;'+pct+'%</span></div>';
+    h+='<div class="ec-progress-bar"><div class="ec-progress-fill" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':accent)+'"></div></div>';
     h+='</div>';
   }
   h+='</div></div>';
@@ -1368,12 +1408,18 @@ function openEvent(idx){
     const p=parseOMSOffset(item.portions);
     const dishKey=item.name;
     const dishOMS=omsValues[eid][dishKey]||0;
-    panels+='<div class="menu-item">';
+    var dc2=dietClass(item.diet||'');
+    var dietBorderMap2={dm:'#ff6b6b',dvg:'#4ade80',dv:'#86efac',df:'#60a5fa',do:'#fbbf24'};
+    var menuBorder=item.diet?( dietBorderMap2[dc2]||'var(--border)' ):'var(--border)';
+    panels+='<div class="menu-item" style="border-left:4px solid '+menuBorder+'">';
     panels+='<div class="menu-item-left">';
-    panels+='<div class="menu-item-name">'+esc(item.name)+'</div>';
+    panels+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
+    panels+='<div class="menu-item-name" style="font-size:15px">'+esc(item.name)+'</div>';
+    if(!p||p.type!=='oms') panels+='<span style="font-size:18px;font-weight:900;color:var(--accent)">'+(item.portions||'—')+'</span>';
+    panels+='</div>';
     panels+='<div class="menu-item-badges">';
-    if(item.diet&&item.diet!=='—') panels+='<span class="diet '+dietClass(item.diet)+'">'+esc(item.diet)+'</span>';
-    if(item.packaging) panels+='<span class="menu-pkg-badge">'+esc(item.packaging)+'</span>';
+    if(item.diet&&item.diet!=='—') panels+='<span class="diet '+dc2+'" style="font-size:12px">'+esc(item.diet)+'</span>';
+    if(item.packaging) panels+='<span class="menu-pkg-badge" style="font-size:12px">'+esc(item.packaging)+'</span>';
     panels+='</div>';
     if(p&&p.type==='oms'){
       panels+='<div class="oms-dish-row">';
@@ -1385,15 +1431,21 @@ function openEvent(idx){
       panels+='</div>';
     }
     panels+='</div>';
-    panels+='<div class="menu-item-right">';
-    if(!p||p.type!=='oms') panels+=formatPortionsDisplay(item.portions, 0);
-    panels+='</div>';
     panels+='</div>';
   });
   panels+='</div></div>';
   // Recipes
   if(hasRecipes){
-    panels+='<div class="sub-panel" id="sp-recipes"><div class="recipe-list">';
+    var rkeys=Object.keys(ev.recipes);
+    var dietCounts={};
+    rkeys.forEach(function(rn){ var d=ev.recipes[rn].diet||'Other'; dietCounts[d]=(dietCounts[d]||0)+1; });
+    panels+='<div class="sub-panel" id="sp-recipes">';
+    // Summary banner
+    panels+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:var(--s3);border-bottom:1px solid var(--border);margin-bottom:8px">';
+    panels+='<span style="font-size:13px;font-weight:900;color:var(--text)">'+rkeys.length+' recipes</span>';
+    Object.keys(dietCounts).forEach(function(d){ panels+='<span class="diet '+dietClass(d)+'" style="font-size:11px">'+esc(d)+' ×'+dietCounts[d]+'</span>'; });
+    panels+='</div>';
+    panels+='<div class="recipe-list">';
     Object.keys(ev.recipes).forEach(function(rname){
       const rd=ev.recipes[rname];
       const rid=safeId(eid+'-'+rname);
@@ -1476,7 +1528,7 @@ function openEvent(idx){
       }
       panels+='</div></div>';
     });
-    panels+='</div></div>';
+    panels+='</div></div></div>';
   }
   // Schedule
   if(hasSched){
@@ -2018,17 +2070,24 @@ function renderMasterList(q, diet){
   const masterIndices = items.slice(0,200).map(function(x){ return MASTER.indexOf(x); });
   list.innerHTML = items.slice(0,200).map(function(x, i){
     const idx = MASTER.indexOf(x);
-    return '<div class="master-item" style="display:flex;align-items:center;gap:8px">' +
-      '<div style="flex:1">' +
-      '<div class="master-item-name">'+esc(x.name)+'</div>' +
-      '<div class="master-item-right">' +
-        (x.diet ? '<span class="diet '+dietClass(x.diet)+'">'+esc(x.diet)+'</span>' : '') +
-        (x.allergens ? '<div class="master-allergen">&#9888; '+esc(x.allergens)+'</div>' : '') +
-      '</div></div>' +
+    const ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
+    const dc = dietClass(x.diet||'');
+    return '<div class="master-item">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
+          '<div class="master-item-name">'+esc(x.name)+'</div>' +
+          (x.diet ? '<span class="diet '+dc+'" style="font-size:11px">'+esc(x.diet)+'</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          (x.allergens ? '<span style="font-size:11px;color:var(--orange);font-weight:700">&#9888; '+esc(x.allergens)+'</span>' : '') +
+          (x.category ? '<span style="font-size:11px;color:var(--sub);font-weight:600;background:var(--s3);border-radius:5px;padding:1px 7px">'+esc(x.category)+'</span>' : '') +
+          (ingCount!==null ? '<span style="font-size:11px;color:var(--blue);font-weight:700">'+ingCount+' ingredients</span>' : '') +
+        '</div>' +
+      '</div>' +
       (creatorUnlocked ?
         '<div style="display:flex;gap:6px;flex-shrink:0">' +
-        '<button onclick="openMasterEdit('+idx+')" style="padding:8px 12px;border:1.5px solid var(--border2);border-radius:8px;background:var(--s2);font-size:14px;cursor:pointer;color:var(--sub)">&#9998;</button>' +
-        '<button onclick="deleteMasterDish('+idx+')" style="padding:8px 12px;border:1.5px solid #4a2020;border-radius:8px;background:#2a1010;font-size:14px;cursor:pointer;color:var(--red)">&#128465;</button>' +
+        '<button onclick="openMasterEdit('+idx+')" style="padding:9px 13px;border:1.5px solid var(--border2);border-radius:8px;background:var(--s2);font-size:16px;cursor:pointer;color:var(--sub)">&#9998;</button>' +
+        '<button onclick="deleteMasterDish('+idx+')" style="padding:9px 13px;border:1.5px solid #4a2020;border-radius:8px;background:#2a1010;font-size:16px;cursor:pointer;color:var(--red)">&#128465;</button>' +
         '</div>'
         : '') +
       '</div>';
