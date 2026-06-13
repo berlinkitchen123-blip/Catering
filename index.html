@@ -759,6 +759,46 @@ body {
   body > *:not(#lbl-print-window) { display: none !important; }
 }
 
+
+/* ── MENU QTY CALC ROW ── */
+.menu-qty-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 6px; padding: 7px 10px;
+  background: rgba(240,192,64,.06);
+  border: 1px solid rgba(240,192,64,.18);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.mqr-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); flex-shrink: 0; }
+.mqr-input {
+  width: 64px;
+  background: var(--s3);
+  border: 1.5px solid rgba(240,192,64,.35);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px; font-weight: 700;
+  text-align: center;
+  padding: 5px 6px;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.mqr-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,192,64,.2); }
+.mqr-input.auto-filled { color: var(--accent); background: rgba(240,192,64,.08); }
+.mqr-op { font-size: 13px; font-weight: 700; color: var(--sub); flex-shrink: 0; }
+.mqr-unit {
+  background: var(--s3);
+  border: 1.5px solid rgba(240,192,64,.35);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 12px; font-weight: 800;
+  padding: 5px 6px;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mqr-unit:focus { outline: none; border-color: var(--accent); }
+.mqr-total { font-size: 17px; font-weight: 900; color: var(--accent); min-width: 44px; text-align: center; flex-shrink: 0; }
+.mqr-total-unit { font-size: 11px; color: var(--sub); font-weight: 700; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -1787,7 +1827,7 @@ function openEditEvent(idx){
 
 function openNewEventForm(){
   editingIdx = -1;
-  editingMenuRows = [{name:'',portions:'',diet:'',packaging:''}];
+  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:''}];
   editingIngredients = {};
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
@@ -1842,19 +1882,72 @@ function renderEditForm(ev){
 }
 
 function renderMenuRow(m, i){
-  return '<div class="menu-edit-row" id="ef-mrow-' + i + '">' +
+  var units = ['KG','G','L','ML','PCS','PKT','TIN','BTL'];
+  var uOpts = units.map(function(u){ return '<option value="'+u+'"'+(((m.ptn_unit||'KG')===u)?' selected':'')+'>'+u+'</option>'; }).join('');
+  var ppl = m.ppl||''; var ptnSize = m.ptn_size||''; var totQty = m.tot_qty||'';
+  var autoClass = ' class="mqr-input'+(totQty&&(!ppl||!ptnSize)?' auto-filled':'')+'"';
+  return '<div class="menu-edit-row" id="ef-mrow-' + i + '" style="flex-direction:column;align-items:stretch">' +
+    '<div style="display:flex;gap:6px;align-items:center">' +
     '<div class="ac-wrap" style="flex:2">' +
     '<input class="form-input" placeholder="Dish name" value="' + esc(m.name||'') + '" data-idx="'+i+'" oninput="editingMenuRows['+i+'].name=this.value" onmousedown="this._ac=true">' +
     '</div>' +
-    '<input class="form-input" style="max-width:55px" placeholder="Qty" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
+    '<input class="form-input" style="max-width:55px" placeholder="Pax" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
     '<input class="form-input" style="max-width:65px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
     '<input class="form-input" style="max-width:90px" placeholder="Packaging" value="' + esc(m.packaging||'') + '" oninput="editingMenuRows[' + i + '].packaging=this.value">' +
     '<button class="btn-remove" onclick="removeMenuRow(' + i + ')">✕</button>' +
+    '</div>' +
+    '<div class="menu-qty-row">' +
+    '<span class="mqr-label">People</span>' +
+    '<input class="mqr-input" type="number" min="0" step="1" placeholder="—" value="'+esc(ppl)+'" id="mqr-ppl-'+i+'" oninput="editingMenuRows['+i+'].ppl=this.value;calcMenuQty('+i+',\'ppl\')">' +
+    '<span class="mqr-op">×</span>' +
+    '<span class="mqr-label">Per person</span>' +
+    '<input class="mqr-input" type="number" min="0" step="0.001" placeholder="—" value="'+esc(ptnSize)+'" id="mqr-ptn-'+i+'" oninput="editingMenuRows['+i+'].ptn_size=this.value;calcMenuQty('+i+',\'ptn\')">' +
+    '<select class="mqr-unit" id="mqr-unit-'+i+'" onchange="editingMenuRows['+i+'].ptn_unit=this.value;calcMenuQty('+i+',\'unit\')">'+uOpts+'</select>' +
+    '<span class="mqr-op">=</span>' +
+    '<span class="mqr-label">Total</span>' +
+    '<input class="mqr-input" type="number" min="0" step="0.001" placeholder="—" value="'+esc(totQty)+'" id="mqr-tot-'+i+'" oninput="editingMenuRows['+i+'].tot_qty=this.value;calcMenuQty('+i+',\'tot\')">' +
+    '<span class="mqr-total-unit">'+(m.ptn_unit||'KG')+'</span>' +
+    '</div>' +
     '</div>';
 }
 
+function calcMenuQty(i, changed){
+  var m = editingMenuRows[i];
+  var ppl = parseFloat(m.ppl);
+  var ptn = parseFloat(m.ptn_size);
+  var tot = parseFloat(m.tot_qty);
+  var pplEl = document.getElementById('mqr-ppl-'+i);
+  var ptnEl = document.getElementById('mqr-ptn-'+i);
+  var totEl = document.getElementById('mqr-tot-'+i);
+  var unitEl = document.getElementById('mqr-unit-'+i);
+  // Update unit label next to total
+  if(unitEl && totEl) {
+    var unitLabel = totEl.nextElementSibling;
+    if(unitLabel) unitLabel.textContent = m.ptn_unit||'KG';
+  }
+  if(changed !== 'tot' && !isNaN(ppl) && !isNaN(ptn)){
+    // Calculate total
+    var result = Math.round(ppl * ptn * 1000) / 1000;
+    m.tot_qty = String(result);
+    if(totEl){ totEl.value = result; totEl.classList.add('auto-filled'); }
+  } else if(changed !== 'ppl' && !isNaN(ptn) && !isNaN(tot) && ptn > 0){
+    // Calculate people
+    var result = Math.round(tot / ptn);
+    m.ppl = String(result);
+    if(pplEl){ pplEl.value = result; pplEl.classList.add('auto-filled'); }
+  } else if(changed !== 'ptn' && !isNaN(ppl) && !isNaN(tot) && ppl > 0){
+    // Calculate portion size
+    var result = Math.round((tot / ppl) * 1000) / 1000;
+    m.ptn_size = String(result);
+    if(ptnEl){ ptnEl.value = result; ptnEl.classList.add('auto-filled'); }
+  }
+  // Remove auto-filled highlight from the field the user is currently typing
+  var editedEl = document.getElementById('mqr-'+changed+'-'+i);
+  if(editedEl) editedEl.classList.remove('auto-filled');
+}
+
 function addMenuRow(){
-  editingMenuRows.push({name:'',portions:'',diet:'',packaging:''});
+  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:''});
   const container = document.getElementById('ef-menu-rows');
   const i = editingMenuRows.length - 1;
   const div = document.createElement('div');
