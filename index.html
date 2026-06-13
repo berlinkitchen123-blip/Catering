@@ -2117,6 +2117,11 @@ function evPrintGYGFormat(ev, packedOn) {
     {bg:'#483D8B',tx:'#E6E6FA'},{bg:'#BC8F8F',tx:'#2F4F4F'},{bg:'#DDA0DD',tx:'#4B0082'}
   ];
 
+  /* Ask for copies per dish label */
+  var qtyInput = prompt('How many copies per dish label?', '1');
+  if(qtyInput === null) return; /* cancelled */
+  var labelQty = Math.max(1, Math.min(20, parseInt(qtyInput)||1));
+
   var dishPages = enriched.map(function(e, idx){
     var col = palette[idx % palette.length];
     /* Build category label: prefer master category, else derive from diet */
@@ -2148,7 +2153,7 @@ function evPrintGYGFormat(ev, packedOn) {
         '<div style="position:absolute;bottom:43px;right:43px;font-size:36px;font-weight:900;letter-spacing:-0.03em;color:'+col.tx+';opacity:0.85">BELLABONA</div>'+
       '</div>'
     );
-  }).join('');
+  }).map(function(page){ return Array(labelQty).fill(page).join(''); }).join('');
 
   evOpenLabelPrint(cover+menu+rating+dishPages, esc(company)+' — GYG Print', 'A4');
 }
