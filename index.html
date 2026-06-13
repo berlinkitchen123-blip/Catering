@@ -2073,21 +2073,21 @@ function evShowGYGQtyModal(ev, packedOn) {
         '<div style="padding:14px 16px;border-top:1px solid #eee;display:flex;gap:10px;flex-shrink:0">'+
           '<button onclick="document.getElementById(\'gyg-qty-overlay\').remove()" '+
           'style="flex:1;padding:12px;border:1.5px solid #ccc;background:#fff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:#555">Cancel</button>'+
-          '<button onclick="evDoGYGPrint('+JSON.stringify(rows)+')" '+
+          '<button onclick="evDoGYGPrint()" '+
           'style="flex:2;padding:12px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;letter-spacing:0.04em">&#128438; PRINT</button>'+
         '</div>'+
       '</div>'+
     '</div>';
 
   /* Attach closure data to window for the print handler */
-  window._gygPrintData = {ev:ev, enriched:enriched, company:company, dateStr:dateStr, service:service, packedOn:packedOn};
+  window._gygPrintData = {ev:ev, enriched:enriched, company:company, dateStr:dateStr, service:service, packedOn:packedOn, rows:rows};
   document.body.insertAdjacentHTML('beforeend', modal);
 }
 
-function evDoGYGPrint(rows) {
+function evDoGYGPrint() {
   var d = window._gygPrintData;
   if(!d) return;
-  var ev=d.ev, enriched=d.enriched, company=d.company, dateStr=d.dateStr, service=d.service, packedOn=d.packedOn;
+  var rows=d.rows, ev=d.ev, enriched=d.enriched, company=d.company, dateStr=d.dateStr, service=d.service, packedOn=d.packedOn;
 
   function getQty(id){
     var el = document.getElementById('gygqty_'+id);
