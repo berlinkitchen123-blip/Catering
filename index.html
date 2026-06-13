@@ -178,6 +178,7 @@ body {
   overflow-x: hidden;
   display: none;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: max(96px, calc(env(safe-area-inset-bottom, 0px) + 88px));
 }
 .screen.active { display: block; }
 
@@ -217,7 +218,7 @@ body {
 .day-chip .dc-date { font-size: 12px; font-weight: 600; opacity: .75; margin-top: 2px; }
 
 .event-grid {
-  padding: 16px;
+  padding: 16px 16px 0 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -810,13 +811,13 @@ body {
         <button class="diet-filter-btn" data-diet="Fish" onclick="setDietFilter(this)">&#127920; Fish</button>
       </div>
     </div>
-    <div id="master-list" style="padding:10px 14px 80px"></div>
+    <div id="master-list" style="padding:10px 14px 100px"></div>
   </div>
   <!-- EVENT DETAIL -->
   <div class="screen" id="screen-event">
     <div id="event-hero"></div>
     <div class="sub-tabs" id="sub-tabs"></div>
-    <div id="sub-panels"></div>
+    <div id="sub-panels" style="padding-bottom:100px"></div>
   </div>
   <!-- BOM -->
   <div class="screen" id="screen-bom">
@@ -824,7 +825,7 @@ body {
       <div class="page-title">&#128230; Bill of Materials</div>
       <div class="page-sub" id="bom-sub"></div>
     </div>
-    <div style="padding:0 20px 20px" id="bom-body"></div>
+    <div style="padding:0 20px 100px" id="bom-body"></div>
   </div>
   <!-- CREATOR EDITOR -->
   <div class="screen" id="screen-creator-editor">
@@ -835,7 +836,7 @@ body {
       </div>
       <button class="btn-primary" onclick="openNewEventForm()">+ New Event</button>
     </div>
-    <div style="padding:0 14px 20px" id="creator-list"></div>
+    <div style="padding:0 14px 100px" id="creator-list"></div>
   </div>
   <!-- ORDERS (Creator) -->
   <div class="screen" id="screen-orders">
@@ -843,7 +844,7 @@ body {
       <div class="page-title">&#128203; Client Orders</div>
       <div class="page-sub" id="orders-sub"></div>
     </div>
-    <div style="padding:0 20px 20px" id="orders-body"></div>
+    <div style="padding:0 20px 100px" id="orders-body"></div>
   </div>
   <!-- INGREDIENTS (Creator) -->
   <div class="screen" id="screen-ingredients">
@@ -851,7 +852,7 @@ body {
       <div class="page-title">&#129378; Order Quantities</div>
       <div class="page-sub" id="ingredients-sub"></div>
     </div>
-    <div style="padding:0 20px 20px" id="ingredients-body"></div>
+    <div style="padding:0 20px 100px" id="ingredients-body"></div>
   </div>
   <!-- LABELS SCREEN -->
   <div class="screen" id="screen-labels">
