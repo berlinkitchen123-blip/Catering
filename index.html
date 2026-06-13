@@ -1184,6 +1184,7 @@ function checkPw(){
     creatorUnlocked=true; closePw();
     buildOrdersScreen(); buildIngredientsScreen(); buildCreatorEditor();
     loadMasterOverrides();
+    loadRecipeIngredients();
     buildBottomNav(); showScreen('creator-editor');
   } else {
     const inp=document.getElementById('pw-input');
@@ -1533,7 +1534,7 @@ function buildOrdersScreen(){
   document.getElementById('orders-sub').textContent = WEEK;
   let h='';
   EVENTS.forEach(function(ev, i){
-    h+='<div class="bom-section"><div class="bom-section-header" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+    h+='<div class="bom-section"><div class="bom-section-header">';
     h+='<div class="bom-section-title" style="flex:1;min-width:0">'+esc(ev.client)+'</div>';
     h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
     h+='<span class="pill pill-blue">&#128101; '+esc(ev.guests)+'</span>';
@@ -1589,6 +1590,18 @@ function buildIngredientsScreen(){
 
 
 /* ── FIREBASE CUSTOM EVENTS ── */
+function loadRecipeIngredients(){
+  try {
+    db.collection('recipe_ingredients').get().then(function(snap){
+      window._recipeDb = {};
+      snap.forEach(function(doc){
+        window._recipeDb[doc.id] = (doc.data().ingredients || []);
+      });
+      console.log('Loaded recipe db:', Object.keys(window._recipeDb).length, 'dishes');
+    });
+  } catch(e){ console.warn('recipe_ingredients load error', e); }
+}
+
 function loadMasterOverrides(){
   try {
     db.collection('master_overrides').get().then(function(snap){
@@ -1645,11 +1658,21 @@ function buildCreatorEditor(){
 
 let editingIdx = -1;
 let editingMenuRows = [];
+let editingIngredients = {}; // dishName -> [{product,qty,unit}]
+window._recipeDb = null;
 
 function openEditEvent(idx){
   editingIdx = idx;
   const ev = EVENTS[idx];
   editingMenuRows = (ev.menu||[]).map(function(m){ return Object.assign({},m); });
+  // Build editingIngredients from existing order_qtys
+  editingIngredients = {};
+  if(ev.order_qtys && ev.order_qtys.length){
+    ev.order_qtys.forEach(function(item){
+      if(!editingIngredients[item.recipe]) editingIngredients[item.recipe] = [];
+      editingIngredients[item.recipe].push({product: item.product, qty: item.qty||'', unit: item.unit||''});
+    });
+  }
   document.getElementById('edit-modal-title').textContent = 'Edit: ' + ev.client;
   renderEditForm(ev);
   document.getElementById('edit-modal').classList.add('show');
@@ -1658,6 +1681,7 @@ function openEditEvent(idx){
 function openNewEventForm(){
   editingIdx = -1;
   editingMenuRows = [{name:'',portions:'',diet:'',packaging:''}];
+  editingIngredients = {};
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
   document.getElementById('edit-modal').classList.add('show');
@@ -1696,20 +1720,28 @@ function renderEditForm(ev){
   editingMenuRows.forEach(function(m, i){ h += renderMenuRow(m, i); });
   h += '</div>';
   h += '<button class="btn-add-row" onclick="addMenuRow()">+ Add menu item</button>';
+  h += '<div class="form-section-title" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between">';
+  h += '<span>Ingredient Quantities</span>';
+  h += '<button onclick="refreshIngredientSection()" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);cursor:pointer;color:var(--sub)">⟳ Refresh</button>';
+  h += '</div>';
+  h += '<div style="font-size:11px;color:var(--sub);margin-bottom:8px">Per-dish ingredients for Order Quantities screen</div>';
+  h += '<div id="ef-ingredients-section"></div>';
   document.getElementById('edit-form-body').innerHTML = h;
   // Init autocomplete on all dish name inputs
   document.querySelectorAll('#ef-menu-rows .ac-wrap input').forEach(function(inp){
     initAutocomplete(inp);
   });
+  refreshIngredientSection();
 }
 
 function renderMenuRow(m, i){
   return '<div class="menu-edit-row" id="ef-mrow-' + i + '">' +
-    '<div class="ac-wrap" style="flex:1">' +
+    '<div class="ac-wrap" style="flex:2">' +
     '<input class="form-input" placeholder="Dish name" value="' + esc(m.name||'') + '" data-idx="'+i+'" oninput="editingMenuRows['+i+'].name=this.value" onmousedown="this._ac=true">' +
     '</div>' +
-    '<input class="form-input" style="max-width:60px" placeholder="Qty" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
-    '<input class="form-input" style="max-width:70px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
+    '<input class="form-input" style="max-width:55px" placeholder="Qty" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
+    '<input class="form-input" style="max-width:65px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
+    '<input class="form-input" style="max-width:90px" placeholder="Packaging" value="' + esc(m.packaging||'') + '" oninput="editingMenuRows[' + i + '].packaging=this.value">' +
     '<button class="btn-remove" onclick="removeMenuRow(' + i + ')">✕</button>' +
     '</div>';
 }
@@ -1736,6 +1768,57 @@ function removeMenuRow(i){
   });
 }
 
+/* ── INGREDIENT EDITING ── */
+function refreshIngredientSection(){
+  var sec = document.getElementById('ef-ingredients-section');
+  if(!sec) return;
+  var h = '';
+  editingMenuRows.forEach(function(m, i){
+    if(!m.name) return;
+    // Auto-populate from _recipeDb if no ingredients yet
+    if(!editingIngredients[m.name] && window._recipeDb && window._recipeDb[m.name]){
+      editingIngredients[m.name] = window._recipeDb[m.name].map(function(r){ return Object.assign({},r); });
+    }
+    var rows = editingIngredients[m.name] || [];
+    h += '<div style="margin-bottom:10px;background:var(--s2);border-radius:10px;padding:10px">';
+    h += '<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">'+esc(m.name)+'</div>';
+    h += '<div id="ei-rows-'+i+'">';
+    rows.forEach(function(r, j){
+      h += '<div class="menu-edit-row" style="margin-bottom:4px">' +
+        '<input class="form-input" style="flex:2" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="updateIngredient('+i+','+j+','product',this.value)">' +
+        '<input class="form-input" style="max-width:55px" placeholder="Qty" value="'+esc(r.qty||'')+'" oninput="updateIngredient('+i+','+j+','qty',this.value)">' +
+        '<input class="form-input" style="max-width:65px" placeholder="Unit" value="'+esc(r.unit||'')+'" oninput="updateIngredient('+i+','+j+','unit',this.value)">' +
+        '<button class="btn-remove" onclick="removeIngredientRow('+i+','+j+')">✕</button>' +
+        '</div>';
+    });
+    h += '</div>';
+    h += '<button class="btn-add-row" style="padding:4px 10px;font-size:11px;margin-top:4px" onclick="addIngredientRow('+i+')">+ ingredient</button>';
+    h += '</div>';
+  });
+  if(!h) h = '<div style="color:var(--sub);font-size:12px;padding:6px 0">Add menu items above, then click ⟳ Refresh</div>';
+  sec.innerHTML = h;
+}
+function updateIngredient(dishIdx, rowIdx, field, val){
+  var name = editingMenuRows[dishIdx] && editingMenuRows[dishIdx].name;
+  if(!name) return;
+  if(!editingIngredients[name]) editingIngredients[name] = [];
+  if(!editingIngredients[name][rowIdx]) editingIngredients[name][rowIdx] = {product:'',qty:'',unit:''};
+  editingIngredients[name][rowIdx][field] = val;
+}
+function addIngredientRow(dishIdx){
+  var name = editingMenuRows[dishIdx] && editingMenuRows[dishIdx].name;
+  if(!name) return;
+  if(!editingIngredients[name]) editingIngredients[name] = [];
+  editingIngredients[name].push({product:'',qty:'',unit:''});
+  refreshIngredientSection();
+}
+function removeIngredientRow(dishIdx, rowIdx){
+  var name = editingMenuRows[dishIdx] && editingMenuRows[dishIdx].name;
+  if(!name) return;
+  if(editingIngredients[name]) editingIngredients[name].splice(rowIdx,1);
+  refreshIngredientSection();
+}
+
 function saveEditForm(){
   const client = document.getElementById('ef-client').value.trim();
   const dateISO = document.getElementById('ef-date-picker').value;
@@ -1760,9 +1843,36 @@ function saveEditForm(){
     phone: document.getElementById('ef-phone').value.trim() || '—',
     notes: document.getElementById('ef-notes').value.trim(),
     menu: editingMenuRows.filter(function(m){ return m.name; }),
-    equipment: [], schedule: {}, recipes: {}, bom_summary: [], order_qtys: []
+    equipment: [], schedule: {}, recipes: {}, bom_summary: [],
+    order_qtys: (function(){
+      var oq = [];
+      editingMenuRows.filter(function(m){ return m.name; }).forEach(function(m){
+        var rows = editingIngredients[m.name];
+        if(rows && rows.length){
+          rows.forEach(function(r){
+            if(r.product) oq.push({recipe:m.name, product:r.product, qty:r.qty||'', unit:r.unit||''});
+          });
+        }
+      });
+      // Fall back to existing order_qtys if no edits were made
+      if(!oq.length && editingIdx >= 0 && EVENTS[editingIdx].order_qtys){
+        return EVENTS[editingIdx].order_qtys;
+      }
+      return oq;
+    })()
   };
   closeEditModal();
+  // Save recipe ingredients to Firebase for future auto-populate
+  try {
+    Object.keys(editingIngredients).forEach(function(dishName){
+      var rows = editingIngredients[dishName].filter(function(r){ return r.product; });
+      if(rows.length){
+        db.collection('recipe_ingredients').doc(dishName).set({ingredients: rows});
+        if(!window._recipeDb) window._recipeDb = {};
+        window._recipeDb[dishName] = rows;
+      }
+    });
+  } catch(e){ console.warn('recipe_ingredients save error', e); }
   // Save to Firebase
   try {
     if(editingIdx >= 0 && EVENTS[editingIdx]._custom){
@@ -1961,6 +2071,11 @@ function showAC(input, dd){
             editingMenuRows[idx].diet = m.diet||'';
             editingMenuRows[idx].allergens = m.allergens||'';
             if(inputs[2]) { inputs[2].dispatchEvent(new Event('input')); }
+            // Auto-populate ingredients from _recipeDb if not already set
+            if(window._recipeDb && window._recipeDb[m.name] && (!editingIngredients[m.name] || !editingIngredients[m.name].length)){
+              editingIngredients[m.name] = window._recipeDb[m.name].map(function(r){ return Object.assign({},r); });
+              if(document.getElementById('ef-ingredients-section')) refreshIngredientSection();
+            }
           }
         }
         dd.classList.remove('show');
