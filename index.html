@@ -1736,6 +1736,7 @@ function openEvent(idx){
     if(item.cooking_notes||item.packaging_notes){
       panels+='<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">';
       if(item.cooking_notes) panels+='<div style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:6px;padding:5px 9px;border-left:2px solid var(--orange)">&#128293; '+esc(item.cooking_notes)+'</div>';
+      if(item.pkg_type) panels+='<div style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:6px;padding:5px 9px;border-left:2px solid var(--blue)">&#128230; <strong>'+esc(item.pkg_type)+'</strong></div>';
       if(item.packaging_notes) panels+='<div style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:6px;padding:5px 9px;border-left:2px solid var(--blue)">&#128230; '+esc(item.packaging_notes)+'</div>';
       panels+='</div>';
     }
@@ -2093,7 +2094,7 @@ function openEditEvent(idx){
 
 function openNewEventForm(){
   editingIdx = -1;
-  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''}];
+  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',pkg_type:'',cooking_notes:'',packaging_notes:''}];
   editingIngredients = {};
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
@@ -2175,16 +2176,20 @@ function renderMenuRow(m, i){
     '<span class="mqr-total-unit">'+(m.ptn_unit||'KG')+'</span>' +
     '</div>' +
     // Notes toggle button
-    '<button class="menu-notes-toggle'+(( m.cooking_notes||m.packaging_notes)?' open':'')+'" id="mnt-'+i+'" onclick="toggleMenuNotes('+i+')">' +
+    '<button class="menu-notes-toggle'+((m.cooking_notes||m.packaging_notes||m.pkg_type)?' open':'')+'" id="mnt-'+i+'" onclick="toggleMenuNotes('+i+')">' +
     '&#128221; Notes' +
-    (( m.cooking_notes||m.packaging_notes) ? ' ✓' : '') +
+    ((m.cooking_notes||m.packaging_notes||m.pkg_type) ? ' ✓' : '') +
     '</button>' +
     // Notes section (cooking + packaging)
-    '<div class="menu-notes-section'+((m.cooking_notes||m.packaging_notes)?' open':'')+'" id="mns-'+i+'">' +
+    '<div class="menu-notes-section'+((m.cooking_notes||m.packaging_notes||m.pkg_type)?' open':'')+'" id="mns-'+i+'">' +
     '<div class="notes-label">🔥 Cooking Instructions</div>' +
     '<textarea class="form-input" rows="2" placeholder="e.g. Heat to 72°C core temp, serve in GN 1/1..." style="font-size:12px;resize:vertical" oninput="editingMenuRows['+i+'].cooking_notes=this.value">'+esc(m.cooking_notes||'')+'</textarea>' +
-    '<div class="notes-label" style="margin-top:8px">📦 Packaging / Serving Instructions</div>' +
-    '<textarea class="form-input" rows="2" placeholder="e.g. Pack in 500ml containers, label with allergens..." style="font-size:12px;resize:vertical" oninput="editingMenuRows['+i+'].packaging_notes=this.value">'+esc(m.packaging_notes||'')+'</textarea>' +
+    '<div class="notes-label" style="margin-top:8px">📦 Packaging Type</div>' +
+    '<select class="form-input" style="font-size:13px" onchange="editingMenuRows['+i+'].pkg_type=this.value"><option value="">— select packaging —</option>' +
+    ['GN 1/1','GN 1/2','GN 2/1','GN 3/1','Paper Bowl','Plastic Jar','Glass Jar','White Box','Brown Box','Plastic Tray','Baskets','Bamboo Boats','Paper Wrap','Round Bowls','Compartment Bowl','No Packaging'].map(function(o){return '<option value="'+o+'"'+(m.pkg_type===o?' selected':'')+'>'+o+'</option>';}).join('') +
+    '</select>' +
+    '<div class="notes-label" style="margin-top:8px">📝 Packaging / Serving Instructions</div>' +
+    '<textarea class="form-input" rows="2" placeholder="e.g. Label with allergens, seal tight..." style="font-size:12px;resize:vertical" oninput="editingMenuRows['+i+'].packaging_notes=this.value">'+esc(m.packaging_notes||'')+'</textarea>' +
     '</div>' +
     '</div>';
 }
@@ -2233,7 +2238,7 @@ function calcMenuQty(i, changed){
 }
 
 function addMenuRow(){
-  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''});
+  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',pkg_type:'',cooking_notes:'',packaging_notes:''});
   const container = document.getElementById('ef-menu-rows');
   const i = editingMenuRows.length - 1;
   const div = document.createElement('div');
