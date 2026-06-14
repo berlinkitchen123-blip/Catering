@@ -826,6 +826,65 @@ body {
 .day-chip.has-events .dc-dot { display: block; }
 .day-chip.today { border-color: var(--blue); color: var(--blue); }
 .day-chip.today.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* ── MINI CALENDAR POPUP ── */
+.cal-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 10px;
+  background: var(--s2); border: 1px solid var(--border);
+  cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text);
+  transition: .15s; white-space: nowrap; user-select: none;
+}
+.cal-btn:hover { border-color: var(--accent); color: var(--accent); }
+.cal-btn .cal-btn-icon { font-size: 14px; }
+.mini-cal-wrap {
+  position: fixed; top: 64px; right: 12px;
+  z-index: 400;
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.6);
+  min-width: 280px;
+  display: none;
+}
+.mini-cal-wrap.show { display: block; }
+.mini-cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.mini-cal-title { font-size: 14px; font-weight: 900; color: var(--text); }
+.mini-cal-title span { color: var(--accent); }
+.mini-cal-nav {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text); transition: .12s;
+}
+.mini-cal-nav:hover { background: var(--s3); border-color: var(--accent); color: var(--accent); }
+.mini-cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.mini-cal-dow {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  color: var(--dim); text-align: center; padding: 4px 0 6px;
+  letter-spacing: .06em;
+}
+.mini-cal-day {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 5px 2px 4px; border-radius: 8px; cursor: pointer;
+  min-height: 36px; transition: .12s; position: relative;
+}
+.mini-cal-day:hover { background: var(--s3); }
+.mini-cal-day .mcd-num { font-size: 13px; font-weight: 700; color: var(--sub); line-height: 1; }
+.mini-cal-day .mcd-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: 3px; }
+.mini-cal-day.today .mcd-num { color: var(--blue); }
+.mini-cal-day.today { border: 1px solid rgba(91,156,246,.3); }
+.mini-cal-day.selected { background: var(--accent); }
+.mini-cal-day.selected .mcd-num { color: #000; font-weight: 900; }
+.mini-cal-day.other-month .mcd-num { color: var(--dim); }
+.mini-cal-day.other-month { opacity: .4; }
+.mini-cal-day.empty { cursor: default; }
 </style>
 </head>
 <body>
@@ -836,10 +895,20 @@ body {
   <div class="topbar-logo">B&amp;B Kitchen</div>
   <div class="topbar-breadcrumb" id="topbar-breadcrumb"></div>
   <div class="topbar-spacer"></div>
-  <div class="topbar-week" id="topbar-week"></div>
+  <div class="cal-btn" id="cal-btn" onclick="toggleMiniCal()"><span class="cal-btn-icon">&#128197;</span><span id="cal-btn-label">Select date</span></div>
   <div class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
   </div>
+</div>
+
+<!-- MINI CALENDAR POPUP -->
+<div class="mini-cal-wrap" id="mini-cal-wrap">
+  <div class="mini-cal-head">
+    <div class="mini-cal-nav" onclick="mcalPrev()">&#8249;</div>
+    <div class="mini-cal-title" id="mcal-title"></div>
+    <div class="mini-cal-nav" onclick="mcalNext()">&#8250;</div>
+  </div>
+  <div class="mini-cal-grid" id="mcal-grid"></div>
 </div>
 
 <!-- SIDE DRAWER -->
@@ -859,13 +928,7 @@ body {
 <div class="screen-stack" id="screen-stack">
   <!-- HOME -->
   <div class="screen active" id="screen-home">
-    <div class="cal-header" id="cal-header">
-      <div class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</div>
-      <div class="cal-month-label" id="cal-month-label"></div>
-      <div class="cal-nav-btn" onclick="calNextMonth()">&#8250;</div>
-    </div>
-    <div class="day-strip" id="day-strip"></div>
-    <div class="event-grid" id="event-grid"></div>
+    <div class="event-grid" id="event-grid" style="padding-top:16px"></div>
   </div>
   <!-- MASTER DATA (Creator only) -->
   <div class="screen" id="screen-master">
@@ -1151,21 +1214,7 @@ function _updateCalLabel(){
   if(lbl) lbl.innerHTML = '<span>'+months[_calMonth.getMonth()]+'</span> '+_calMonth.getFullYear();
 }
 
-function calPrevMonth(){
-  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth()-1, 1);
-  currentDay = -1;
-  buildDayStrip();
-  document.getElementById('event-grid').innerHTML =
-    '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">Select a day</div></div>';
-}
-
-function calNextMonth(){
-  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth()+1, 1);
-  currentDay = -1;
-  buildDayStrip();
-  document.getElementById('event-grid').innerHTML =
-    '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">Select a day</div></div>';
-}
+// calPrevMonth/calNextMonth replaced by mcalPrev/mcalNext
 let customEvents = [];
 
 const CREATOR_PW = 'bb24';
@@ -1381,48 +1430,102 @@ document.getElementById('pw-overlay').addEventListener('click',function(e){ if(e
 
 /* ── HOME SCREEN ── */
 function buildDayStrip(){
-  _updateCalLabel();
-  var strip=document.getElementById('day-strip');
-  strip.innerHTML='';
-  var today = new Date(); today.setHours(0,0,0,0);
-  var daysInMonth = _calDaysInMonth();
-  // Build a set of dates that have events for quick lookup
-  var eventDateSet = {};
+  renderMiniCal();
+}
+
+function renderMiniCal(){
+  var months=['January','February','March','April','May','June',
+              'July','August','September','October','November','December'];
+  var titleEl=document.getElementById('mcal-title');
+  if(titleEl) titleEl.innerHTML='<span>'+months[_calMonth.getMonth()]+'</span> '+_calMonth.getFullYear();
+  var grid=document.getElementById('mcal-grid');
+  if(!grid) return;
+  var today=new Date(); today.setHours(0,0,0,0);
+  // Event date lookup
+  var eventDateSet={};
   EVENTS.forEach(function(e){
-    var ed = _parseEventDate(e.date||'');
-    if(ed){ var k=ed.getFullYear()+'-'+ed.getMonth()+'-'+ed.getDate(); eventDateSet[k]=true; }
+    var ed=_parseEventDate(e.date||'');
+    if(ed){ eventDateSet[ed.getFullYear()+'-'+ed.getMonth()+'-'+ed.getDate()]=true; }
   });
-  daysInMonth.forEach(function(date, i){
-    var dateStr = _fmtDate(date);
-    var hasEvs = !!eventDateSet[date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate()];
-    var isToday = date.getTime()===today.getTime();
-    var dd = String(date.getDate()).padStart(2,'0');
-    var dayShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
-    var el=document.createElement('div');
-    var cls='day-chip';
-    if(i===currentDay) cls+=' active';
-    if(hasEvs) cls+=' has-events';
+  // Day of week headers Mon-Sun
+  var dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var html='';
+  dows.forEach(function(d){ html+='<div class="mini-cal-dow">'+d+'</div>'; });
+  // First day of month (adjust so Mon=0)
+  var firstDay=new Date(_calMonth.getFullYear(),_calMonth.getMonth(),1);
+  var startDow=(firstDay.getDay()+6)%7; // Mon=0
+  for(var b=0;b<startDow;b++) html+='<div class="mini-cal-day empty"></div>';
+  var daysInMonth=_calDaysInMonth();
+  daysInMonth.forEach(function(date,i){
+    var isToday=date.getTime()===today.getTime();
+    var hasEvs=!!eventDateSet[date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate()];
+    var isSelected=(currentDay===i);
+    var cls='mini-cal-day';
     if(isToday) cls+=' today';
-    el.className=cls;
-    el.dataset.day=i;
-    el.innerHTML='<div style="font-weight:800">'+dayShort+'</div><div class="dc-date">'+dd+'</div><div class="dc-dot"></div>';
-    el.onclick=(function(idx){ return function(){ selectDay(idx); }; })(i);
-    strip.appendChild(el);
+    if(isSelected) cls+=' selected';
+    if(hasEvs && !isSelected) cls+=' has-events';
+    var dot=hasEvs?'<div class="mcd-dot"></div>':'';
+    html+='<div class="'+cls+'" onclick="selectDayFromMiniCal('+i+')">'
+      +'<div class="mcd-num">'+date.getDate()+'</div>'+dot+'</div>';
   });
-  // Auto-scroll to today or first event day
-  var activeChip = strip.querySelector('.day-chip.active, .day-chip.today, .day-chip.has-events');
-  if(activeChip) setTimeout(function(){ activeChip.scrollIntoView({inline:'center', behavior:'smooth'}); }, 80);
+  grid.innerHTML=html;
+}
+
+function selectDayFromMiniCal(i){
+  selectDay(i);
+  closeMiniCal();
+}
+
+function toggleMiniCal(){
+  var wrap=document.getElementById('mini-cal-wrap');
+  if(!wrap) return;
+  if(wrap.classList.contains('show')){ closeMiniCal(); }
+  else { wrap.classList.add('show'); renderMiniCal(); }
+}
+function closeMiniCal(){
+  var wrap=document.getElementById('mini-cal-wrap');
+  if(wrap) wrap.classList.remove('show');
+}
+
+function mcalPrev(){
+  _calMonth=new Date(_calMonth.getFullYear(),_calMonth.getMonth()-1,1);
+  currentDay=-1;
+  renderMiniCal();
+  updateCalBtn();
+}
+function mcalNext(){
+  _calMonth=new Date(_calMonth.getFullYear(),_calMonth.getMonth()+1,1);
+  currentDay=-1;
+  renderMiniCal();
+  updateCalBtn();
+}
+function updateCalBtn(){
+  var lbl=document.getElementById('cal-btn-label');
+  if(!lbl) return;
+  if(currentDay>=0){
+    var daysInMonth=_calDaysInMonth();
+    var d=daysInMonth[currentDay];
+    if(d){
+      var dayShort=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+      var dd=String(d.getDate()).padStart(2,'0');
+      var mm=String(d.getMonth()+1).padStart(2,'0');
+      lbl.textContent=dd+'/'+mm+', '+dayShort;
+      return;
+    }
+  }
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  lbl.textContent=months[_calMonth.getMonth()]+' '+_calMonth.getFullYear();
 }
 function selectDay(i){
   currentDay=i;
-  document.querySelectorAll('.day-chip').forEach(function(el,j){ el.classList.toggle('active',j===i); });
-  // Find dateStr for this index in current month
-  var daysInMonth = _calDaysInMonth();
-  var dateStr = daysInMonth[i] ? _fmtDate(daysInMonth[i]) : null;
-  var evs = dateStr ? EVENTS.filter(function(e){ return e.date===dateStr; }) : [];
+  var daysInMonth=_calDaysInMonth();
+  var dateStr=daysInMonth[i]?_fmtDate(daysInMonth[i]):null;
+  var evs=dateStr?EVENTS.filter(function(e){ return e.date===dateStr; }):[];
   var grid=document.getElementById('event-grid');
-  grid.innerHTML = evs.map(function(ev){ return renderHomeCard(ev); }).join('') ||
+  grid.innerHTML=evs.map(function(ev){ return renderHomeCard(ev); }).join('') ||
     '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">No events this day</div></div>';
+  updateCalBtn();
+  renderMiniCal();
 }
 function renderHomeDay(i){
   if(i < 0){ return; }
@@ -1446,8 +1549,15 @@ function renderHomeCard(ev){
   h+='<div class="event-card-body">';
   // Top row: client name + arrow
   h+='<div class="ec-top">';
+  // Format date: "Monday 15/06/2026" -> "15/06, Mon"
+  var evDateFmt = (function(s){
+    if(!s) return '';
+    var m=s.match(/(\w+)\s+(\d{2}\/\d{2}\/\d{4})/);
+    if(m) return m[2].slice(0,5)+', '+m[1].slice(0,3);
+    return s;
+  })(ev.date);
   h+='<div><div class="ec-client">'+esc(ev.client)+'</div>';
-  if(ev.date) h+='<div style="font-size:12px;color:var(--sub);font-weight:700;margin-top:2px">&#128197; '+esc(ev.date)+'</div>';
+  if(ev.date) h+='<div style="font-size:13px;color:var(--accent);font-weight:800;margin-top:3px">'+esc(evDateFmt)+'</div>';
   h+='</div>';
   h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
   h+='<div class="ec-arrow">&#8250;</div>';
@@ -2860,7 +2970,7 @@ function evOpenLabelPrint(html, title, pageSize) {
 }
 
 /* ── INIT ── */
-document.getElementById('topbar-week').textContent = WEEK;
+// topbar-week replaced by mini-cal-btn
 document.getElementById('drawer-week').textContent = WEEK;
 buildDayStrip();
 renderHomeDay(0);
