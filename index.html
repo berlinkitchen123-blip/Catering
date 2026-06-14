@@ -2570,20 +2570,34 @@ function renderMasterList(q, diet){
   }
   const masterIndices = items.slice(0,200).map(function(x){ return MASTER.indexOf(x); });
   list.innerHTML = items.slice(0,200).map(function(x, i){
-    const idx = MASTER.indexOf(x);
-    const ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
-    const dc = dietClass(x.diet||'');
-    const pp = x.price ? parseFloat(x.price) : null;
-    const dietOpts = ['','Vegan','Vegetarian','Meat','Fish','Pescatarian','Mixed'].map(function(d){
+    var idx = MASTER.indexOf(x);
+    var ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
+    var dc = dietClass(x.diet||'');
+    var pp = x.price ? parseFloat(x.price) : null;
+    var dietColor = {'Vegan':'#22c55e','Vegetarian':'#14b8a6','Meat':'#ef4444','Fish':'#3b82f6','Pescatarian':'#a855f7','Mixed':'#f59e0b'}[x.diet] || '#555';
+    var dietOpts = ['','Vegan','Vegetarian','Meat','Fish','Pescatarian','Mixed'].map(function(d){
       return '<option value="'+d+'"'+(x.diet===d?' selected':'')+'>'+( d||'— Diet —')+'</option>';
     }).join('');
+    var unitOpts = ['g','kg','qty'].map(function(u){
+      return '<option value="'+u+'"'+(((x.portion_unit||'qty')===u)?' selected':'')+'>'+u+'</option>';
+    }).join('');
+
     if(!creatorUnlocked){
-      // Read-only view
-      // Diet accent color
-    var dietColor = {'Vegan':'#22c55e','Vegetarian':'#14b8a6','Meat':'#ef4444','Fish':'#3b82f6','Pescatarian':'#a855f7','Mixed':'#f59e0b'}[x.diet] || '#444';
-    var unitOpts = ['g','kg','qty'].map(function(u){ return '<option value="'+u+'"'+(((x.portion_unit||'qty')===u)?' selected':'')+'>'+u+'</option>'; }).join('');
+      // Read-only card
+      return '<div style="background:var(--s2);border-radius:14px;border:1px solid var(--border2);border-left:4px solid '+dietColor+';padding:14px 16px;margin-bottom:10px">' +
+        '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px">'+esc(x.name)+'</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+          (x.diet?'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;border:2px solid '+dietColor+';color:'+dietColor+';background:'+dietColor+'22">'+esc(x.diet)+'</span>':'')+
+          (pp?'<span style="font-size:11px;font-weight:800;color:#4eca82;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:20px;padding:3px 10px">€'+pp.toFixed(2)+'/'+esc(x.portion_unit||'qty')+'</span>':'')+
+          (x.gluten_free?'<span style="font-size:11px;font-weight:800;color:#818cf8;background:rgba(99,102,241,0.12);border:1.5px solid rgba(99,102,241,0.4);border-radius:20px;padding:3px 10px">GF</span>':'')+
+          (x.allergens?'<span style="font-size:11px;font-weight:700;color:#fb923c;background:rgba(251,146,60,0.07);border:1.5px solid rgba(251,146,60,0.25);border-radius:20px;padding:3px 10px">⚠ '+esc(x.allergens)+'</span>':'')+
+        '</div>' +
+        '</div>';
+    }
+
+    // Creator editable card
     return '<div style="background:var(--s2);border-radius:14px;border:1px solid var(--border2);border-left:4px solid '+dietColor+';padding:14px 16px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.18)">' +
-      // Row 1: name + action buttons
+      // Row 1: name + buttons
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
         '<div style="font-size:15px;font-weight:800;color:var(--text);flex:1;line-height:1.3">'+esc(x.name)+'</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0">' +
@@ -2591,7 +2605,7 @@ function renderMasterList(q, diet){
           '<button onclick="deleteMasterDish('+idx+')" style="width:34px;height:34px;border:1.5px solid rgba(239,68,68,0.3);border-radius:9px;background:rgba(239,68,68,0.08);font-size:14px;cursor:pointer;color:#ef4444;display:flex;align-items:center;justify-content:center">&#128465;</button>' +
         '</div>' +
       '</div>' +
-      // Row 2: diet + price/unit + GF + allergens
+      // Row 2: diet pill + price + unit + GF + allergens
       '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
         '<select onchange="saveMasterField('+idx+',\'diet\',this.value)" style="padding:4px 8px;border-radius:20px;border:2px solid '+dietColor+';background:'+dietColor+'22;color:'+dietColor+';font-size:11px;font-weight:800;cursor:pointer;outline:none">'+dietOpts+'</select>' +
         '<div style="display:flex;align-items:center;gap:3px;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:20px;padding:3px 10px">' +
@@ -2609,14 +2623,15 @@ function renderMasterList(q, diet){
           '<input type="text" placeholder="Allergens…" value="'+esc(x.allergens||'')+'" style="flex:1;background:none;border:none;color:#fb923c;font-size:11px;font-weight:700;outline:none" onchange="saveMasterField('+idx+',\'allergens\',this.value)">' +
         '</div>' +
       '</div>' +
-      // Row 3: category chip + ingredient count
+      // Row 3: category + ingredient count
       ((x.category||ingCount!==null)?
-      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
-        (x.category?'<span style="font-size:10px;color:var(--sub);font-weight:700;background:var(--s3);border-radius:10px;padding:2px 9px;letter-spacing:0.5px">'+esc(x.category)+'</span>':'')+
-        (ingCount!==null?'<span style="font-size:10px;color:var(--blue);font-weight:700;background:rgba(59,130,246,0.1);border-radius:10px;padding:2px 9px">&#128218; '+ingCount+' ingredients</span>':'')+
-      '</div>':'') +
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+          (x.category?'<span style="font-size:10px;color:var(--sub);font-weight:700;background:var(--s3);border-radius:10px;padding:2px 9px;letter-spacing:0.5px">'+esc(x.category)+'</span>':'')+
+          (ingCount!==null?'<span style="font-size:10px;color:var(--blue);font-weight:700;background:rgba(59,130,246,0.1);border-radius:10px;padding:2px 9px">&#128218; '+ingCount+' ingredients</span>':'')+
+        '</div>'
+      :'') +
       '</div>';
-  }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
+    }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
 }
 
 /* ── MASTER EDIT ── */
