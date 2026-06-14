@@ -1231,34 +1231,10 @@ body {
 <!-- MASTER EDIT OVERLAY -->
 <div id="master-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center;padding:16px">
   <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
-    <div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)" id="me-name">Dish name</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Edit diet, allergens &amp; ingredients</div>
+    <div style="font-size:15px;font-weight:800;margin-bottom:2px;color:var(--text)" id="me-name">Dish name</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:14px">&#128218; Edit ingredients &amp; recipe</div>
     <input type="hidden" id="me-idx">
-    <div class="form-group" style="margin-bottom:12px">
-      <div class="form-label">Diet</div>
-      <select id="me-diet" class="form-input">
-        <option value="">— Select —</option>
-        <option value="Vegan">Vegan</option>
-        <option value="Vegetarian">Vegetarian</option>
-        <option value="Meat">Meat</option>
-        <option value="Fish">Fish</option>
-        <option value="Pescatarian">Pescatarian</option>
-        <option value="Mixed">Mixed</option>
-      </select>
-    </div>
-    <div class="form-group" style="margin-bottom:12px">
-      <div class="form-label">Allergens (comma separated)</div>
-      <input class="form-input" id="me-allergens" placeholder="e.g. Gluten, Milk, Eggs">
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <input type="checkbox" id="me-gf" style="width:16px;height:16px;cursor:pointer">
-      <label for="me-gf" style="font-size:13px;font-weight:600;cursor:pointer">Gluten Free</label>
-    </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <div class="form-label">&#128181; Price per Portion (€)</div>
-      <input class="form-input" id="me-price" type="number" step="0.01" placeholder="e.g. 3.50">
-    </div>
-    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">Ingredients / Recipe</div>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">Ingredients / Recipe</div>
     <div id="me-ing-rows" style="margin-bottom:6px"></div>
     <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:16px">+ Add ingredient</button>
     <div style="display:flex;gap:10px">
@@ -2598,29 +2574,51 @@ function renderMasterList(q, diet){
     const ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
     const dc = dietClass(x.diet||'');
     const pp = x.price ? parseFloat(x.price) : null;
+    const dietOpts = ['','Vegan','Vegetarian','Meat','Fish','Pescatarian','Mixed'].map(function(d){
+      return '<option value="'+d+'"'+(x.diet===d?' selected':'')+'>'+( d||'— Diet —')+'</option>';
+    }).join('');
+    if(!creatorUnlocked){
+      // Read-only view
+      return '<div class="master-item" style="flex-direction:column;align-items:stretch;gap:0;padding:14px 16px">' +
+        '<div class="master-item-name" style="font-size:15px;margin-bottom:8px">'+esc(x.name)+'</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:5px">' +
+          (x.diet?'<span class="diet '+dc+'" style="font-size:12px">'+esc(x.diet)+'</span>':'')+
+          (pp?'<span style="font-size:12px;font-weight:800;color:#4eca82">&#128181; €'+pp.toFixed(2)+'/ptn</span>':'')+
+          (x.gluten_free?'<span style="font-size:11px;font-weight:700;color:var(--accent)">GF</span>':'')+
+        '</div>'+
+        (x.allergens?'<div style="font-size:12px;color:var(--orange);font-weight:700">&#9888; '+esc(x.allergens)+'</div>':'')+
+        '</div>';
+    }
     return '<div class="master-item" style="flex-direction:column;align-items:stretch;gap:0;padding:14px 16px">' +
-      // Row 1: name + edit/delete buttons
-      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">' +
-        '<div class="master-item-name" style="font-size:15px;line-height:1.3">'+esc(x.name)+'</div>' +
-        (creatorUnlocked ?
-          '<div style="display:flex;gap:6px;flex-shrink:0">' +
-          '<button onclick="openMasterEdit('+idx+')" style="padding:7px 11px;border:1.5px solid var(--border2);border-radius:8px;background:var(--s2);font-size:15px;cursor:pointer;color:var(--sub)">&#9998;</button>' +
+      // Row 1: name + burger + delete
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">' +
+        '<div class="master-item-name" style="font-size:15px;flex:1">'+esc(x.name)+'</div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button onclick="openMasterEdit('+idx+')" title="Edit ingredients" style="padding:7px 12px;border:1.5px solid var(--border2);border-radius:8px;background:var(--s2);font-size:16px;cursor:pointer;color:var(--sub)">&#9776;</button>' +
           '<button onclick="deleteMasterDish('+idx+')" style="padding:7px 11px;border:1.5px solid #4a2020;border-radius:8px;background:#2a1010;font-size:15px;cursor:pointer;color:var(--red)">&#128465;</button>' +
-          '</div>' : '') +
+        '</div>' +
       '</div>' +
-      // Row 2: diet + price + gluten-free
-      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">' +
-        (x.diet ? '<span class="diet '+dc+'" style="font-size:12px">'+esc(x.diet)+'</span>' : '<span style="font-size:11px;color:var(--dim);font-weight:600">No diet set</span>') +
-        (pp ? '<span style="font-size:12px;font-weight:800;color:#4eca82;background:rgba(78,202,130,.12);border:1px solid rgba(78,202,130,.25);border-radius:6px;padding:2px 8px">&#128181; €'+pp.toFixed(2)+'/ptn</span>' : '<span style="font-size:11px;color:var(--dim);font-weight:600">No price</span>') +
-        (x.gluten_free ? '<span style="font-size:11px;font-weight:700;color:var(--accent);background:rgba(240,192,64,.12);border-radius:5px;padding:2px 7px">GF</span>' : '') +
+      // Row 2: Diet + Price inline
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center">' +
+        '<select onchange="saveMasterField('+idx+','diet',this.value)" style="padding:5px 8px;border-radius:8px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-size:12px;font-weight:700;cursor:pointer">'+dietOpts+'</select>' +
+        '<div style="display:flex;align-items:center;gap:4px;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:4px 8px">' +
+          '<span style="font-size:12px;color:var(--sub);font-weight:700">€</span>' +
+          '<input type="number" step="0.01" placeholder="price/ptn" value="'+(pp?pp.toFixed(2):'')+'" style="width:80px;background:none;border:none;color:#4eca82;font-size:13px;font-weight:800;outline:none" onchange="saveMasterField('+idx+','price',parseFloat(this.value)||0)">' +
+          '<span style="font-size:10px;color:var(--sub)">/ptn</span>' +
+        '</div>' +
+        '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;font-weight:700;color:var(--sub)">' +
+          '<input type="checkbox" '+(x.gluten_free?'checked':'')+' onchange="saveMasterField('+idx+','gluten_free',this.checked?'Yes':'')" style="width:14px;height:14px"> GF' +
+        '</label>' +
       '</div>' +
-      // Row 3: allergens
-      (x.allergens ?
-        '<div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:5px">&#9888; '+esc(x.allergens)+'</div>' : '') +
-      // Row 4: category + ingredients
+      // Row 3: Allergens inline
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">' +
+        '<span style="font-size:11px;color:var(--orange);flex-shrink:0">&#9888;</span>' +
+        '<input type="text" placeholder="Allergens (e.g. Gluten, Milk)" value="'+esc(x.allergens||'')+'" style="flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--orange);font-size:12px;font-weight:700;outline:none" onchange="saveMasterField('+idx+','allergens',this.value)">' +
+      '</div>' +
+      // Row 4: category + ing count
       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-        (x.category ? '<span style="font-size:11px;color:var(--sub);font-weight:600;background:var(--s3);border-radius:5px;padding:2px 8px">'+esc(x.category)+'</span>' : '') +
-        (ingCount!==null ? '<span style="font-size:11px;color:var(--blue);font-weight:700">&#128218; '+ingCount+' ingredients</span>' : '<span style="font-size:11px;color:var(--dim)">No recipe yet</span>') +
+        (x.category?'<span style="font-size:11px;color:var(--sub);font-weight:600;background:var(--s3);border-radius:5px;padding:2px 8px">'+esc(x.category)+'</span>':'')+
+        (ingCount!==null?'<span style="font-size:11px;color:var(--blue);font-weight:700">&#128218; '+ingCount+' ingredients</span>':'<span style="font-size:11px;color:var(--dim)">No recipe yet — tap &#9776; to add</span>')+
       '</div>' +
       '</div>';
   }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
@@ -2673,6 +2671,15 @@ function removeMasterIngRow(j){
 }
 function closeMasterEdit(){
   document.getElementById('master-edit-overlay').style.display='none';
+}
+function saveMasterField(idx, field, value){
+  if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
+  MASTER[idx][field] = value;
+  var dishName = MASTER[idx].name;
+  var update = {}; update[field] = value;
+  try { dbShared.collection('master_overrides').doc(dishName).set(update, {merge:true}); } catch(e){}
+  // Re-render just this item by refreshing the list
+  filterMaster();
 }
 function saveMasterEdit(){
   const idx = parseInt(document.getElementById('me-idx').value);
