@@ -2130,7 +2130,17 @@ function loadRecipeIngredients(){
 
 function loadMasterOverrides(){
   try {
-    dbShared.collection('master_overrides').get().then(function(snap){
+    // First load deleted dishes, then apply overrides
+    dbShared.collection('master_deleted').get().then(function(delSnap){
+      const deleted = new Set();
+      delSnap.forEach(function(doc){ deleted.add(doc.id); });
+      // Filter out deleted dishes from MASTER
+      for(var i = MASTER.length-1; i >= 0; i--){
+        if(deleted.has(MASTER[i].name)) MASTER.splice(i, 1);
+      }
+      // Then apply overrides
+      return dbShared.collection('master_overrides').get();
+    }).then(function(snap){
       snap.forEach(function(doc){
         const data = doc.data();
         const idx = MASTER.findIndex(function(x){ return x.name === doc.id; });
@@ -2723,6 +2733,7 @@ function deleteMasterDish(idx){
   if(!confirm('Delete "'+x.name+'" from Master Menu?\n\nThis will remove it from Firestore and cannot be undone.')) return;
   try { dbShared.collection('recipe_ingredients').doc(x.name).delete(); } catch(e){ console.warn('delete recipe_ingredients error',e); }
   try { dbShared.collection('master_overrides').doc(x.name).delete(); } catch(e){ console.warn('delete master_overrides error',e); }
+  try { dbShared.collection('master_deleted').doc(x.name).set({deleted:true, deletedAt: new Date().toISOString()}); } catch(e){ console.warn('delete master_deleted error',e); }
   MASTER.splice(idx, 1);
   filterMaster();
 }
