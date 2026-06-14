@@ -1250,6 +1250,7 @@ const FIREBASE_CONFIGS = {
   munich: {apiKey:"AIzaSyChuKmFQE9btud68RYBAgkeUjsCCW2shN0",authDomain:"catering-b8767.firebaseapp.com",projectId:"catering-b8767",storageBucket:"catering-b8767.firebasestorage.app",messagingSenderId:"917467887999",appId:"1:917467887999:web:c82af73fd653cd5c6b824a"}
 };
 let db = null;
+let dbShared = null; // always Berlin — shared recipe/master data
 let selectedCity = null;
 </script>
 <script>
@@ -2078,7 +2079,7 @@ function buildIngredientsScreen(){
 /* ── FIREBASE CUSTOM EVENTS ── */
 function loadRecipeIngredients(){
   try {
-    db.collection('recipe_ingredients').get().then(function(snap){
+    dbShared.collection('recipe_ingredients').get().then(function(snap){
       window._recipeDb = {};
       snap.forEach(function(doc){
         window._recipeDb[doc.id] = (doc.data().ingredients || []);
@@ -2090,7 +2091,7 @@ function loadRecipeIngredients(){
 
 function loadMasterOverrides(){
   try {
-    db.collection('master_overrides').get().then(function(snap){
+    dbShared.collection('master_overrides').get().then(function(snap){
       snap.forEach(function(doc){
         const data = doc.data();
         const idx = MASTER.findIndex(function(x){ return x.name === doc.id; });
@@ -2427,7 +2428,7 @@ function saveEditForm(){
     Object.keys(editingIngredients).forEach(function(dishName){
       var rows = editingIngredients[dishName].filter(function(r){ return r.product; });
       if(rows.length){
-        db.collection('recipe_ingredients').doc(dishName).set({ingredients: rows});
+        dbShared.collection('recipe_ingredients').doc(dishName).set({ingredients: rows});
         if(!window._recipeDb) window._recipeDb = {};
         window._recipeDb[dishName] = rows;
       }
@@ -2628,13 +2629,13 @@ function saveMasterEdit(){
   const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
   // Save diet/allergens to master_overrides
   try {
-    db.collection('master_overrides').doc(dishName).set({
+    dbShared.collection('master_overrides').doc(dishName).set({
       diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : ''
     });
   } catch(e){ console.warn('master_overrides save error', e); }
   // Save ingredients to recipe_ingredients
   try {
-    db.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
+    dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
     if(!window._recipeDb) window._recipeDb = {};
     window._recipeDb[dishName] = ings;
   } catch(e){ console.warn('recipe_ingredients save error', e); }
@@ -2646,8 +2647,8 @@ function deleteMasterDish(idx){
   const x = MASTER[idx];
   if(!x) return;
   if(!confirm('Delete "'+x.name+'" from Master Menu?\n\nThis will remove it from Firestore and cannot be undone.')) return;
-  try { db.collection('recipe_ingredients').doc(x.name).delete(); } catch(e){ console.warn('delete recipe_ingredients error',e); }
-  try { db.collection('master_overrides').doc(x.name).delete(); } catch(e){ console.warn('delete master_overrides error',e); }
+  try { dbShared.collection('recipe_ingredients').doc(x.name).delete(); } catch(e){ console.warn('delete recipe_ingredients error',e); }
+  try { dbShared.collection('master_overrides').doc(x.name).delete(); } catch(e){ console.warn('delete master_overrides error',e); }
   MASTER.splice(idx, 1);
   filterMaster();
 }
@@ -3119,11 +3120,18 @@ function selectCity(city) {
     badge.style.background = city === 'berlin' ? 'rgba(91,156,246,.18)' : 'rgba(78,202,130,.18)';
     badge.style.color = city === 'berlin' ? '#5b9cf6' : '#4eca82';
   }
-  // Init Firebase for selected city
-  var appName = 'app-' + city;
-  var fbApp;
-  try { fbApp = firebase.app(appName); } catch(e) { fbApp = firebase.initializeApp(FIREBASE_CONFIGS[city], appName); }
-  db = fbApp.firestore();
+  // Always init Berlin Firebase for shared recipe/master data
+  var fbBerlin;
+  try { fbBerlin = firebase.app('app-berlin'); } catch(e) { fbBerlin = firebase.initializeApp(FIREBASE_CONFIGS['berlin'], 'app-berlin'); }
+  dbShared = fbBerlin.firestore();
+  // Init city-specific Firebase for events
+  if(city === 'berlin') {
+    db = dbShared;
+  } else {
+    var fbCity;
+    try { fbCity = firebase.app('app-' + city); } catch(e) { fbCity = firebase.initializeApp(FIREBASE_CONFIGS[city], 'app-' + city); }
+    db = fbCity.firestore();
+  }
   // Munich: start with empty events/master
   if(city === 'munich') {
     EVENTS = [];
