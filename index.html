@@ -1001,6 +1001,9 @@ body {
   <div class="drawer-nav" id="drawer-nav"></div>
   <div class="drawer-footer">
     <div class="drawer-lock" id="drawer-lock-btn"></div>
+    <div onclick="switchCity()" style="margin-top:10px;padding:11px 16px;border-radius:10px;background:var(--s2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:8px;transition:.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--sub)'">
+      <span style="font-size:16px">🌍</span> Switch City
+    </div>
   </div>
 </nav>
 
@@ -3108,6 +3111,20 @@ function evOpenLabelPrint(html, title, pageSize) {
 }
 
 /* ── CITY SELECTION + INIT ── */
+function switchCity() {
+  closeDrawer();
+  // Reset state
+  db = null; dbShared = null; selectedCity = null;
+  EVENTS = (_D.events||[]).slice();
+  DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
+  customEvents = [];
+  // Hide city badge
+  var badge = document.getElementById('city-badge');
+  if(badge) badge.style.display = 'none';
+  // Show city picker again
+  document.getElementById('city-picker').classList.remove('hidden');
+}
+
 function selectCity(city) {
   selectedCity = city;
   // Hide city picker
