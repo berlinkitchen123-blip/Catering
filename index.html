@@ -863,7 +863,7 @@ body {
 }
 .mini-cal-nav:hover { background: var(--s3); border-color: var(--accent); color: var(--accent); }
 .mini-cal-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
 }
 .mini-cal-dow {
   font-size: 9px; font-weight: 800; text-transform: uppercase;
@@ -885,6 +885,23 @@ body {
 .mini-cal-day.other-month .mcd-num { color: var(--dim); }
 .mini-cal-day.other-month { opacity: .4; }
 .mini-cal-day.empty { cursor: default; }
+
+/* ── MENU ITEM NOTES ── */
+.menu-notes-section {
+  display: none; margin-top: 6px;
+  border-top: 1px dashed var(--border2); padding-top: 8px;
+}
+.menu-notes-section.open { display: block; }
+.menu-notes-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; color: var(--sub);
+  background: none; border: 1px dashed var(--border); border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; margin-top: 6px; transition: .12s;
+}
+.menu-notes-toggle:hover { border-color: var(--blue); color: var(--blue); }
+.menu-notes-toggle.open { border-color: var(--blue); color: var(--blue); background: rgba(91,156,246,.08); }
+.notes-label { font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--sub); margin-bottom: 4px; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -1199,12 +1216,23 @@ function _parseEventDate(s){
 }
 
 function _calDaysInMonth(){
-  // Return array of all Date objects in _calMonth
+  // Return Mon-Fri only for _calMonth
   var year = _calMonth.getFullYear(), month = _calMonth.getMonth();
   var result = [];
   var d = new Date(year, month, 1);
-  while(d.getMonth() === month){ result.push(new Date(d)); d.setDate(d.getDate()+1); }
+  while(d.getMonth() === month){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) result.push(new Date(d)); // skip Sun(0) Sat(6)
+    d.setDate(d.getDate()+1);
+  }
   return result;
+}
+
+function _nextBusinessDay(from){
+  // Returns the next business day (Mon-Fri) strictly after 'from'
+  var d = new Date(from); d.setDate(d.getDate()+1);
+  while(d.getDay()===0||d.getDay()===6) d.setDate(d.getDate()+1);
+  return d;
 }
 
 function _updateCalLabel(){
@@ -1447,14 +1475,21 @@ function renderMiniCal(){
     var ed=_parseEventDate(e.date||'');
     if(ed){ eventDateSet[ed.getFullYear()+'-'+ed.getMonth()+'-'+ed.getDate()]=true; }
   });
-  // Day of week headers Mon-Sun
-  var dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  // Day of week headers Mon-Fri only
+  var dows=['Mon','Tue','Wed','Thu','Fri'];
   var html='';
   dows.forEach(function(d){ html+='<div class="mini-cal-dow">'+d+'</div>'; });
-  // First day of month (adjust so Mon=0)
+  // First weekday of month (Mon=0..Fri=4)
   var firstDay=new Date(_calMonth.getFullYear(),_calMonth.getMonth(),1);
-  var startDow=(firstDay.getDay()+6)%7; // Mon=0
-  for(var b=0;b<startDow;b++) html+='<div class="mini-cal-day empty"></div>';
+  var firstDow=firstDay.getDay(); // 0=Sun,1=Mon..5=Fri,6=Sat
+  // Find first Mon of this month's display
+  var startOffset=(firstDow===0)?4:(firstDow-1); // blanks before first business day
+  // But we only show Mon-Fri so find the actual first Mon-Fri day
+  var tempD=new Date(_calMonth.getFullYear(),_calMonth.getMonth(),1);
+  while(tempD.getDay()===0||tempD.getDay()===6) tempD.setDate(tempD.getDate()+1);
+  // Calculate column offset for first business day
+  var colStart=(tempD.getDay()+4)%5; // Mon=0,Tue=1..Fri=4
+  for(var b=0;b<colStart;b++) html+='<div class="mini-cal-day empty"></div>';
   var daysInMonth=_calDaysInMonth();
   daysInMonth.forEach(function(date,i){
     var isToday=date.getTime()===today.getTime();
@@ -1694,6 +1729,14 @@ function openEvent(idx){
       panels+='<span class="oms-dish-op">+'+(p.offset)+'=</span>';
       panels+='<span class="oms-dish-total" id="odt-'+safeId(eid+dishKey)+'">'+((dishOMS?dishOMS+p.offset:'?'))+'</span>';
       panels+='<span class="oms-dish-unit">portions</span>';
+      panels+='</div>';
+    }
+    panels+='</div>';
+    // Show cooking/packaging notes if present
+    if(item.cooking_notes||item.packaging_notes){
+      panels+='<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">';
+      if(item.cooking_notes) panels+='<div style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:6px;padding:5px 9px;border-left:2px solid var(--orange)">&#128293; '+esc(item.cooking_notes)+'</div>';
+      if(item.packaging_notes) panels+='<div style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:6px;padding:5px 9px;border-left:2px solid var(--blue)">&#128230; '+esc(item.packaging_notes)+'</div>';
       panels+='</div>';
     }
     panels+='</div>';
@@ -2050,7 +2093,7 @@ function openEditEvent(idx){
 
 function openNewEventForm(){
   editingIdx = -1;
-  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:''}];
+  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''}];
   editingIngredients = {};
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
@@ -2131,7 +2174,27 @@ function renderMenuRow(m, i){
     '<input class="mqr-input" type="number" min="0" step="0.001" placeholder="—" value="'+esc(totQty)+'" id="mqr-tot-'+i+'" oninput="editingMenuRows['+i+'].tot_qty=this.value;calcMenuQty('+i+',\'tot\')">' +
     '<span class="mqr-total-unit">'+(m.ptn_unit||'KG')+'</span>' +
     '</div>' +
+    // Notes toggle button
+    '<button class="menu-notes-toggle'+(( m.cooking_notes||m.packaging_notes)?' open':'')+'" id="mnt-'+i+'" onclick="toggleMenuNotes('+i+')">' +
+    '&#128221; Notes' +
+    (( m.cooking_notes||m.packaging_notes) ? ' ✓' : '') +
+    '</button>' +
+    // Notes section (cooking + packaging)
+    '<div class="menu-notes-section'+((m.cooking_notes||m.packaging_notes)?' open':'')+'" id="mns-'+i+'">' +
+    '<div class="notes-label">🔥 Cooking Instructions</div>' +
+    '<textarea class="form-input" rows="2" placeholder="e.g. Heat to 72°C core temp, serve in GN 1/1..." style="font-size:12px;resize:vertical" oninput="editingMenuRows['+i+'].cooking_notes=this.value">'+esc(m.cooking_notes||'')+'</textarea>' +
+    '<div class="notes-label" style="margin-top:8px">📦 Packaging / Serving Instructions</div>' +
+    '<textarea class="form-input" rows="2" placeholder="e.g. Pack in 500ml containers, label with allergens..." style="font-size:12px;resize:vertical" oninput="editingMenuRows['+i+'].packaging_notes=this.value">'+esc(m.packaging_notes||'')+'</textarea>' +
+    '</div>' +
     '</div>';
+}
+
+function toggleMenuNotes(i){
+  var sec=document.getElementById('mns-'+i);
+  var btn=document.getElementById('mnt-'+i);
+  if(!sec||!btn) return;
+  var isOpen=sec.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
 }
 
 function calcMenuQty(i, changed){
@@ -2170,7 +2233,7 @@ function calcMenuQty(i, changed){
 }
 
 function addMenuRow(){
-  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:''});
+  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''});
   const container = document.getElementById('ef-menu-rows');
   const i = editingMenuRows.length - 1;
   const div = document.createElement('div');
