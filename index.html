@@ -2704,23 +2704,9 @@ function saveMasterField(idx, field, value){
 }
 function saveMasterEdit(){
   const idx = parseInt(document.getElementById('me-idx').value);
-  const diet = document.getElementById('me-diet').value.trim();
-  const allergens = document.getElementById('me-allergens').value.trim();
-  const gf = document.getElementById('me-gf').checked;
   if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
-  const price = parseFloat(document.getElementById('me-price').value)||0;
-  MASTER[idx].diet = diet;
-  MASTER[idx].allergens = allergens;
-  MASTER[idx].gluten_free = gf ? 'Yes' : '';
-  MASTER[idx].price = price;
   const dishName = MASTER[idx].name;
   const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
-  // Save diet/allergens to master_overrides
-  try {
-    dbShared.collection('master_overrides').doc(dishName).set({
-      diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : '', price: price
-    });
-  } catch(e){ console.warn('master_overrides save error', e); }
   // Save ingredients to recipe_ingredients
   try {
     dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
