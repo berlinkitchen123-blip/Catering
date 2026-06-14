@@ -1804,9 +1804,9 @@ function openEvent(idx){
     if(p&&p.type==='oms'){
       panels+='<div class="oms-dish-row">';
       panels+='<span class="oms-dish-label">OMS</span>';
-      panels+='<input class="oms-dish-input" type="number" min="0" value="'+esc(String(dishOMS||''))+'" placeholder="0" data-eid="'+eid+'" data-dish="'+esc(dishKey)+'" data-offset="'+p.offset+'" oninput="updateDishOMS(this)">';
+      panels+='<input class="oms-dish-input" type="number" min="0" value="'+(dishOMS!=null?dishOMS:'')+'" placeholder="0" data-eid="'+eid+'" data-dish="'+esc(dishKey)+'" data-offset="'+p.offset+'" oninput="updateDishOMS(this)">';
       panels+='<span class="oms-dish-op">+'+(p.offset)+'=</span>';
-      panels+='<span class="oms-dish-total" id="odt-'+safeId(eid+dishKey)+'">'+((dishOMS?dishOMS+p.offset:'?'))+'</span>';
+      panels+='<span class="oms-dish-total" id="odt-'+safeId(eid+dishKey)+'">'+((dishOMS!=null&&dishOMS!=='')?dishOMS+p.offset:'?')+'</span>';
       panels+='<span class="oms-dish-unit">portions</span>';
       panels+='</div>';
     }
