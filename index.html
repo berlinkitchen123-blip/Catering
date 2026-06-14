@@ -1254,6 +1254,10 @@ body {
       <input type="checkbox" id="me-gf" style="width:16px;height:16px;cursor:pointer">
       <label for="me-gf" style="font-size:13px;font-weight:600;cursor:pointer">Gluten Free</label>
     </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <div class="form-label">&#128181; Price per Portion (€)</div>
+      <input class="form-input" id="me-price" type="number" step="0.01" placeholder="e.g. 3.50">
+    </div>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">Ingredients / Recipe</div>
     <div id="me-ing-rows" style="margin-bottom:6px"></div>
     <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:16px">+ Add ingredient</button>
@@ -1950,7 +1954,7 @@ function openEvent(idx){
     panels+='<div class="sub-panel" id="sp-finance">';
     panels+='<div class="fin-grid">';
     panels+='<div class="fin-card full"><div class="fin-label">&#128181; Catering Charge (Invoice to Client)</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-charge" placeholder="0.00" oninput="calcFinance()"></div></div>';
-    panels+='<div class="fin-card"><div class="fin-label">&#127859; Food Cost</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-food" placeholder="0.00" oninput="calcFinance()"></div></div>';
+    panels+='<div class="fin-card"><div class="fin-label">&#127859; Food Cost <button onclick="calcAutoFoodCost()" style="font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(78,202,130,.2);color:#4eca82;border:1px solid rgba(78,202,130,.4);cursor:pointer;font-weight:700;margin-left:4px">&#9889; Auto</button></div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-food" placeholder="0.00" oninput="calcFinance()"></div></div>';
     panels+='<div class="fin-card"><div class="fin-label">&#128104;&#8205;&#127859; Labour Cost</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-labour" placeholder="0.00" oninput="calcFinance()"></div></div>';
     panels+='<div class="fin-card full"><div class="fin-label">&#128666; Other Costs</div><div style="display:flex;gap:8px"><input class="fin-input" type="number" id="fin-other" placeholder="0.00" style="max-width:120px" oninput="calcFinance()"><input class="fin-input" type="text" id="fin-other-desc" placeholder="Description (transport, rental...)"></div></div>';
     panels+='<div class="fin-card full"><div class="fin-label">&#128221; Notes</div><textarea class="fin-input" id="fin-notes" rows="2" placeholder="Payment status, PO number..." style="font-size:13px;resize:vertical"></textarea></div>';
@@ -2142,6 +2146,7 @@ function loadMasterOverrides(){
           if(data.diet !== undefined) MASTER[idx].diet = data.diet;
           if(data.allergens !== undefined) MASTER[idx].allergens = data.allergens;
           if(data.gluten_free !== undefined) MASTER[idx].gluten_free = data.gluten_free;
+          if(data.price !== undefined) MASTER[idx].price = data.price;
         }
       });
       renderMasterList('', masterDietFilter);
@@ -2211,7 +2216,7 @@ function openEditEvent(idx){
 
 function openNewEventForm(){
   editingIdx = -1;
-  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''}];
+  editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',price_per_portion:'',cooking_notes:'',packaging_notes:''}];
   editingIngredients = {};
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
@@ -2273,11 +2278,12 @@ function renderMenuRow(m, i){
   return '<div class="menu-edit-row" id="ef-mrow-' + i + '" style="flex-direction:column;align-items:stretch">' +
     '<div style="display:flex;gap:6px;align-items:center">' +
     '<div class="ac-wrap" style="flex:2">' +
-    '<input class="form-input" placeholder="Dish name" value="' + esc(m.name||'') + '" data-idx="'+i+'" oninput="editingMenuRows['+i+'].name=this.value" onmousedown="this._ac=true">' +
+    '<input class="form-input" placeholder="Dish name" value="' + esc(m.name||'') + '" data-idx="'+i+'" oninput="editingMenuRows['+i+'].name=this.value;autoFillMenuPrice('+i+',this.value)" onmousedown="this._ac=true">' +
     '</div>' +
     '<input class="form-input" style="max-width:55px" placeholder="Pax" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
     '<input class="form-input" style="max-width:65px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
     '<select class="form-input" style="max-width:130px;font-size:12px" onchange="editingMenuRows['+i+'].packaging=this.value">'+[''+'',"GN 1/1","GN 1/2","GN 2/1","GN 3/1","Paper Bowl","Plastic Jar","Glass Jar","White Box","Brown Box","Plastic Tray","Baskets","Bamboo Boats","Paper Wrap","Round Bowls","Compartment Bowl","No Packaging"].map(function(o){return '<option value="'+o+'"'+(m.packaging===o?' selected':'')+'>'+(!o?'— pkg —':o)+'</option>';}).join('')+'</select>' +
+    '<input class="form-input" type="number" step="0.01" placeholder="€/ptn" title="Price per portion" style="max-width:72px;font-size:12px" value="'+esc(String(m.price_per_portion||''))+'" oninput="editingMenuRows['+i+'].price_per_portion=this.value">' +
     '<button class="btn-remove" onclick="removeMenuRow(' + i + ')">✕</button>' +
     '</div>' +
     '<div class="menu-qty-row">' +
@@ -2351,7 +2357,7 @@ function calcMenuQty(i, changed){
 }
 
 function addMenuRow(){
-  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',cooking_notes:'',packaging_notes:''});
+  editingMenuRows.push({name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',price_per_portion:'',cooking_notes:'',packaging_notes:''});
   const container = document.getElementById('ef-menu-rows');
   const i = editingMenuRows.length - 1;
   const div = document.createElement('div');
@@ -2589,6 +2595,7 @@ function renderMasterList(q, diet){
   list.innerHTML = items.slice(0,200).map(function(x, i){
     const idx = MASTER.indexOf(x);
     const ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
+    const priceStr = x.price ? '€'+parseFloat(x.price).toFixed(2)+'/portion' : '';
     const dc = dietClass(x.diet||'');
     return '<div class="master-item">' +
       '<div style="flex:1;min-width:0">' +
@@ -2600,6 +2607,7 @@ function renderMasterList(q, diet){
           (x.allergens ? '<span style="font-size:11px;color:var(--orange);font-weight:700">&#9888; '+esc(x.allergens)+'</span>' : '') +
           (x.category ? '<span style="font-size:11px;color:var(--sub);font-weight:600;background:var(--s3);border-radius:5px;padding:1px 7px">'+esc(x.category)+'</span>' : '') +
           (ingCount!==null ? '<span style="font-size:11px;color:var(--blue);font-weight:700">'+ingCount+' ingredients</span>' : '') +
+        (x.price ? ' <span style="font-size:11px;color:#4eca82;font-weight:700">€'+parseFloat(x.price).toFixed(2)+'/ptn</span>' : '') +
         '</div>' +
       '</div>' +
       (creatorUnlocked ?
@@ -2621,6 +2629,7 @@ function openMasterEdit(idx){
   document.getElementById('me-diet').value = x.diet || '';
   document.getElementById('me-allergens').value = x.allergens || '';
   document.getElementById('me-gf').checked = !!x.gluten_free;
+  document.getElementById('me-price').value = x.price || '';
   document.getElementById('me-idx').value = idx;
   // Load existing ingredients from recipeDb
   masterEditIngredients = (window._recipeDb && window._recipeDb[x.name])
@@ -2665,15 +2674,17 @@ function saveMasterEdit(){
   const allergens = document.getElementById('me-allergens').value.trim();
   const gf = document.getElementById('me-gf').checked;
   if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
+  const price = parseFloat(document.getElementById('me-price').value)||0;
   MASTER[idx].diet = diet;
   MASTER[idx].allergens = allergens;
   MASTER[idx].gluten_free = gf ? 'Yes' : '';
+  MASTER[idx].price = price;
   const dishName = MASTER[idx].name;
   const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
   // Save diet/allergens to master_overrides
   try {
     dbShared.collection('master_overrides').doc(dishName).set({
-      diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : ''
+      diet: diet, allergens: allergens, gluten_free: gf ? 'Yes' : '', price: price
     });
   } catch(e){ console.warn('master_overrides save error', e); }
   // Save ingredients to recipe_ingredients
@@ -3150,6 +3161,22 @@ function evOpenLabelPrint(html, title, pageSize) {
   w.document.close();
 }
 
+function autoFillMenuPrice(i,name){
+  var m=MASTER.find(function(x){ return x.name.toLowerCase()===name.toLowerCase(); });
+  if(m&&m.price){
+    editingMenuRows[i].price_per_portion=String(m.price);
+    var inputs=document.querySelectorAll('input[placeholder="€/ptn"]');
+    if(inputs[i]) inputs[i].value=m.price;
+  }
+}
+function calcAutoFoodCost(){
+  if(!currentEvent) return;
+  var total=0;
+  (currentEvent.menu||[]).forEach(function(m){
+    total+=(parseFloat(m.price_per_portion)||0)*(parseFloat(m.tot_qty)||parseFloat(m.portions)||0);
+  });
+  if(total>0){ var el=document.getElementById('fin-food'); if(el){ el.value=total.toFixed(2); calcFinance(); } }
+}
 /* ── FINANCE ── */
 function calcFinance(){
   var charge=parseFloat(document.getElementById('fin-charge').value)||0;
