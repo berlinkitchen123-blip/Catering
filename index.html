@@ -2076,6 +2076,7 @@ function buildIngredientsScreen(){
       // Try shared recipe DB first, then event's own embedded recipes
       var ings = (window._recipeDb && window._recipeDb[m.name]) ||
                  (ev.recipes && ev.recipes[m.name] && ev.recipes[m.name].ingredients);
+      console.log('[OQ]', m.name, 'portions=', portions, 'm.portions=', m.portions, 'ings=', ings ? ings.length : 'none');
       if(ings && ings.length && portions){
         ings.forEach(function(ing){
           rows.push({recipe: m.name, product: ing.product||ing.name||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
