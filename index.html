@@ -799,6 +799,33 @@ body {
 .mqr-unit:focus { outline: none; border-color: var(--accent); }
 .mqr-total { font-size: 17px; font-weight: 900; color: var(--accent); min-width: 44px; text-align: center; flex-shrink: 0; }
 .mqr-total-unit { font-size: 11px; color: var(--sub); font-weight: 700; flex-shrink: 0; }
+
+/* ── CALENDAR MONTH NAV ── */
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px 0;
+  background: var(--bg);
+}
+.cal-nav-btn {
+  width: 36px; height: 36px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; color: var(--text); transition: .15s;
+  flex-shrink: 0;
+}
+.cal-nav-btn:hover { background: var(--s3); border-color: var(--accent); }
+.cal-month-label {
+  font-size: 16px; font-weight: 900; color: var(--text); letter-spacing: -.2px;
+  text-align: center; flex: 1;
+}
+.cal-month-label span { color: var(--accent); }
+.day-chip .dc-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); margin: 3px auto 0; display: none;
+}
+.day-chip.has-events .dc-dot { display: block; }
+.day-chip.today { border-color: var(--blue); color: var(--blue); }
+.day-chip.today.active { background: var(--accent); color: #000; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -832,6 +859,11 @@ body {
 <div class="screen-stack" id="screen-stack">
   <!-- HOME -->
   <div class="screen active" id="screen-home">
+    <div class="cal-header" id="cal-header">
+      <div class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</div>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <div class="cal-nav-btn" onclick="calNextMonth()">&#8250;</div>
+    </div>
     <div class="day-strip" id="day-strip"></div>
     <div class="event-grid" id="event-grid"></div>
   </div>
@@ -1078,6 +1110,62 @@ const MASTER = [{"name": "(VEGAN) Penne all'Amatriciana", "diet": "Vegan", "alle
 const WEEK = _D.week;
 let EVENTS = (_D.events||[]).slice();
 let DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
+
+// ── Calendar month navigation ──
+var _calMonth = (function(){
+  // Try to find current month from today
+  var t = new Date();
+  var d = new Date(t.getFullYear(), t.getMonth(), 1);
+  // If today has no events, still show today's month
+  return d;
+})();
+
+function _fmtDate(d){
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var dd=String(d.getDate()).padStart(2,'0');
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var yyyy=d.getFullYear();
+  return days[d.getDay()]+' '+dd+'/'+mm+'/'+yyyy;
+}
+
+function _parseEventDate(s){
+  // "Monday 15/06/2026" -> Date
+  var m = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if(!m) return null;
+  return new Date(+m[3], +m[2]-1, +m[1]);
+}
+
+function _calDaysInMonth(){
+  // Return array of all Date objects in _calMonth
+  var year = _calMonth.getFullYear(), month = _calMonth.getMonth();
+  var result = [];
+  var d = new Date(year, month, 1);
+  while(d.getMonth() === month){ result.push(new Date(d)); d.setDate(d.getDate()+1); }
+  return result;
+}
+
+function _updateCalLabel(){
+  var months=['January','February','March','April','May','June',
+              'July','August','September','October','November','December'];
+  var lbl = document.getElementById('cal-month-label');
+  if(lbl) lbl.innerHTML = '<span>'+months[_calMonth.getMonth()]+'</span> '+_calMonth.getFullYear();
+}
+
+function calPrevMonth(){
+  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth()-1, 1);
+  currentDay = -1;
+  buildDayStrip();
+  document.getElementById('event-grid').innerHTML =
+    '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">Select a day</div></div>';
+}
+
+function calNextMonth(){
+  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth()+1, 1);
+  currentDay = -1;
+  buildDayStrip();
+  document.getElementById('event-grid').innerHTML =
+    '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">Select a day</div></div>';
+}
 let customEvents = [];
 
 const CREATOR_PW = 'bb24';
@@ -1293,28 +1381,55 @@ document.getElementById('pw-overlay').addEventListener('click',function(e){ if(e
 
 /* ── HOME SCREEN ── */
 function buildDayStrip(){
-  const strip=document.getElementById('day-strip');
+  _updateCalLabel();
+  var strip=document.getElementById('day-strip');
   strip.innerHTML='';
-  DAYS.forEach(function(d,i){
-    const evs=EVENTS.filter(function(e){return e.date===d;});
-    const parts=d.split(' ');
-    const el=document.createElement('div');
-    el.className='day-chip'+(i===currentDay?' active':'');
+  var today = new Date(); today.setHours(0,0,0,0);
+  var daysInMonth = _calDaysInMonth();
+  // Build a set of dates that have events for quick lookup
+  var eventDateSet = {};
+  EVENTS.forEach(function(e){
+    var ed = _parseEventDate(e.date||'');
+    if(ed){ var k=ed.getFullYear()+'-'+ed.getMonth()+'-'+ed.getDate(); eventDateSet[k]=true; }
+  });
+  daysInMonth.forEach(function(date, i){
+    var dateStr = _fmtDate(date);
+    var hasEvs = !!eventDateSet[date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate()];
+    var isToday = date.getTime()===today.getTime();
+    var dd = String(date.getDate()).padStart(2,'0');
+    var dayShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
+    var el=document.createElement('div');
+    var cls='day-chip';
+    if(i===currentDay) cls+=' active';
+    if(hasEvs) cls+=' has-events';
+    if(isToday) cls+=' today';
+    el.className=cls;
     el.dataset.day=i;
-    el.innerHTML='<div style="font-weight:800">'+esc(parts[0])+'</div><div class="dc-date">'+(parts[1]||'')+'</div>';
-    el.onclick=function(){ selectDay(+this.dataset.day); };
+    el.innerHTML='<div style="font-weight:800">'+dayShort+'</div><div class="dc-date">'+dd+'</div><div class="dc-dot"></div>';
+    el.onclick=(function(idx){ return function(){ selectDay(idx); }; })(i);
     strip.appendChild(el);
   });
+  // Auto-scroll to today or first event day
+  var activeChip = strip.querySelector('.day-chip.active, .day-chip.today, .day-chip.has-events');
+  if(activeChip) setTimeout(function(){ activeChip.scrollIntoView({inline:'center', behavior:'smooth'}); }, 80);
 }
 function selectDay(i){
   currentDay=i;
   document.querySelectorAll('.day-chip').forEach(function(el,j){ el.classList.toggle('active',j===i); });
-  renderHomeDay(i);
+  // Find dateStr for this index in current month
+  var daysInMonth = _calDaysInMonth();
+  var dateStr = daysInMonth[i] ? _fmtDate(daysInMonth[i]) : null;
+  var evs = dateStr ? EVENTS.filter(function(e){ return e.date===dateStr; }) : [];
+  var grid=document.getElementById('event-grid');
+  grid.innerHTML = evs.map(function(ev){ return renderHomeCard(ev); }).join('') ||
+    '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">No events this day</div></div>';
 }
 function renderHomeDay(i){
-  const d=DAYS[i];
-  const evs=EVENTS.filter(function(e){ return e.date===d; });
-  const grid=document.getElementById('event-grid');
+  if(i < 0){ return; }
+  var daysInMonth = _calDaysInMonth();
+  var dateStr = daysInMonth[i] ? _fmtDate(daysInMonth[i]) : (DAYS[i]||null);
+  var evs = dateStr ? EVENTS.filter(function(e){ return e.date===dateStr; }) : [];
+  var grid=document.getElementById('event-grid');
   grid.innerHTML=evs.map(function(ev){ return renderHomeCard(ev); }).join('') ||
     '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">No events this day</div></div>';
 }
@@ -1777,7 +1892,7 @@ function loadCustomEvents(){
       EVENTS = _D.events.slice().concat(customEvents);
       DAYS = Array.from(new Set(EVENTS.map(function(e){ return e.date; })));
       buildDayStrip();
-      renderHomeDay(currentDay);
+      if(currentDay >= 0) renderHomeDay(currentDay);
       if(creatorUnlocked) buildCreatorEditor();
     });
   } catch(e){ console.warn('Firebase custom events error', e); }
