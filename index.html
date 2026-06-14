@@ -2077,15 +2077,23 @@ function buildIngredientsScreen(){
       var recipeEntry = ev.recipes && ev.recipes[m.name];
       var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
                  || (window._recipeDb && window._recipeDb[m.name]);
+      var beforeLen = rows.length;
       if(ings && ings.length && portions){
         ings.forEach(function(ing){
-          var qtyNum = parseFloat(ing.qty_per_portion);
-          if(isNaN(qtyNum)) return; // skip total/note rows
-          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
+          var qtyNum = parseFloat(ing.qty_per_portion||ing.qty);
+          if(isNaN(qtyNum) || ing.name==='Total'||ing.product==='Total') return; // skip total/note rows
+          var ingForCalc = (ing.qty_per_portion ? ing : Object.assign({}, ing, {qty_per_portion: ing.qty}));
+          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ingForCalc, portions), unit: ing.unit||'kg'});
         });
-      } else {
-        // No recipe data — show the menu item with portions
-        rows.push({recipe: m.name, product: '—', qty: String(portions||'—'), unit: ''});
+      }
+      // If no ingredient rows were produced, fall back to order_qtys or show placeholder
+      if(rows.length === beforeLen){
+        var oqRows = ev.order_qtys ? ev.order_qtys.filter(function(r){ return r.recipe === m.name; }) : [];
+        if(oqRows.length){
+          oqRows.forEach(function(r){ rows.push(r); });
+        } else {
+          rows.push({recipe: m.name, product: '—', qty: String(portions||'—'), unit: ''});
+        }
       }
     });
     h+='<div class="bom-section"><div class="bom-section-header">';
@@ -2437,7 +2445,7 @@ function saveEditForm(){
     phone: document.getElementById('ef-phone').value.trim() || '—',
     notes: document.getElementById('ef-notes').value.trim(),
     menu: editingMenuRows.filter(function(m){ return m.name; }),
-    equipment: [], schedule: {}, recipes: {}, bom_summary: [],
+    equipment: [], schedule: {}, recipes: (editingIdx >= 0 && EVENTS[editingIdx] && EVENTS[editingIdx].recipes && Object.keys(EVENTS[editingIdx].recipes).length ? EVENTS[editingIdx].recipes : {}), bom_summary: [],
     order_qtys: (function(){
       var oq = [];
       editingMenuRows.filter(function(m){ return m.name; }).forEach(function(m){
