@@ -1591,8 +1591,13 @@ function renderHomeCard(ev){
     if(m) return m[2].slice(0,5)+', '+m[1].slice(0,3);
     return s;
   })(ev.date);
-  h+='<div><div class="ec-client">'+esc(ev.client)+'</div>';
-  if(ev.date) h+='<div style="font-size:13px;color:var(--accent);font-weight:800;margin-top:3px">'+esc(evDateFmt)+'</div>';
+  var shortDate=(function(s){
+    if(!s) return '';
+    var m=s.match(/\d{2}\/\d{2}/);
+    return m?m[0]:'';
+  })(ev.date);
+  var cardTitle=ev.client+(shortDate?'-'+shortDate:'');
+  h+='<div><div class="ec-client">'+esc(cardTitle)+'</div>';
   h+='</div>';
   h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
   h+='<div class="ec-arrow">&#8250;</div>';
