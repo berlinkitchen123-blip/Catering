@@ -1630,14 +1630,12 @@ function openEvent(idx){
         panels+='<div class="recipe-section-title">Ingredients</div>';
         const dishOMS2=(omsValues[eid]&&omsValues[eid][rname])||0;
         const recipePortions=calcPortions(rd.portions, dishOMS2);
-        if(recipePortions){
-          panels+='<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(240,192,64,.12);border:1px solid rgba(240,192,64,.3);border-radius:8px;padding:5px 11px;margin-bottom:8px">';
-          panels+='<span style="font-size:18px;font-weight:900;color:var(--accent)">'+recipePortions+'</span>';
-          panels+='<span style="font-size:11px;color:var(--sub);font-weight:700">portions</span>';
-          panels+='</div>';
-        }
+        panels+='<div id="rcp-banner-'+rid+'" style="display:inline-flex;align-items:center;gap:6px;background:rgba(240,192,64,.12);border:1px solid rgba(240,192,64,.3);border-radius:8px;padding:5px 11px;margin-bottom:8px'+(recipePortions?'':';opacity:0.3">')+'">';
+        panels+='<span id="rcp-pcount-'+rid+'" style="font-size:18px;font-weight:900;color:var(--accent)">'+(recipePortions||'?')+'</span>';
+        panels+='<span style="font-size:11px;color:var(--sub);font-weight:700">portions</span>';
+        panels+='</div>';
         panels+='<table class="dt" style="table-layout:fixed;width:100%"><colgroup><col style="width:40%"><col style="width:16%"><col style="width:10%"><col style="width:34%"></colgroup>';
-        panels+='<thead><tr><th>Ingredient</th><th>Qty/Ptn</th><th>Unit</th><th>'+(recipePortions ? recipePortions+' × qty = total' : 'Total')+'</th></tr></thead><tbody>';
+        panels+='<thead><tr><th>Ingredient</th><th>Qty/Ptn</th><th>Unit</th><th id="rcp-th4-'+rid+'">'+(recipePortions ? recipePortions+' × qty = total' : 'Total')+'</th></tr></thead><tbody>';
         rd.ingredients.forEach(function(ing){
           var qtyNum=parseFloat(ing.qty_per_portion);
           var totDisplay='';
@@ -2238,20 +2236,40 @@ function updateDishOMS(input){
   if(!omsValues[eid]) omsValues[eid]={};
   omsValues[eid][dish]=val;
   const total=val+offset;
-  // Update total display
+  // Update menu tab total display
   const totalEl=document.getElementById('odt-'+safeId(eid+dish));
   if(totalEl) totalEl.textContent=val?total:'?';
-  // Re-scale this recipe's ingredient totals
+  // Re-render recipe card with updated OMS total
   if(currentEvent&&currentEvent.recipes&&currentEvent.recipes[dish]){
     const rd=currentEvent.recipes[dish];
-    if(!rd.ingredients||!rd.ingredients.length) return;
     const rid=safeId(eid+'-'+dish);
+    const recipePortions=val?total:0;
+    // Update portions badge
+    const pcountEl=document.getElementById('rcp-pcount-'+rid);
+    const bannerEl=document.getElementById('rcp-banner-'+rid);
+    if(pcountEl) pcountEl.textContent=recipePortions||'?';
+    if(bannerEl) bannerEl.style.opacity=recipePortions?'1':'0.3';
+    // Update 4th column header
+    const th4El=document.getElementById('rcp-th4-'+rid);
+    if(th4El) th4El.textContent=recipePortions?(recipePortions+' × qty = total'):'Total';
+    // Update ingredient rows
+    if(!rd.ingredients||!rd.ingredients.length) return;
     const tbody=document.querySelector('#rc-'+rid+' .dt tbody');
     if(!tbody) return;
     tbody.innerHTML=rd.ingredients.map(function(ing){
-      const tot=val?calcIngTotal(ing,total):(ing.total_or_notes||'');
-      const isNote=tot&&isNaN(parseFloat(tot))&&tot.length>6;
-      return '<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td><td class="sub">'+esc(ing.unit||'')+'</td><td class="'+(isNote?'sub':'highlight')+'">'+esc(tot)+'</td></tr>';
+      var qtyNum=parseFloat(ing.qty_per_portion);
+      var totDisplay=''; var isNote=false;
+      if(!isNaN(qtyNum)&&recipePortions){
+        var raw=qtyNum*recipePortions;
+        var tot=raw<1?raw.toFixed(3):raw.toFixed(2).replace(/\.?0+$/,'');
+        totDisplay=recipePortions+' × '+ing.qty_per_portion+' = '+tot;
+      } else {
+        totDisplay=ing.total_or_notes||'';
+        isNote=totDisplay&&isNaN(parseFloat(totDisplay))&&totDisplay.length>6;
+      }
+      return '<tr><td>'+esc(ing.name)+'</td><td>'+esc(ing.qty_per_portion||'')+'</td>'
+        +'<td class="sub">'+esc(ing.unit||'')+'</td>'
+        +'<td class="'+(isNote?'sub':'highlight')+'" style="font-size:11px;word-break:break-word">'+esc(totDisplay)+'</td></tr>';
     }).join('');
   }
 }
