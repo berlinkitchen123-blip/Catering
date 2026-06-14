@@ -2068,30 +2068,33 @@ function buildIngredientsScreen(){
   document.getElementById('ingredients-sub').textContent = WEEK;
   let h='';
   EVENTS.forEach(function(ev){
-    var hasQtys = ev.order_qtys && ev.order_qtys.length;
-    var hasMenu = ev.menu && ev.menu.length;
-    if(!hasQtys && !hasMenu) return;
+    if(!ev.menu || !ev.menu.length) return;
+    // Build live order quantities from recipe DB + current menu portions
+    var rows = [];
+    ev.menu.forEach(function(m){
+      var portions = parseFloat(m.tot_qty) || parseFloat(m.portions) || 0;
+      var ings = window._recipeDb && window._recipeDb[m.name];
+      if(ings && ings.length && portions){
+        ings.forEach(function(ing){
+          rows.push({recipe: m.name, product: ing.product||ing.name||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
+        });
+      } else {
+        // No recipe data — show the menu item with portions
+        rows.push({recipe: m.name, product: '—', qty: String(portions||'—'), unit: ''});
+      }
+    });
     h+='<div class="bom-section"><div class="bom-section-header">';
     h+='<div class="bom-section-title">'+esc(ev.client)+'</div>';
     h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
     h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span></div>';
     h+='<div class="bom-section-body">';
-    if(hasQtys){
-      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th></tr></thead><tbody>';
-      let lr='';
-      ev.order_qtys.forEach(function(item){
-        if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
-        h+='<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
-      });
-      h+='</tbody></table>';
-    } else {
-      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Dish</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>Price/ptn</th><th>Total</th></tr></thead><tbody>';
-      ev.menu.forEach(function(m){
-        var pp=parseFloat(m.price_per_portion)||0; var ptn=parseFloat(m.portions)||0; var tot=pp&&ptn?'€'+(pp*ptn).toFixed(2):'';
-        h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td><td class="sub">'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+tot+'</td></tr>';
-      });
-      h+='</tbody></table>';
-    }
+    h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th></tr></thead><tbody>';
+    var lr='';
+    rows.forEach(function(item){
+      if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
+      h+='<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
+    });
+    h+='</tbody></table>';
     h+='</div></div>';
   });
   if(!h) h='<div class="empty"><div class="empty-icon">&#129378;</div><div class="empty-text">No order data</div></div>';
