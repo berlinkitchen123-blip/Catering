@@ -1321,6 +1321,7 @@ const CREATOR_PW = 'bb24';
 let creatorUnlocked = false;
 let currentScreen = 'home';
 let currentDay = 0;
+let pendingScreen = null;
 let currentEvent = null;
 let checklistState = {};
 let omsValues = {}; // eventId -> {dishName -> omsBase}
@@ -1407,52 +1408,35 @@ function buildBottomNav(){ buildDrawer(); } // alias
 function buildDrawer(){
   const nav=document.getElementById('drawer-nav');
   nav.innerHTML='';
-
-  // Main items
-  const mainItems=[
-    {id:'home', icon:'&#127968;', label:'Events'},
-    {id:'bom',  icon:'&#128230;', label:'BOM'},
+  const allItems=[
+    {id:'home',           icon:'&#127968;', label:'Events',           creator:false},
+    {id:'bom',            icon:'&#128230;', label:'BOM',              creator:false},
+    {id:'labels',         icon:'&#127991;', label:'Labels',           creator:false},
+    {id:'creator-editor', icon:'&#9998;',   label:'Manage Events',    creator:true},
+    {id:'orders',         icon:'&#128203;', label:'Client Orders',    creator:true},
+    {id:'ingredients',    icon:'&#129378;', label:'Order Quantities', creator:true},
+    {id:'master',         icon:'&#128218;', label:'Master Data',      creator:true},
   ];
-  mainItems.forEach(function(item){
+  allItems.forEach(function(item){
     const el=document.createElement('div');
     const isActive=currentScreen===item.id||(currentScreen==='home'&&item.id==='home')||(currentScreen==='event'&&item.id==='home');
     el.className='drawer-item'+(isActive?' active':'');
-    el.innerHTML='<div class="drawer-item-icon">'+item.icon+'</div><div class="drawer-item-label">'+item.label+'</div>';
-    el.onclick=(function(id){ return function(){ handleNavClick(id); closeDrawer(); }; })(item.id);
+    const lockBadge=(item.creator&&!creatorUnlocked)?'<span style="font-size:10px;opacity:.45;margin-left:4px">&#128274;</span>':'';
+    el.innerHTML='<div class="drawer-item-icon">'+item.icon+'</div><div class="drawer-item-label">'+item.label+lockBadge+'</div>';
+    el.onclick=(function(id,needsCreator){
+      return function(){
+        closeDrawer();
+        if(needsCreator&&!creatorUnlocked){ pendingScreen=id; setTimeout(openPw,200); }
+        else { handleNavClick(id); }
+      };
+    })(item.id,item.creator);
     nav.appendChild(el);
   });
-
-  if(creatorUnlocked){
-    // Creator section
-    const div=document.createElement('div');
-    div.className='drawer-divider'; nav.appendChild(div);
-    const lbl=document.createElement('div');
-    lbl.className='drawer-section-label'; lbl.textContent='Creator';
-    nav.appendChild(lbl);
-    const creatorItems=[
-      {id:'creator-editor', icon:'&#9998;', label:'Manage Events'},
-      {id:'orders',         icon:'&#128203;', label:'Client Orders'},
-      {id:'ingredients',    icon:'&#129378;', label:'Order Quantities'},
-      {id:'master',         icon:'&#128218;', label:'Master Data'},
-    ];
-    creatorItems.forEach(function(item){
-      const el=document.createElement('div');
-      const isActive=currentScreen===item.id;
-      el.className='drawer-item'+(isActive?' active':'');
-      el.innerHTML='<div class="drawer-item-icon">'+item.icon+'</div><div class="drawer-item-label">'+item.label+'</div>';
-      el.onclick=(function(id){ return function(){ handleNavClick(id); closeDrawer(); }; })(item.id);
-      nav.appendChild(el);
-    });
-  }
-
-  // Footer lock button
   const lockBtn=document.getElementById('drawer-lock-btn');
   if(lockBtn){
     lockBtn.className='drawer-lock'+(creatorUnlocked?' unlocked':'');
-    lockBtn.innerHTML=creatorUnlocked
-      ? '&#128275; <span>Lock Creator</span>'
-      : '&#128274; <span>Creator Access</span>';
-    lockBtn.onclick=function(){ if(creatorUnlocked){ lockCreator(); closeDrawer(); } else { closeDrawer(); setTimeout(openPw, 200); } };
+    lockBtn.innerHTML=creatorUnlocked?'&#128275; <span>Lock Creator</span>':'&#128274; <span>Creator Access</span>';
+    lockBtn.onclick=function(){ if(creatorUnlocked){ lockCreator(); closeDrawer(); } else { closeDrawer(); setTimeout(openPw,200); } };
   }
 }
 function toggleDrawer(){
@@ -1512,7 +1496,9 @@ function checkPw(){
     buildOrdersScreen(); buildIngredientsScreen(); buildCreatorEditor();
     loadMasterOverrides();
     loadRecipeIngredients();
-    buildBottomNav(); showScreen('creator-editor');
+    buildBottomNav();
+    var dest=pendingScreen||'creator-editor'; pendingScreen=null;
+    showScreen(dest);
   } else {
     const inp=document.getElementById('pw-input');
     inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
