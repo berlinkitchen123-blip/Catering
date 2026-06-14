@@ -947,6 +947,27 @@ body {
 .city-card-label {
   font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .08em;
 }
+
+/* ── FINANCE PANEL ── */
+.fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+.fin-card { background: var(--s2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+.fin-card.full { grid-column: 1 / -1; }
+.fin-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--sub); margin-bottom: 6px; }
+.fin-input-wrap { display: flex; align-items: center; gap: 6px; }
+.fin-currency { font-size: 15px; font-weight: 800; color: var(--sub); }
+.fin-input { background: var(--s3); border: 1.5px solid var(--border2); border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 16px; font-weight: 700; width: 100%; outline: none; }
+.fin-input:focus { border-color: var(--accent); }
+.fin-result { background: var(--s1); border: 1px solid var(--border2); border-radius: 14px; padding: 16px; margin: 0 16px; }
+.fin-result-row { display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; }
+.fin-result-row:last-child { border-bottom: none; font-size: 16px; font-weight: 900; }
+.fin-result-label { color: var(--sub); }
+.fin-result-val { color: var(--text); }
+.fin-result-val.profit-pos { color: var(--green); }
+.fin-result-val.profit-neg { color: var(--red); }
+.fin-save-btn { margin: 14px 16px 24px; width: calc(100% - 32px); padding: 14px; background: var(--accent);
+  color: #000; font-weight: 800; font-size: 14px; border: none; border-radius: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -1195,6 +1216,17 @@ body {
 </div>
 
 
+<!-- FINANCE OVERVIEW SCREEN -->
+<div class="screen" id="screen-finance">
+  <div class="page-hero">
+    <div class="page-title">&#128176; Finance Overview</div>
+    <div class="page-sub">Revenue &amp; cost summary · Creator only</div>
+  </div>
+  <div style="padding:0 14px 100px" id="finance-overview-body">
+    <div style="color:var(--sub);text-align:center;padding:40px">Loading...</div>
+  </div>
+</div>
+
 <!-- MASTER EDIT OVERLAY -->
 <div id="master-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center;padding:16px">
   <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
@@ -1416,6 +1448,7 @@ function buildDrawer(){
     {id:'orders',         icon:'&#128203;', label:'Client Orders',    creator:true},
     {id:'ingredients',    icon:'&#129378;', label:'Order Quantities', creator:true},
     {id:'master',         icon:'&#128218;', label:'Master Data',      creator:true},
+    {id:'finance',        icon:'&#128176;', label:'Finance Overview',  creator:true},
   ];
   allItems.forEach(function(item){
     const el=document.createElement('div');
@@ -1453,6 +1486,7 @@ function closeDrawer(){
 }
 function handleNavClick(id){
   if(id==='home'){ showScreen('home'); return; }
+  if(id==='finance'){ buildFinanceOverview(); showScreen('finance'); return; }
   showScreen(id);
 }
 function showScreen(id, animate){
@@ -1745,6 +1779,7 @@ function openEvent(idx){
   tabs.push({id:'menu',label:'&#127869; Menu',count:(ev.menu||[]).length});
   if(hasRecipes) tabs.push({id:'recipes',label:'&#128218; Recipes',count:Object.keys(ev.recipes).length});
   if(hasSched) tabs.push({id:'sched',label:'&#128336; Schedule'});
+  if(creatorUnlocked) tabs.push({id:'finance',label:'&#128176; Finance'});
 
   const tabsEl=document.getElementById('sub-tabs');
   tabsEl.innerHTML=tabs.map(function(t,i){
@@ -1909,12 +1944,30 @@ function openEvent(idx){
     });
     panels+='</div></div>';
   }
+  // Finance panel (creator only)
+  if(creatorUnlocked){
+    panels+='<div class="sub-panel" id="sp-finance">';
+    panels+='<div class="fin-grid">';
+    panels+='<div class="fin-card full"><div class="fin-label">&#128181; Catering Charge (Invoice to Client)</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-charge" placeholder="0.00" oninput="calcFinance()"></div></div>';
+    panels+='<div class="fin-card"><div class="fin-label">&#127859; Food Cost</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-food" placeholder="0.00" oninput="calcFinance()"></div></div>';
+    panels+='<div class="fin-card"><div class="fin-label">&#128104;&#8205;&#127859; Labour Cost</div><div class="fin-input-wrap"><span class="fin-currency">€</span><input class="fin-input" type="number" id="fin-labour" placeholder="0.00" oninput="calcFinance()"></div></div>';
+    panels+='<div class="fin-card full"><div class="fin-label">&#128666; Other Costs</div><div style="display:flex;gap:8px"><input class="fin-input" type="number" id="fin-other" placeholder="0.00" style="max-width:120px" oninput="calcFinance()"><input class="fin-input" type="text" id="fin-other-desc" placeholder="Description (transport, rental...)"></div></div>';
+    panels+='<div class="fin-card full"><div class="fin-label">&#128221; Notes</div><textarea class="fin-input" id="fin-notes" rows="2" placeholder="Payment status, PO number..." style="font-size:13px;resize:vertical"></textarea></div>';
+    panels+='</div>';
+    panels+='<div class="fin-result">';
+    panels+='<div class="fin-result-row"><span class="fin-result-label">Total Costs</span><span class="fin-result-val" id="fin-total-cost">€ —</span></div>';
+    panels+='<div class="fin-result-row"><span class="fin-result-label">Profit</span><span class="fin-result-val" id="fin-profit">€ —</span></div>';
+    panels+='<div class="fin-result-row"><span class="fin-result-label">Margin</span><span class="fin-result-val" id="fin-margin">— %</span></div>';
+    panels+="</div><button class='fin-save-btn' onclick="saveFinance('"+eid+"')">&#128190; Save Financials</button>";
+    panels+='</div>';
+  }
 
   document.getElementById('sub-panels').innerHTML=panels;
   document.getElementById('screen-event').scrollTop=0;
   showScreen('event','forward');
   loadChecklists([ev]);
   updateEquipProgress(ev);
+  if(creatorUnlocked) loadFinance(eid);
 }
 
 function switchSubTab(tab){
@@ -3094,6 +3147,89 @@ function evOpenLabelPrint(html, title, pageSize) {
     '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},800)}<\/scr'+'ipt>'+
     '</body></html>');
   w.document.close();
+}
+
+/* ── FINANCE ── */
+function calcFinance(){
+  var charge=parseFloat(document.getElementById('fin-charge').value)||0;
+  var food=parseFloat(document.getElementById('fin-food').value)||0;
+  var labour=parseFloat(document.getElementById('fin-labour').value)||0;
+  var other=parseFloat(document.getElementById('fin-other').value)||0;
+  var total=food+labour+other;
+  var profit=charge-total;
+  var margin=charge>0?((profit/charge)*100):0;
+  var fmt=function(n){ return '€ '+n.toFixed(2); };
+  var tc=document.getElementById('fin-total-cost'); if(tc) tc.textContent=fmt(total);
+  var profEl=document.getElementById('fin-profit');
+  if(profEl){ profEl.textContent=fmt(profit); profEl.className='fin-result-val '+(profit>=0?'profit-pos':'profit-neg'); }
+  var mg=document.getElementById('fin-margin'); if(mg) mg.textContent=margin.toFixed(1)+' %';
+}
+function saveFinance(eid){
+  var data={
+    charge:parseFloat(document.getElementById('fin-charge').value)||0,
+    food_cost:parseFloat(document.getElementById('fin-food').value)||0,
+    labour_cost:parseFloat(document.getElementById('fin-labour').value)||0,
+    other_cost:parseFloat(document.getElementById('fin-other').value)||0,
+    other_desc:(document.getElementById('fin-other-desc')||{}).value||'',
+    notes:(document.getElementById('fin-notes')||{}).value||'',
+    updatedAt:new Date().toISOString()
+  };
+  db.collection('event_financials').doc(eid).set(data,{merge:true}).then(function(){
+    var btn=document.querySelector('.fin-save-btn');
+    if(btn){ btn.innerHTML='&#10003; Saved'; btn.style.background='var(--green)';
+      setTimeout(function(){ btn.innerHTML='&#128190; Save Financials'; btn.style.background=''; },2000); }
+  }).catch(function(e){ alert('Save failed: '+e.message); });
+}
+function loadFinance(eid){
+  db.collection('event_financials').doc(eid).get().then(function(doc){
+    if(!doc.exists) return;
+    var d=doc.data();
+    var set=function(id,val){ var el=document.getElementById(id); if(el&&val!=null) el.value=val; };
+    set('fin-charge',d.charge); set('fin-food',d.food_cost);
+    set('fin-labour',d.labour_cost); set('fin-other',d.other_cost);
+    set('fin-other-desc',d.other_desc); set('fin-notes',d.notes);
+    calcFinance();
+  }).catch(function(){});
+}
+function buildFinanceOverview(){
+  if(!creatorUnlocked) return;
+  var body=document.getElementById('finance-overview-body');
+  if(!body) return;
+  body.innerHTML='<div style="color:var(--sub);text-align:center;padding:40px">Loading...</div>';
+  db.collection('event_financials').get().then(function(snap){
+    var finMap={};
+    snap.forEach(function(d){ finMap[d.id]=d.data(); });
+    var totalCharge=0,totalCost=0,totalProfit=0;
+    var rows=EVENTS.map(function(ev){
+      var eid=eventId(ev);
+      var f=finMap[eid]||{};
+      var charge=f.charge||0,food=f.food_cost||0,labour=f.labour_cost||0,other=f.other_cost||0;
+      var cost=food+labour+other,profit=charge-cost;
+      totalCharge+=charge; totalCost+=cost; totalProfit+=profit;
+      var profColor=profit>0?'var(--green)':profit<0?'var(--red)':'var(--sub)';
+      return '<div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+        +'<div><div style="font-size:14px;font-weight:800">'+esc(ev.client)+'</div>'
+        +'<div style="font-size:11px;color:var(--sub)">'+esc(ev.date||'')+'</div></div>'
+        +(charge?'<div style="font-size:16px;font-weight:900;color:var(--accent)">€'+charge.toFixed(0)+'</div>':'<div style="font-size:11px;color:var(--dim)">No data</div>')
+        +'</div>'
+        +(charge?'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">'
+          +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">COST</div><div style="font-size:13px;font-weight:800">€'+cost.toFixed(0)+'</div></div>'
+          +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">PROFIT</div><div style="font-size:13px;font-weight:800;color:'+profColor+'">€'+profit.toFixed(0)+'</div></div>'
+          +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">MARGIN</div><div style="font-size:13px;font-weight:800">'+(charge>0?((profit/charge)*100).toFixed(0):'—')+'%</div></div>'
+          +'</div>':'')
+        +'</div>';
+    }).join('');
+    var tp=totalProfit;
+    var summary='<div style="background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border2);border-radius:14px;padding:18px;margin-bottom:16px">'
+      +'<div style="font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">All Events</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">'
+      +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">REVENUE</div><div style="font-size:22px;font-weight:900;color:var(--accent)">€'+totalCharge.toFixed(0)+'</div></div>'
+      +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">COSTS</div><div style="font-size:22px;font-weight:900">€'+totalCost.toFixed(0)+'</div></div>'
+      +'<div><div style="font-size:10px;color:var(--sub);font-weight:700">PROFIT</div><div style="font-size:22px;font-weight:900;color:'+(tp>=0?'var(--green)':'var(--red)')+'">€'+tp.toFixed(0)+'</div></div>'
+      +'</div></div>';
+    body.innerHTML=summary+(rows||'<div style="color:var(--sub);text-align:center;padding:20px">No financial data yet.</div>');
+  }).catch(function(e){ body.innerHTML='<div style="color:var(--red);padding:20px">Error: '+e.message+'</div>'; });
 }
 
 /* ── CITY SELECTION + INIT ── */
