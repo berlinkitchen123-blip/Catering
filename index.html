@@ -2079,8 +2079,8 @@ function buildOrdersScreen(){
     if(ev.location&&ev.location!=='—') h+='<p style="margin:10px 0 4px;font-size:13px">&#128205; <strong>'+esc(ev.location)+'</strong></p>';
     if(ev.contact&&ev.contact!=='—') h+='<p style="font-size:13px;color:var(--sub);margin-bottom:10px">&#128100; '+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' · '+esc(ev.phone):'')+'</p>';
     if(ev.menu&&ev.menu.length){
-      h+='<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Packaging</th></tr></thead><tbody>';
-      ev.menu.forEach(function(m){ h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td></tr>'; });
+      h+='<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>Price/ptn</th><th>Total</th></tr></thead><tbody>';
+      ev.menu.forEach(function(m){ var pp=parseFloat(m.price_per_portion)||0; var ptn=parseFloat(m.portions)||0; var tot=pp&&ptn?'€'+(pp*ptn).toFixed(2):''; h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td><td class="sub">'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+tot+'</td></tr>'; });
       h+='</tbody></table>';
     }
     h+='</div></div>';
@@ -2110,9 +2110,10 @@ function buildIngredientsScreen(){
       });
       h+='</tbody></table>';
     } else {
-      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Dish</th><th>Portions</th><th>Diet</th><th>Packaging</th></tr></thead><tbody>';
+      h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Dish</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>Price/ptn</th><th>Total</th></tr></thead><tbody>';
       ev.menu.forEach(function(m){
-        h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td></tr>';
+        var pp=parseFloat(m.price_per_portion)||0; var ptn=parseFloat(m.portions)||0; var tot=pp&&ptn?'€'+(pp*ptn).toFixed(2):'';
+        h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td><td class="sub">'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+tot+'</td></tr>';
       });
       h+='</tbody></table>';
     }
