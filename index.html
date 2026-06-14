@@ -2072,14 +2072,16 @@ function buildIngredientsScreen(){
     // Build live order quantities from recipe DB + current menu portions
     var rows = [];
     ev.menu.forEach(function(m){
-      var portions = parseFloat(m.portions) || parseFloat(m.tot_qty) || parseFloat(m.ppl) || 0;
-      // Try shared recipe DB first, then event's own embedded recipes
-      var ings = (window._recipeDb && window._recipeDb[m.name]) ||
-                 (ev.recipes && ev.recipes[m.name] && ev.recipes[m.name].ingredients);
-      console.log('[OQ]', m.name, 'portions=', portions, 'm.portions=', m.portions, 'ings=', ings ? ings.length : 'none');
+      var portions = parseFloat(m.portions) || parseFloat(m.ppl) || parseFloat(m.tot_qty) || 0;
+      // Prefer ev.recipes (has qty_per_portion), fall back to _recipeDb
+      var recipeEntry = ev.recipes && ev.recipes[m.name];
+      var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
+                 || (window._recipeDb && window._recipeDb[m.name]);
       if(ings && ings.length && portions){
         ings.forEach(function(ing){
-          rows.push({recipe: m.name, product: ing.product||ing.name||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
+          var qtyNum = parseFloat(ing.qty_per_portion);
+          if(isNaN(qtyNum)) return; // skip total/note rows
+          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
         });
       } else {
         // No recipe data — show the menu item with portions
