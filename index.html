@@ -2072,8 +2072,10 @@ function buildIngredientsScreen(){
     // Build live order quantities from recipe DB + current menu portions
     var rows = [];
     ev.menu.forEach(function(m){
-      var portions = parseFloat(m.tot_qty) || parseFloat(m.portions) || 0;
-      var ings = window._recipeDb && window._recipeDb[m.name];
+      var portions = parseFloat(m.portions) || parseFloat(m.tot_qty) || parseFloat(m.ppl) || 0;
+      // Try shared recipe DB first, then event's own embedded recipes
+      var ings = (window._recipeDb && window._recipeDb[m.name]) ||
+                 (ev.recipes && ev.recipes[m.name] && ev.recipes[m.name].ingredients);
       if(ings && ings.length && portions){
         ings.forEach(function(ing){
           rows.push({recipe: m.name, product: ing.product||ing.name||'', qty: calcIngTotal(ing, portions), unit: ing.unit||'kg'});
