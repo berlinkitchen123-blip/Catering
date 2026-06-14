@@ -2630,10 +2630,6 @@ function openMasterEdit(idx){
   const x = MASTER[idx];
   if(!x) return;
   document.getElementById('me-name').textContent = x.name;
-  document.getElementById('me-diet').value = x.diet || '';
-  document.getElementById('me-allergens').value = x.allergens || '';
-  document.getElementById('me-gf').checked = !!x.gluten_free;
-  document.getElementById('me-price').value = x.price || '';
   document.getElementById('me-idx').value = idx;
   // Load existing ingredients from recipeDb
   masterEditIngredients = (window._recipeDb && window._recipeDb[x.name])
