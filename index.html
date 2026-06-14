@@ -3036,7 +3036,23 @@ function evOpenLabelPrint(html, title, pageSize) {
 // topbar-week replaced by mini-cal-btn
 document.getElementById('drawer-week').textContent = WEEK;
 buildDayStrip();
-renderHomeDay(0);
+// Auto-select: weekend → next Monday; weekday after 12PM → next business day
+(function(){
+  var now = new Date();
+  var target = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var isWeekend = (target.getDay()===0||target.getDay()===6);
+  if(isWeekend||(now.getHours()>=12&&!isWeekend)) target = _nextBusinessDay(target);
+  // If still weekend (e.g. after adding 1 to Saturday), keep skipping
+  while(target.getDay()===0||target.getDay()===6) target = _nextBusinessDay(target);
+  _calMonth = new Date(target.getFullYear(), target.getMonth(), 1);
+  var days = _calDaysInMonth();
+  var idx = 0;
+  for(var i=0;i<days.length;i++){
+    if(days[i].getDate()===target.getDate()&&days[i].getMonth()===target.getMonth()&&days[i].getFullYear()===target.getFullYear()){idx=i;break;}
+  }
+  currentDay = idx;
+})();
+renderHomeDay(currentDay);
 buildBomScreen();
 buildBottomNav();
 showScreen('home');
