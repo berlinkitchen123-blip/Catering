@@ -927,8 +927,9 @@ body {
   cursor: pointer; border: 2px solid transparent;
   transition: transform .18s, border-color .18s, box-shadow .18s;
   text-align: center; position: relative; overflow: hidden;
-  user-select: none;
+  user-select: none; -webkit-tap-highlight-color: rgba(255,255,255,.1);
 }
+.city-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
 .city-card:active { transform: scale(.96); }
 .city-card.berlin {
   background: linear-gradient(145deg, #1a1a2e, #16213e);
@@ -3248,35 +3249,40 @@ function switchCity() {
 }
 
 function selectCity(city) {
-  selectedCity = city;
-  // Hide city picker
-  document.getElementById('city-picker').classList.add('hidden');
-  // Show city badge in topbar
-  var badge = document.getElementById('city-badge');
-  if(badge){
-    badge.textContent = city === 'berlin' ? '🐻 Berlin' : '🍺 Munich';
-    badge.style.display = 'inline';
-    badge.style.background = city === 'berlin' ? 'rgba(91,156,246,.18)' : 'rgba(78,202,130,.18)';
-    badge.style.color = city === 'berlin' ? '#5b9cf6' : '#4eca82';
+  try {
+    selectedCity = city;
+    // Hide city picker
+    document.getElementById('city-picker').classList.add('hidden');
+    // Show city badge in topbar
+    var badge = document.getElementById('city-badge');
+    if(badge){
+      badge.textContent = city === 'berlin' ? '🐻 Berlin' : '🍺 Munich';
+      badge.style.display = 'inline';
+      badge.style.background = city === 'berlin' ? 'rgba(91,156,246,.18)' : 'rgba(78,202,130,.18)';
+      badge.style.color = city === 'berlin' ? '#5b9cf6' : '#4eca82';
+    }
+    // Init Berlin Firebase (shared recipes/master)
+    var fbBerlin;
+    try { fbBerlin = firebase.app('app-berlin'); }
+    catch(e) { fbBerlin = firebase.initializeApp(FIREBASE_CONFIGS['berlin'], 'app-berlin'); }
+    dbShared = fbBerlin.firestore();
+    // Init city-specific Firebase for events
+    if(city === 'berlin') {
+      db = dbShared;
+    } else {
+      var fbCity;
+      try { fbCity = firebase.app('app-' + city); }
+      catch(e2) { fbCity = firebase.initializeApp(FIREBASE_CONFIGS[city], 'app-' + city); }
+      db = fbCity.firestore();
+    }
+    if(city === 'munich') { EVENTS = []; DAYS = []; }
+    initApp();
+  } catch(err) {
+    console.error('selectCity error:', err);
+    // Still try to run app without Firebase
+    document.getElementById('city-picker').classList.add('hidden');
+    try { initApp(); } catch(e2) { console.error('initApp error:', e2); }
   }
-  // Always init Berlin Firebase for shared recipe/master data
-  var fbBerlin;
-  try { fbBerlin = firebase.app('app-berlin'); } catch(e) { fbBerlin = firebase.initializeApp(FIREBASE_CONFIGS['berlin'], 'app-berlin'); }
-  dbShared = fbBerlin.firestore();
-  // Init city-specific Firebase for events
-  if(city === 'berlin') {
-    db = dbShared;
-  } else {
-    var fbCity;
-    try { fbCity = firebase.app('app-' + city); } catch(e) { fbCity = firebase.initializeApp(FIREBASE_CONFIGS[city], 'app-' + city); }
-    db = fbCity.firestore();
-  }
-  // Munich: start with empty events/master
-  if(city === 'munich') {
-    EVENTS = [];
-    DAYS = [];
-  }
-  initApp();
 }
 
 function initApp() {
