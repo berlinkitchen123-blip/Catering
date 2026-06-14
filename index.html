@@ -2598,27 +2598,28 @@ function renderMasterList(q, diet){
           '<button onclick="deleteMasterDish('+idx+')" style="padding:7px 11px;border:1.5px solid #4a2020;border-radius:8px;background:#2a1010;font-size:15px;cursor:pointer;color:var(--red)">&#128465;</button>' +
         '</div>' +
       '</div>' +
-      // Row 2: Diet + Price inline
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center">' +
+      // Row 2: Diet + Price + Portions + GF + Allergens inline
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">' +
         '<select onchange="saveMasterField('+idx+',\'diet\',this.value)" style="padding:5px 8px;border-radius:8px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-size:12px;font-weight:700;cursor:pointer">'+dietOpts+'</select>' +
-        '<div style="display:flex;align-items:center;gap:4px;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:4px 8px">' +
+        '<div style="display:flex;align-items:center;gap:3px;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:4px 8px">' +
           '<span style="font-size:12px;color:var(--sub);font-weight:700">€</span>' +
-          '<input type="number" step="0.01" placeholder="price/ptn" value="'+(pp?pp.toFixed(2):'')+'" style="width:80px;background:none;border:none;color:#4eca82;font-size:13px;font-weight:800;outline:none" onchange="saveMasterField('+idx+',\'price\',parseFloat(this.value)||0)">' +
-          '<span style="font-size:10px;color:var(--sub)">/ptn</span>' +
+          '<input type="number" step="0.01" placeholder="price" value="'+(pp?pp.toFixed(2):'')+'" style="width:60px;background:none;border:none;color:#4eca82;font-size:13px;font-weight:800;outline:none" onchange="saveMasterField('+idx+',\'price\',parseFloat(this.value)||0)">' +
+          '<span style="font-size:10px;color:var(--sub)">/</span>' +
+          '<input type="number" step="1" placeholder="ptn" value="'+(x.portions||'')+'" style="width:40px;background:none;border:none;color:var(--text);font-size:13px;font-weight:800;outline:none" onchange="saveMasterField('+idx+',\'portions\',parseFloat(this.value)||0)">' +
+          '<span style="font-size:10px;color:var(--sub)">ptn</span>' +
         '</div>' +
         '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;font-weight:700;color:var(--sub)">' +
-          '<input type="checkbox" '+(x.gluten_free?'checked':'')+' onchange="saveMasterField('+idx+',\'gluten_free\',this.checked?\'Yes\':\'\')" style="width:14px;height:14px"> GF' +
+          '<input type="checkbox" '+(x.gluten_free?'checked':'')+' onchange="saveMasterField('+idx+',\'gluten_free\',this.checked?\'Yes\':\'\'" style="width:14px;height:14px"> GF' +
         '</label>' +
-      '</div>' +
-      // Row 3: Allergens inline
-      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">' +
-        '<span style="font-size:11px;color:var(--orange);flex-shrink:0">&#9888;</span>' +
-        '<input type="text" placeholder="Allergens (e.g. Gluten, Milk)" value="'+esc(x.allergens||'')+'" style="flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--orange);font-size:12px;font-weight:700;outline:none" onchange="saveMasterField('+idx+',\'allergens\',this.value)">' +
+        '<div style="display:flex;align-items:center;gap:4px;flex:1;min-width:140px;background:var(--s2);border:1.5px solid var(--border2);border-radius:8px;padding:4px 8px">' +
+          '<span style="font-size:11px;color:var(--orange);flex-shrink:0">&#9888;</span>' +
+          '<input type="text" placeholder="Allergens" value="'+esc(x.allergens||'')+'" style="flex:1;background:none;border:none;color:var(--orange);font-size:12px;font-weight:700;outline:none" onchange="saveMasterField('+idx+',\'allergens\',this.value)">' +
+        '</div>' +
       '</div>' +
       // Row 4: category + ing count
       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
         (x.category?'<span style="font-size:11px;color:var(--sub);font-weight:600;background:var(--s3);border-radius:5px;padding:2px 8px">'+esc(x.category)+'</span>':'')+
-        (ingCount!==null?'<span style="font-size:11px;color:var(--blue);font-weight:700">&#128218; '+ingCount+' ingredients</span>':'<span style="font-size:11px;color:var(--dim)">No recipe yet — tap &#9776; to add</span>')+
+        (ingCount!==null?'<span style="font-size:11px;color:var(--blue);font-weight:700">&#128218; '+ingCount+' ingredients</span>':'')+
       '</div>' +
       '</div>';
   }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
