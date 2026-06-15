@@ -1511,6 +1511,7 @@ function checkPw(){
     buildOrdersScreen(); buildIngredientsScreen(); buildCreatorEditor();
     loadMasterOverrides();
     loadRecipeIngredients();
+  loadOMSValues();
     buildBottomNav();
     var dest=pendingScreen||'creator-editor'; pendingScreen=null;
     showScreen(dest);
@@ -2129,6 +2130,17 @@ function loadRecipeIngredients(){
   } catch(e){ console.warn('recipe_ingredients load error', e); }
 }
 
+function loadOMSValues(){
+  try {
+    db.collection('oms_values').get().then(function(snap){
+      snap.forEach(function(doc){
+        omsValues[doc.id] = doc.data();
+      });
+      console.log('Loaded OMS values for', snap.size, 'events');
+    });
+  } catch(e){ console.warn('OMS values load error', e); }
+}
+
 function loadMasterOverrides(){
   try {
     // First load deleted dishes, then apply overrides
@@ -2528,6 +2540,7 @@ function closeEditModal(e){
   document.getElementById('edit-modal').classList.remove('show');
 }
 
+var _omsSaveTimer = {};
 function updateDishOMS(input){
   const eid=input.dataset.eid;
   const dish=input.dataset.dish;
@@ -2535,6 +2548,13 @@ function updateDishOMS(input){
   const val=parseInt(input.value)||0;
   if(!omsValues[eid]) omsValues[eid]={};
   omsValues[eid][dish]=val;
+  // Debounced Firebase save
+  clearTimeout(_omsSaveTimer[eid]);
+  _omsSaveTimer[eid] = setTimeout(function(){
+    try {
+      db.collection('oms_values').doc(eid).set(omsValues[eid], {merge:true});
+    } catch(e){ console.warn('OMS save error', e); }
+  }, 800);
   const total=val+offset;
   // Update menu tab total display
   const totalEl=document.getElementById('odt-'+safeId(eid+dish));
