@@ -1268,6 +1268,9 @@ body {
       <input type="checkbox" id="add-gf" style="width:16px;height:16px">
       <label for="add-gf" style="font-size:13px;color:var(--text)">Gluten Free</label>
     </div>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128218; Ingredients (optional)</div>
+    <div id="add-ing-rows" style="margin-bottom:6px"></div>
+    <button onclick="addNewDishIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:16px">+ Add ingredient</button>
     <div style="display:flex;gap:10px">
       <button onclick="closeAddDish()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
       <button onclick="saveNewDish()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Add Dish</button>
@@ -3729,11 +3732,34 @@ function saveOMSNow(eid){
 
 
 /* ── ADD NEW DISH ── */
+var _addDishIngredients = [];
+function renderAddDishIngRows(){
+  var container = document.getElementById('add-ing-rows');
+  if(!container) return;
+  if(!_addDishIngredients.length){
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = _addDishIngredients.map(function(ing, i){
+    return '<div style="display:flex;gap:4px;margin-bottom:4px;align-items:center">' +
+      '<input class="form-input" style="flex:3;font-size:12px;padding:6px 8px" placeholder="Ingredient name" value="'+esc(ing.name)+'" oninput="_addDishIngredients['+i+'].name=this.value">' +
+      '<input class="form-input" style="flex:1;font-size:12px;padding:6px 8px" placeholder="Qty" value="'+esc(ing.qty_per_portion)+'" oninput="_addDishIngredients['+i+'].qty_per_portion=this.value">' +
+      '<input class="form-input" style="flex:1;font-size:12px;padding:6px 8px" placeholder="Unit" value="'+esc(ing.unit)+'" oninput="_addDishIngredients['+i+'].unit=this.value">' +
+      '<button onclick="_addDishIngredients.splice('+i+',1);renderAddDishIngRows()" style="padding:5px 8px;border:none;background:#7f1d1d;color:#fff;border-radius:6px;cursor:pointer;font-size:12px">&#10005;</button>' +
+      '</div>';
+  }).join('');
+}
+function addNewDishIngRow(){
+  _addDishIngredients.push({name:'', qty_per_portion:'', unit:'kg'});
+  renderAddDishIngRows();
+}
 function openAddDish(){
   if(!creatorUnlocked){ alert('Creator access required'); return; }
   ['add-name','add-allergens','add-category'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('add-diet').value='';
   document.getElementById('add-gf').checked=false;
+  _addDishIngredients = [];
+  renderAddDishIngRows();
   document.getElementById('add-dish-overlay').style.display='flex';
 }
 function closeAddDish(){ document.getElementById('add-dish-overlay').style.display='none'; }
@@ -3762,6 +3788,15 @@ function saveNewDish(){
   } catch(e){ console.warn('add dish save error', e); }
   // Remove from deleted list if re-adding
   try { dbShared.collection('master_deleted').doc(name).delete(); } catch(e){}
+  // Save ingredients if provided
+  var ings = _addDishIngredients.filter(function(r){ return r.name && r.name.trim(); });
+  if(ings.length){
+    try {
+      dbShared.collection('recipe_ingredients').doc(name).set({ingredients: ings});
+      if(!window._recipeDb) window._recipeDb = {};
+      window._recipeDb[name] = ings;
+    } catch(e){ console.warn('ingredient save error', e); }
+  }
   closeAddDish();
   masterPage = 1;
   filterMaster();
