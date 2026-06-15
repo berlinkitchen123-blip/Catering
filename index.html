@@ -3556,7 +3556,7 @@ function generateEventPDF(evIdx){
 
   // Helper: resolve real portions for a menu item (handles OMS events)
   function resolvePortions(m){
-    var p = parseOMSOffset(m.portions);
+        var p = parseOMSOffset(m.portions) || {};
     if(p.type === 'oms'){
       var base = (omsValues[eid] && omsValues[eid][m.name]) || 0;
       return base + p.offset;
