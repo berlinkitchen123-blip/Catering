@@ -3675,7 +3675,7 @@ function generateEventPDF(evIdx){
     var dc = dietColors[diet]||'#888';
     var dietBadge = diet ? '<span class="diet-badge" style="background:'+dc+'">'+diet+'</span>' : '—';
     var portionsDisplay = resolvePortions(m);
-    var p = parseOMSOffset(m.portions);
+        var p = parseOMSOffset(m.portions) || {};
     var portionsCell = portionsDisplay ? String(portionsDisplay) : '—';
     if(p.type==='oms') portionsCell = portionsDisplay + '<br><span style="font-size:7pt;color:#888">OMS+'+p.offset+'</span>';
     html += '<tr><td><strong>'+esc(m.name)+'</strong>'+(allergens?'<br><span style="font-size:7pt;color:#888">⚠ '+esc(allergens)+'</span>':'')+'</td><td>'+dietBadge+'</td><td style="text-align:center;font-weight:700">'+portionsCell+'</td><td>'+esc(m.packaging||'—')+'</td><td style="font-size:7.5pt;color:#666">'+(m.notes||'')+'</td></tr>';
