@@ -2804,6 +2804,8 @@ function openMasterEdit(idx){
     ? window._recipeDb[x.name].map(function(r){ return Object.assign({},r); })
     : [];
   renderMasterIngRows();
+  document.getElementById('me-notes').value = x.notes||'';
+  document.getElementById('me-instructions').value = x.instructions||'';
   document.getElementById('master-edit-overlay').style.display='flex';
 }
 function renderMasterIngRows(){
@@ -2850,7 +2852,13 @@ function saveMasterEdit(){
   if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
   const dishName = MASTER[idx].name;
   const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
-  // Save ingredients to recipe_ingredients
+  const notes = document.getElementById('me-notes').value.trim();
+  const instructions = document.getElementById('me-instructions').value.trim();
+  try {
+    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions }, {merge:true});
+    MASTER[idx].notes = notes;
+    MASTER[idx].instructions = instructions;
+  } catch(e){ console.warn('notes save error', e); }
   try {
     dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
     if(!window._recipeDb) window._recipeDb = {};
