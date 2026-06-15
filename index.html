@@ -2267,7 +2267,7 @@ function loadMasterOverrides(){
           if(data.notes !== undefined) MASTER[idx].notes = data.notes;
           if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
         } else if(data._added){
-                    MASTER.push({name:doc.id, diet:data.diet||'', category:data.category||'',
+                    MASTER.push({name:doc.id, diet:data.diet||'', categoy:data.category||'',
                                   allergens:data.allergens||'', gluten_free:data.gluten_free||'',
                                               price:data.price||0, portion_unit:data.portion_unit||'portion',
                                                           notes:data.notes||'', instructions:data.instructions||''});
@@ -3504,6 +3504,7 @@ function selectCity(city) {
   }
 }
 
+
 function initApp() {
   // topbar-week replaced by mini-cal-btn
   document.getElementById('drawer-week').textContent = WEEK;
@@ -3528,7 +3529,7 @@ function initApp() {
   buildBottomNav();
   showScreen('home');
   try{ loadCustomEvents(); }catch(e){ console.warn('CE load error',e); }
-  renderMasterList('','');
+  loadMasterOverrides();
 }
 
 /* ── PDF GENERATION ── */
