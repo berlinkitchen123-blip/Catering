@@ -3419,12 +3419,23 @@ function initApp() {
 function generateEventPDF(evIdx){
   var ev = EVENTS[evIdx];
   if(!ev) return;
+  var eid = eventId(ev);
+
+  // Helper: resolve real portions for a menu item (handles OMS events)
+  function resolvePortions(m){
+    var p = parseOMSOffset(m.portions);
+    if(p.type === 'oms'){
+      var base = (omsValues[eid] && omsValues[eid][m.name]) || 0;
+      return base + p.offset;
+    }
+    return parseFloat(m.portions) || parseFloat(m.ppl) || 0;
+  }
 
   // Build ingredient BOM rows
   var bomByDish = {};
   var consolidated = {};
   (ev.menu||[]).forEach(function(m){
-    var portions = parseFloat(m.portions) || parseFloat(m.ppl) || 0;
+    var portions = resolvePortions(m);
     var recipeEntry = ev.recipes && ev.recipes[m.name];
     var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
                || (window._recipeDb && window._recipeDb[m.name]);
@@ -3530,7 +3541,11 @@ function generateEventPDF(evIdx){
     var allergens = (masterItem&&masterItem.allergens) || (ev.recipes&&ev.recipes[m.name]&&ev.recipes[m.name].allergens) || '';
     var dc = dietColors[diet]||'#888';
     var dietBadge = diet ? '<span class="diet-badge" style="background:'+dc+'">'+diet+'</span>' : '—';
-    html += '<tr><td><strong>'+esc(m.name)+'</strong>'+(allergens?'<br><span style="font-size:7pt;color:#888">⚠ '+esc(allergens)+'</span>':'')+'</td><td>'+dietBadge+'</td><td style="text-align:center;font-weight:700">'+esc(String(m.portions||m.ppl||'—'))+'</td><td>'+esc(m.packaging||'—')+'</td><td style="font-size:7.5pt;color:#666">'+(m.notes||'')+'</td></tr>';
+    var portionsDisplay = resolvePortions(m);
+    var p = parseOMSOffset(m.portions);
+    var portionsCell = portionsDisplay ? String(portionsDisplay) : '—';
+    if(p.type==='oms') portionsCell = portionsDisplay + '<br><span style="font-size:7pt;color:#888">OMS+'+p.offset+'</span>';
+    html += '<tr><td><strong>'+esc(m.name)+'</strong>'+(allergens?'<br><span style="font-size:7pt;color:#888">⚠ '+esc(allergens)+'</span>':'')+'</td><td>'+dietBadge+'</td><td style="text-align:center;font-weight:700">'+portionsCell+'</td><td>'+esc(m.packaging||'—')+'</td><td style="font-size:7.5pt;color:#666">'+(m.notes||'')+'</td></tr>';
   });
   html += '</tbody></table>';
 
