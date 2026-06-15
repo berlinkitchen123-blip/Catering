@@ -1901,8 +1901,8 @@ function openEvent(idx){
     }
     panels+='</div>';
   });
-  // Save OMS button — only for OMS-type events
-  var isOMSEvent = (ev.menu||[]).some(function(item){ return parseOMSOffset(item.portions).type==='oms'; });
+// Save OMS button — only for OMS-type events
+    var isOMSEvent = (ev.menu||[]).some(function(item){ return (parseOMSOffset(item.portions)||{}).type==='oms'; });
   if(isOMSEvent){
     panels+='<div style="padding:10px 0 4px">';
     panels+='<button data-eid="'+eid+'" onclick="saveOMSNow(this.dataset.eid)" id="oms-save-btn-'+safeId(eid)+'" style="width:100%;padding:11px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:0.04em">&#128190; Save OMS Numbers<\/button>';
