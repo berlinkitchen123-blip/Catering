@@ -1038,8 +1038,16 @@ body {
   <!-- MASTER DATA (Creator only) -->
   <div class="screen" id="screen-master">
     <div class="page-hero" style="padding-bottom:12px">
-      <div class="page-title">&#128218; Master Menu Data</div>
-      <div class="page-sub" id="master-sub">All dishes · diet · allergens</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <div class="page-title">&#128218; Master Menu Data</div>
+          <div class="page-sub" id="master-sub">All dishes · diet · allergens</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;padding-top:4px">
+          <button onclick="openAddDish()" style="padding:7px 12px;border-radius:9px;border:none;background:#024930;color:#fff;font-size:12px;font-weight:800;cursor:pointer">+ Add</button>
+          <button onclick="openBEOUpload()" style="padding:7px 12px;border-radius:9px;border:none;background:#1e3a5f;color:#fff;font-size:12px;font-weight:800;cursor:pointer">&#128196; Upload BEO</button>
+        </div>
+      </div>
     </div>
     <div style="padding:0 14px 12px;position:sticky;top:0;background:var(--bg);z-index:30;border-bottom:1px solid var(--border)">
       <input class="form-input" id="master-search" placeholder="&#128269; Search dish name..." oninput="filterMaster()" style="width:100%;margin-bottom:8px">
@@ -1241,6 +1249,53 @@ body {
       <button onclick="closeMasterEdit()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
       <button onclick="saveMasterEdit()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Save Changes</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ADD DISH OVERLAY -->
+<div id="add-dish-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+    <div style="font-size:15px;font-weight:800;margin-bottom:14px;color:var(--text)">&#10133; Add New Dish</div>
+    <input id="add-name" class="form-input" placeholder="Dish name *" style="width:100%;margin-bottom:8px">
+    <select id="add-diet" class="form-input" style="width:100%;margin-bottom:8px">
+      <option value="">— Diet —</option>
+      <option>Vegan</option><option>Vegetarian</option><option>Meat</option><option>Fish</option><option>Pescatarian</option><option>Mixed</option>
+    </select>
+    <input id="add-category" class="form-input" placeholder="Category (e.g. Main, Salad, Dessert)" style="width:100%;margin-bottom:8px">
+    <input id="add-allergens" class="form-input" placeholder="Allergens (e.g. Gluten, Lactose)" style="width:100%;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <input type="checkbox" id="add-gf" style="width:16px;height:16px">
+      <label for="add-gf" style="font-size:13px;color:var(--text)">Gluten Free</label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeAddDish()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
+      <button onclick="saveNewDish()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Add Dish</button>
+    </div>
+  </div>
+</div>
+
+<!-- BEO UPLOAD OVERLAY -->
+<div id="beo-upload-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+    <div style="font-size:15px;font-weight:800;margin-bottom:6px;color:var(--text)">&#128196; Upload BEO File</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:14px">Upload an Excel (.xlsx) BEO file to extract dish names and ingredients</div>
+    <div id="beo-drop-zone" onclick="document.getElementById('beo-file-input').click()" style="border:2px dashed var(--border2);border-radius:12px;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;transition:background 0.2s" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+      <div style="font-size:28px;margin-bottom:6px">&#128196;</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)">Click to select Excel file</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">.xlsx files supported</div>
+    </div>
+    <input type="file" id="beo-file-input" accept=".xlsx,.xls" style="display:none" onchange="parseBEOFile(this)">
+    <div id="beo-preview" style="display:none">
+      <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px" id="beo-preview-title"></div>
+      <div id="beo-preview-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;font-size:12px"></div>
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button onclick="closeBEOUpload()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:13px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
+        <button onclick="importBEOData()" id="beo-import-btn" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer">Import Dishes</button>
+      </div>
+    </div>
+    <div id="beo-status" style="font-size:12px;color:var(--sub);margin-top:8px;text-align:center"></div>
+    <button onclick="closeBEOUpload()" id="beo-cancel-plain" style="width:100%;margin-top:10px;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:13px;font-weight:700;cursor:pointer;color:var(--sub)">Close</button>
   </div>
 </div>
 
@@ -2620,11 +2675,23 @@ function updateDishOMS(input){
 
 /* ── MASTER DATA ── */
 let masterDietFilter = '';
+let masterPage = 1;
+const MASTER_PAGE_SIZE = 50;
+function masterLoadMore(){
+  masterPage++;
+  var q = (document.getElementById('master-search')||{}).value||'';
+  renderMasterList(q, masterDietFilter);
+  // scroll to bottom of list
+  setTimeout(function(){ var l=document.getElementById('master-list'); if(l) l.lastElementChild&&l.lastElementChild.scrollIntoView({behavior:'smooth'}); },50);
+}
+
 function filterMaster(){
+  masterPage = 1; // reset to first page on new search
   const q = document.getElementById('master-search').value.toLowerCase();
   renderMasterList(q, masterDietFilter);
 }
 function setDietFilter(btn){
+  masterPage = 1;
   masterDietFilter = btn.dataset.diet;
   document.querySelectorAll('.diet-filter-btn').forEach(function(b){ b.classList.toggle('active', b===btn); });
   filterMaster();
@@ -2638,8 +2705,9 @@ function renderMasterList(q, diet){
     list.innerHTML = '<div class="empty"><div class="empty-icon">&#128269;</div><div class="empty-text">No matches</div></div>';
     return;
   }
-  const masterIndices = items.slice(0,200).map(function(x){ return MASTER.indexOf(x); });
-  list.innerHTML = items.slice(0,200).map(function(x, i){
+  const pageItems = items.slice(0, masterPage * MASTER_PAGE_SIZE);
+  const masterIndices = pageItems.map(function(x){ return MASTER.indexOf(x); });
+  list.innerHTML = pageItems.map(function(x, i){
     var idx = MASTER.indexOf(x);
     var ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
     var dc = dietClass(x.diet||'');
@@ -2701,7 +2769,11 @@ function renderMasterList(q, diet){
         '</div>'
       :'') +
       '</div>';
-    }).join('') + (items.length>200 ? '<div style="padding:10px;text-align:center;color:var(--sub);font-size:12px">Showing 200 of '+items.length+' — refine your search</div>' : '');
+    }).join('') +
+    (items.length > masterPage * MASTER_PAGE_SIZE ?
+      '<div style="padding:14px;text-align:center"><button onclick="masterLoadMore()" style="padding:9px 28px;border-radius:10px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-size:13px;font-weight:700;cursor:pointer">Load more (' + (items.length - masterPage * MASTER_PAGE_SIZE) + ' remaining)</button></div>' :
+      (items.length > 0 ? '<div style="padding:8px;text-align:center;color:var(--sub);font-size:11px">All ' + items.length + ' items shown</div>' : '')
+    );
 }
 
 /* ── MASTER EDIT ── */
@@ -3653,6 +3725,208 @@ function saveOMSNow(eid){
     if(btn){ btn.textContent='\u26A0 Save failed'; btn.style.background='#7f1d1d'; }
     setTimeout(function(){ if(btn){ btn.textContent='\u{1F4BE} Save OMS Numbers'; btn.style.background='#1e3a5f'; } }, 2000);
   }
+}
+
+
+/* ── ADD NEW DISH ── */
+function openAddDish(){
+  if(!creatorUnlocked){ alert('Creator access required'); return; }
+  ['add-name','add-allergens','add-category'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('add-diet').value='';
+  document.getElementById('add-gf').checked=false;
+  document.getElementById('add-dish-overlay').style.display='flex';
+}
+function closeAddDish(){ document.getElementById('add-dish-overlay').style.display='none'; }
+function saveNewDish(){
+  var name = document.getElementById('add-name').value.trim();
+  if(!name){ alert('Dish name is required'); return; }
+  if(MASTER.find(function(x){ return x.name.toLowerCase()===name.toLowerCase(); })){
+    alert('Dish "'+name+'" already exists in Master Data'); return;
+  }
+  var newDish = {
+    name: name,
+    diet: document.getElementById('add-diet').value,
+    category: document.getElementById('add-category').value.trim(),
+    allergens: document.getElementById('add-allergens').value.trim(),
+    gluten_free: document.getElementById('add-gf').checked ? 'Yes' : '',
+    price: 0
+  };
+  MASTER.push(newDish);
+  // Save to Firebase master_overrides
+  try {
+    dbShared.collection('master_overrides').doc(name).set({
+      diet: newDish.diet, allergens: newDish.allergens,
+      gluten_free: newDish.gluten_free, price: 0,
+      category: newDish.category, _added: true
+    });
+  } catch(e){ console.warn('add dish save error', e); }
+  // Remove from deleted list if re-adding
+  try { dbShared.collection('master_deleted').doc(name).delete(); } catch(e){}
+  closeAddDish();
+  masterPage = 1;
+  filterMaster();
+}
+
+/* ── BEO UPLOAD ── */
+var _beoImportData = [];
+function openBEOUpload(){
+  if(!creatorUnlocked){ alert('Creator access required'); return; }
+  document.getElementById('beo-upload-overlay').style.display='flex';
+  document.getElementById('beo-preview').style.display='none';
+  document.getElementById('beo-status').textContent='';
+  document.getElementById('beo-file-input').value='';
+  _beoImportData=[];
+}
+function closeBEOUpload(){ document.getElementById('beo-upload-overlay').style.display='none'; }
+
+function parseBEOFile(input){
+  var file = input.files[0];
+  if(!file) return;
+  var statusEl = document.getElementById('beo-status');
+  statusEl.textContent = 'Reading file...';
+  // Dynamically load SheetJS
+  if(!window.XLSX){
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = function(){ doParseExcel(file); };
+    script.onerror = function(){ statusEl.textContent = 'Failed to load Excel library. Check internet connection.'; };
+    document.head.appendChild(script);
+  } else {
+    doParseExcel(file);
+  }
+}
+
+function doParseExcel(file){
+  var statusEl = document.getElementById('beo-status');
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var data = new Uint8Array(e.target.result);
+      var wb = XLSX.read(data, {type:'array'});
+      statusEl.textContent = 'Sheets found: ' + wb.SheetNames.join(', ');
+
+      // Try known sheet names first
+      var sheetName = wb.SheetNames.find(function(n){
+        return n.toLowerCase().includes('beo') || n.toLowerCase().includes('extract') || n.toLowerCase().includes('recipe') || n.toLowerCase().includes('menu') || n.toLowerCase().includes('ingredient');
+      }) || wb.SheetNames[0];
+
+      var ws = wb.Sheets[sheetName];
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      // Extract dish data: look for dish name rows (non-empty first column, 2nd col is a number/string)
+      var extracted = [];
+      var currentDish = null;
+      var inIngredients = false;
+
+      rows.forEach(function(row){
+        if(!row || row.length < 2) return;
+        var col0 = String(row[0]||'').trim();
+        var col1 = String(row[1]||'').trim();
+        var col2 = String(row[2]||'').trim();
+
+        // Detect dish header rows (bold-like: all caps or title case with qty in col1)
+        var isQtyNum = !isNaN(parseFloat(col1)) && col1 !== '';
+        var isIngredientRow = isQtyNum && col0.length > 2;
+
+        // Detect section headers (skip)
+        if(col0.toLowerCase().includes('ingredient') && col1.toLowerCase().includes('qty')) {
+          inIngredients = true; return;
+        }
+        if(col0.toLowerCase().includes('total') || col0.toLowerCase() === 'dish' || col0.toLowerCase() === 'recipe') return;
+
+        if(isIngredientRow && currentDish){
+          // This looks like an ingredient row
+          currentDish.ingredients.push({
+            name: col0, qty_per_portion: col1, unit: col2||'kg'
+          });
+        } else if(col0 && !isQtyNum && col0.length > 3 && col1.length < 30){
+          // Looks like a dish name row
+          currentDish = {name: col0, diet: col1||'', allergens: col2||'', ingredients: []};
+          extracted.push(currentDish);
+        }
+      });
+
+      // Also scan for any cell that looks like a dish name (large bold cells)
+      // Fallback: treat each unique non-empty col0 value as a potential dish
+      if(extracted.length === 0){
+        var seen = {};
+        rows.forEach(function(row){
+          var col0 = String(row[0]||'').trim();
+          if(col0 && col0.length > 3 && !seen[col0] && isNaN(parseFloat(col0)) && col0 !== col0.toUpperCase()){
+            seen[col0] = true;
+            extracted.push({name: col0, diet:'', allergens:'', ingredients:[]});
+          }
+        });
+      }
+
+      // Deduplicate against existing MASTER
+      var isNew = function(name){ return !MASTER.find(function(x){ return x.name.toLowerCase()===name.toLowerCase(); }); };
+      var newDishes = extracted.filter(function(d){ return isNew(d.name); });
+      var existingDishes = extracted.filter(function(d){ return !isNew(d.name); });
+
+      _beoImportData = extracted;
+
+      // Show preview
+      var previewEl = document.getElementById('beo-preview');
+      var listEl = document.getElementById('beo-preview-list');
+      document.getElementById('beo-preview-title').textContent = 'Found '+extracted.length+' dishes ('+newDishes.length+' new, '+existingDishes.length+' already in Master)';
+      listEl.innerHTML = extracted.map(function(d){
+        var isN = isNew(d.name);
+        return '<div style="padding:6px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:16px">'+(isN?'&#10133;':'&#10004;')+'</span>'+
+          '<div><div style="font-weight:700;font-size:12px;color:'+(isN?'var(--text)':'var(--sub)')+'">'+esc(d.name)+'</div>'+
+          (d.ingredients.length ? '<div style="font-size:10px;color:var(--sub)">'+d.ingredients.length+' ingredients</div>' : '')+
+          '</div>'+
+          '<span style="margin-left:auto;font-size:10px;padding:2px 7px;border-radius:4px;background:'+(isN?'rgba(2,73,48,0.3)':'var(--s2)')+';color:'+(isN?'#4ade80':'var(--sub)')+'">'+
+          (isN?'NEW':'exists')+'</span></div>';
+      }).join('');
+      previewEl.style.display='block';
+      document.getElementById('beo-cancel-plain').style.display='none';
+      statusEl.textContent = '';
+    } catch(err){
+      statusEl.textContent = 'Error reading file: ' + err.message;
+      console.error('BEO parse error', err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function importBEOData(){
+  if(!_beoImportData.length) return;
+  var btn = document.getElementById('beo-import-btn');
+  btn.textContent = 'Importing...';
+  btn.disabled = true;
+  var added = 0;
+  var updated = 0;
+  _beoImportData.forEach(function(d){
+    var existing = MASTER.find(function(x){ return x.name.toLowerCase()===d.name.toLowerCase(); });
+    if(!existing){
+      // New dish
+      var newDish = {name:d.name, diet:d.diet||'', allergens:d.allergens||'', gluten_free:'', price:0};
+      MASTER.push(newDish);
+      try { dbShared.collection('master_overrides').doc(d.name).set({diet:d.diet||'',allergens:d.allergens||'',gluten_free:'',price:0,_added:true},{merge:true}); } catch(e){}
+      added++;
+    }
+    // Save ingredients if found
+    if(d.ingredients && d.ingredients.length){
+      var ings = d.ingredients.filter(function(i){ return i.name&&i.name.trim(); });
+      if(ings.length){
+        try {
+          dbShared.collection('recipe_ingredients').doc(d.name).set({ingredients:ings},{merge:false});
+          if(!window._recipeDb) window._recipeDb={};
+          window._recipeDb[d.name] = ings;
+          updated++;
+        } catch(e){}
+      }
+    }
+  });
+  setTimeout(function(){
+    btn.textContent = '✓ Done! Added '+added+' dishes, updated '+updated+' recipes';
+    btn.style.background='#024930';
+    masterPage=1;
+    filterMaster();
+    setTimeout(function(){ closeBEOUpload(); btn.disabled=false; btn.textContent='Import Dishes'; btn.style.background='#024930'; }, 2500);
+  }, 500);
 }
 
 </script>
