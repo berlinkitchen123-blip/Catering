@@ -2266,6 +2266,12 @@ function loadMasterOverrides(){
           if(data.portion_unit !== undefined) MASTER[idx].portion_unit = data.portion_unit;
           if(data.notes !== undefined) MASTER[idx].notes = data.notes;
           if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
+        } else if(data._added){
+                    MASTER.push({name:doc.id, diet:data.diet||'', category:data.category||'',
+                                  allergens:data.allergens||'', gluten_free:data.gluten_free||'',
+                                              price:data.price||0, portion_unit:data.portion_unit||'portion',
+                                                          notes:data.notes||'', instructions:data.instructions||''});
+
         }
       });
       renderMasterList('', masterDietFilter);
@@ -2743,7 +2749,7 @@ function renderMasterList(q, diet){
     var dietOpts = ['','Vegan','Vegetarian','Meat','Fish','Pescatarian','Mixed'].map(function(d){
       return '<option value="'+d+'"'+(x.diet===d?' selected':'')+'>'+( d||'— Diet —')+'</option>';
     }).join('');
-    var unitOpts = ['g','kg','qty'].map(function(u){
+    var unitOpts = ['portion','g','kg','qty'].map(function(u){
       return '<option value="'+u+'"'+(((x.portion_unit||'qty')===u)?' selected':'')+'>'+u+'</option>';
     }).join('');
 
