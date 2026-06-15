@@ -1822,6 +1822,13 @@ function openEvent(idx){
     }
     panels+='</div>';
   });
+  // Save OMS button — only for OMS-type events
+  var isOMSEvent = (ev.menu||[]).some(function(item){ return parseOMSOffset(item.portions).type==='oms'; });
+  if(isOMSEvent){
+    panels+='<div style="padding:10px 0 4px">';
+    panels+='<button data-eid="'+eid+'" onclick="saveOMSNow(this.dataset.eid)" id="oms-save-btn-'+safeId(eid)+'" style="width:100%;padding:11px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:0.04em">&#128190; Save OMS Numbers<\/button>';
+    panels+='<\/div>';
+  }
   panels+='</div></div>';
   // Recipes
   if(hasRecipes){
@@ -3597,6 +3604,21 @@ function generateEventPDF(evIdx){
   win.document.close();
   win.focus();
   setTimeout(function(){ win.print(); }, 600);
+}
+
+
+function saveOMSNow(eid){
+  var btn = document.getElementById('oms-save-btn-'+safeId(eid));
+  try {
+    db.collection('oms_values').doc(eid).set(omsValues[eid]||{}).then(function(){
+      if(btn){ btn.textContent='\u2713 Saved!'; btn.style.background='#024930'; }
+      setTimeout(function(){ if(btn){ btn.textContent='\u{1F4BE} Save OMS Numbers'; btn.style.background='#1e3a5f'; } }, 2000);
+    });
+  } catch(e){
+    console.warn('OMS save error', e);
+    if(btn){ btn.textContent='\u26A0 Save failed'; btn.style.background='#7f1d1d'; }
+    setTimeout(function(){ if(btn){ btn.textContent='\u{1F4BE} Save OMS Numbers'; btn.style.background='#1e3a5f'; } }, 2000);
+  }
 }
 
 </script>
