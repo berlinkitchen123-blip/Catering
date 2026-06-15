@@ -1337,7 +1337,7 @@ let currentDay = 0;
 let pendingScreen = null;
 let currentEvent = null;
 let checklistState = {};
-let omsValues = {}; // eventId -> {dishName -> omsBase}
+let omsValues = (function(){ try{ return JSON.parse(localStorage.getItem('bb_oms')||'{}'); }catch(e){ return {}; } })(); // eventId -> {dishName -> omsBase}
 let fbListeners = [];
 
 /* ── UTILS ── */
@@ -2141,7 +2141,22 @@ function loadOMSValues(){
   try {
     db.collection('oms_values').get().then(function(snap){
       snap.forEach(function(doc){
-        omsValues[doc.id] = doc.data();
+        // Merge Firebase over localStorage (Firebase is authoritative)
+        omsValues[doc.id] = Object.assign(omsValues[doc.id]||{}, doc.data());
+      });
+      // Sync merged result back to localStorage
+      try { localStorage.setItem('bb_oms', JSON.stringify(omsValues)); } catch(e){}
+      // Update any visible OMS inputs with the loaded values
+      document.querySelectorAll('.oms-dish-input').forEach(function(input){
+        var eid = input.dataset.eid;
+        var dish = input.dataset.dish;
+        var offset = parseInt(input.dataset.offset)||0;
+        if(omsValues[eid] && omsValues[eid][dish] != null){
+          var val = omsValues[eid][dish];
+          input.value = val;
+          var totalEl = document.getElementById('odt-'+safeId(eid+dish));
+          if(totalEl) totalEl.textContent = val ? val+offset : '?';
+        }
       });
       console.log('Loaded OMS values for', snap.size, 'events');
     });
@@ -2555,6 +2570,8 @@ function updateDishOMS(input){
   const val=parseInt(input.value)||0;
   if(!omsValues[eid]) omsValues[eid]={};
   omsValues[eid][dish]=val;
+  // Save to localStorage immediately
+  try { localStorage.setItem('bb_oms', JSON.stringify(omsValues)); } catch(e){}
   // Debounced Firebase save
   clearTimeout(_omsSaveTimer[eid]);
   _omsSaveTimer[eid] = setTimeout(function(){
@@ -3609,6 +3626,8 @@ function generateEventPDF(evIdx){
 
 function saveOMSNow(eid){
   var btn = document.getElementById('oms-save-btn-'+safeId(eid));
+  // Save to localStorage immediately
+  try { localStorage.setItem('bb_oms', JSON.stringify(omsValues)); } catch(e){}
   try {
     db.collection('oms_values').doc(eid).set(omsValues[eid]||{}).then(function(){
       if(btn){ btn.textContent='\u2713 Saved!'; btn.style.background='#024930'; }
