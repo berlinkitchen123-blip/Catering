@@ -2267,7 +2267,7 @@ function loadMasterOverrides(){
           if(data.notes !== undefined) MASTER[idx].notes = data.notes;
           if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
         } else if(data._added){
-                    MASTER.push({name:doc.id, diet:data.diet||'', categoy:data.category||'',
+                    MASTER.push({name:doc.id, diet:data.diet||'', category:data.category||'',
                                   allergens:data.allergens||'', gluten_free:data.gluten_free||'',
                                               price:data.price||0, portion_unit:data.portion_unit||'portion',
                                                           notes:data.notes||'', instructions:data.instructions||''});
@@ -3813,7 +3813,7 @@ function addNewDishIngRow(){
 }
 function openAddDish(){
   if(!creatorUnlocked){ alert('Creator access required'); return; }
-  ['add-name','add-allergens','add-category'].forEach(function(id){ document.getElementById(id).value=''; });
+    ['add-name','add-allergens','add-category','add-notes','add-instructions'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('add-diet').value='';
   document.getElementById('add-price').value='';
   document.getElementById('add-unit').value='portion';
@@ -3838,7 +3838,9 @@ function saveNewDish(){
     allergens: document.getElementById('add-allergens').value.trim(),
     gluten_free: document.getElementById('add-gf').checked ? 'Yes' : '',
     price: priceVal,
-    portion_unit: unitVal
+    portion_unit: unitVal,
+        notes: document.getElementById('add-notes').value.trim(),
+            instructions: document.getElementById('add-instructions').value.trim()
   };
   MASTER.push(newDish);
   // Save to Firebase master_overrides
@@ -3846,7 +3848,7 @@ function saveNewDish(){
     dbShared.collection('master_overrides').doc(name).set({
       diet: newDish.diet, allergens: newDish.allergens,
       gluten_free: newDish.gluten_free, price: priceVal,
-      portion_unit: unitVal, category: newDish.category, _added: true
+      portion_unit: unitVal, category: newDish.category, notes: newDish.notes, instructions: newDish.instructions, _added: true
     });
   } catch(e){ console.warn('add dish save error', e); }
   // Remove from deleted list if re-adding
