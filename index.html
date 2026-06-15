@@ -3679,6 +3679,8 @@ function generateEventPDF(evIdx){
     var portionsCell = portionsDisplay ? String(portionsDisplay) : '—';
     if(p.type==='oms') portionsCell = portionsDisplay + '<br><span style="font-size:7pt;color:#888">OMS+'+p.offset+'</span>';
     html += '<tr><td><strong>'+esc(m.name)+'</strong>'+(allergens?'<br><span style="font-size:7pt;color:#888">⚠ '+esc(allergens)+'</span>':'')+'</td><td>'+dietBadge+'</td><td style="text-align:center;font-weight:700">'+portionsCell+'</td><td>'+esc(m.packaging||'—')+'</td><td style="font-size:7.5pt;color:#666">'+(m.notes||'')+'</td></tr>';
+            if(m.cooking_notes) html += '<tr><td colspan="5" style="font-size:8pt;color:#555;padding:2px 8px 4px 12px;background:#f9f9f9"><em><strong>Cooking:</strong> '+esc(m.cooking_notes)+'</em></td></tr>';
+                    if(m.packaging_notes) html += '<tr><td colspan="5" style="font-size:8pt;color:#555;padding:2px 8px 4px 12px;background:#f9f9f9"><em><strong>Packaging:</strong> '+esc(m.packaging_notes)+'</em></td></tr>';
   });
   html += '</tbody></table>';
 
