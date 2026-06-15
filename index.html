@@ -2960,6 +2960,22 @@ function showAC(input, dd){
             editingMenuRows[idx].name = m.name;
             editingMenuRows[idx].diet = m.diet||'';
             editingMenuRows[idx].allergens = m.allergens||'';
+                      // Auto-populate price from master data
+                                editingMenuRows[idx].price_per_portion = m.price ? String(m.price) : '';
+                                          var priceInp = row.querySelector('input[placeholder="€/ptn"]');
+                                                    if(priceInp) priceInp.value = m.price || '';
+                                                              // Auto-populate cooking/packaging notes from master data
+                                                                        editingMenuRows[idx].cooking_notes = m.instructions||'';
+                                                                                  editingMenuRows[idx].packaging_notes = m.notes||'';
+                                                                                            if(m.instructions || m.notes){
+                                                                                                        var sec = document.getElementById('mns-'+idx);
+                                                                                                                    var btn = document.getElementById('mnt-'+idx);
+                                                                                                                                if(sec){ sec.classList.add('open'); }
+                                                                                                                                            if(btn){ btn.classList.add('open'); }
+                                                                                                                                                        var tas = sec ? sec.querySelectorAll('textarea') : [];
+                                                                                                                                                                    if(tas[0]) tas[0].value = m.instructions||'';
+                                                                                                                                                                                if(tas[1]) tas[1].value = m.notes||'';
+                                                                                                                                                                                          }
             if(inputs[2]) { inputs[2].dispatchEvent(new Event('input')); }
             // Auto-populate ingredients from _recipeDb if not already set
             if(window._recipeDb && window._recipeDb[m.name] && (!editingIngredients[m.name] || !editingIngredients[m.name].length)){
