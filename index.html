@@ -1244,7 +1244,11 @@ body {
     <input type="hidden" id="me-idx">
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">Ingredients / Recipe</div>
     <div id="me-ing-rows" style="margin-bottom:6px"></div>
-    <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:16px">+ Add ingredient</button>
+    <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:12px">+ Add ingredient</button>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128221; Notes</div>
+    <textarea id="me-notes" class="form-input" placeholder="Dish notes..." rows="2" style="width:100%;margin-bottom:8px;resize:vertical;font-size:12px"></textarea>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#127859; Cooking Instructions</div>
+    <textarea id="me-instructions" class="form-input" placeholder="Step-by-step instructions..." rows="3" style="width:100%;margin-bottom:16px;resize:vertical;font-size:12px"></textarea>
     <div style="display:flex;gap:10px">
       <button onclick="closeMasterEdit()" style="flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:10px;background:var(--s2);font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)">Cancel</button>
       <button onclick="saveMasterEdit()" style="flex:2;padding:11px;border:none;background:#024930;color:#fff;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">Save Changes</button>
