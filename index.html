@@ -2263,6 +2263,9 @@ function loadMasterOverrides(){
           if(data.allergens !== undefined) MASTER[idx].allergens = data.allergens;
           if(data.gluten_free !== undefined) MASTER[idx].gluten_free = data.gluten_free;
           if(data.price !== undefined) MASTER[idx].price = data.price;
+          if(data.portion_unit !== undefined) MASTER[idx].portion_unit = data.portion_unit;
+          if(data.notes !== undefined) MASTER[idx].notes = data.notes;
+          if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
         }
       });
       renderMasterList('', masterDietFilter);
@@ -2809,7 +2812,10 @@ function openMasterEdit(idx){
   document.getElementById('me-idx').value = idx;
   // Load existing ingredients from recipeDb
   masterEditIngredients = (window._recipeDb && window._recipeDb[x.name])
-    ? window._recipeDb[x.name].map(function(r){ return Object.assign({},r); })
+    ? window._recipeDb[x.name].map(function(r){
+        // Normalize: some entries use 'name', others use 'product'
+        return {product: r.product||r.name||'', qty: r.qty||r.qty_per_portion||'', unit: r.unit||'kg'};
+      })
     : [];
   renderMasterIngRows();
   document.getElementById('me-notes').value = x.notes||'';
@@ -3823,7 +3829,9 @@ function saveNewDish(){
   // Remove from deleted list if re-adding
   try { dbShared.collection('master_deleted').doc(name).delete(); } catch(e){}
   // Save ingredients if provided
-  var ings = _addDishIngredients.filter(function(r){ return r.name && r.name.trim(); });
+  var ings = _addDishIngredients.filter(function(r){ return r.name && r.name.trim(); }).map(function(r){
+    return {product: r.name, qty_per_portion: r.qty_per_portion, unit: r.unit||'kg'};
+  });
   if(ings.length){
     try {
       dbShared.collection('recipe_ingredients').doc(name).set({ingredients: ings});
