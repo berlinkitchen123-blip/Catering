@@ -1745,8 +1745,9 @@ function openEvent(idx){
   var evIdx=idx;
   var isGYG=isGYGEvent(ev);
   var btnLabel=isGYG?'&#127991; Print GYG Format':'&#127991; Print Labels';
-  hero+='<div style="padding:10px 14px 8px">';
-  hero+='<button data-evidx="'+evIdx+'" onclick="evPrintLabels(+this.dataset.evidx)" style="width:100%;background:#024930;color:#fff;border:none;padding:12px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:0.04em">'+btnLabel+'<\/button>';
+  hero+='<div style="padding:10px 14px 8px;display:flex;gap:8px">';
+  hero+='<button data-evidx="'+evIdx+'" onclick="evPrintLabels(+this.dataset.evidx)" style="flex:1;background:#024930;color:#fff;border:none;padding:12px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:0.04em">'+btnLabel+'<\/button>';
+  hero+='<button data-evidx="'+evIdx+'" onclick="generateEventPDF(+this.dataset.evidx)" style="flex:1;background:#1e3a5f;color:#fff;border:none;padding:12px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;letter-spacing:0.04em">&#128196; BEO + BOM<\/button>';
   hero+='<\/div>';
   hero+='<\/div>';
   document.getElementById('event-hero').innerHTML=hero;
@@ -3369,6 +3370,215 @@ function initApp() {
   try{ loadCustomEvents(); }catch(e){ console.warn('CE load error',e); }
   renderMasterList('','');
 }
+
+/* ── PDF GENERATION ── */
+function generateEventPDF(evIdx){
+  var ev = EVENTS[evIdx];
+  if(!ev) return;
+
+  // Build ingredient BOM rows
+  var bomByDish = {};
+  var consolidated = {};
+  (ev.menu||[]).forEach(function(m){
+    var portions = parseFloat(m.portions) || parseFloat(m.ppl) || 0;
+    var recipeEntry = ev.recipes && ev.recipes[m.name];
+    var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
+               || (window._recipeDb && window._recipeDb[m.name]);
+    var rows = [];
+    if(ings && ings.length && portions){
+      ings.forEach(function(ing){
+        var qtyNum = parseFloat(ing.qty_per_portion || ing.qty);
+        if(isNaN(qtyNum) || (ing.name||ing.product||'').toLowerCase()==='total') return;
+        var total = qtyNum * portions;
+        var totalFmt = total < 1 ? total.toFixed(3) : total.toFixed(2).replace(/\.?0+$/,'');
+        var unit = ing.unit || 'kg';
+        rows.push({product: ing.name||ing.product||'', qty: totalFmt, unit: unit});
+        var key = (ing.name||ing.product||'').toLowerCase();
+        if(!consolidated[key]) consolidated[key] = {product: ing.name||ing.product||'', qty: 0, unit: unit};
+        consolidated[key].qty += total;
+      });
+    }
+    bomByDish[m.name] = {portions: portions, rows: rows};
+  });
+
+  var dietColors = {'Vegan':'#16a34a','Vegetarian':'#0d9488','Meat':'#dc2626','Fish':'#2563eb','Pescatarian':'#7c3aed','Mixed':'#d97706'};
+
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>BEO + BOM - '+esc(ev.client)+'</title><style>';
+  html += '*{margin:0;padding:0;box-sizing:border-box}';
+  html += 'body{font-family:Arial,sans-serif;font-size:9pt;color:#111;background:#fff}';
+  html += '@page{size:A4;margin:10mm 10mm 10mm 10mm}';
+  html += '.page{width:190mm;min-height:277mm;padding:0;page-break-after:always}';
+  html += '.page:last-child{page-break-after:auto}';
+  html += '.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:4mm;margin-bottom:4mm}';
+  html += '.hdr-logo{font-size:14pt;font-weight:900;letter-spacing:-0.5px}';
+  html += '.hdr-title{font-size:11pt;font-weight:700;text-align:right;color:#333}';
+  html += '.hdr-sub{font-size:8pt;color:#666;text-align:right}';
+  html += '.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:2mm 6mm;margin-bottom:4mm}';
+  html += '.info-row{display:flex;gap:2mm;font-size:8.5pt}';
+  html += '.info-label{font-weight:700;color:#555;white-space:nowrap;min-width:22mm}';
+  html += '.info-val{color:#111}';
+  html += 'h2{font-size:9pt;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:#444;border-bottom:1px solid #ccc;padding-bottom:1.5mm;margin:3mm 0 2mm}';
+  html += 'table{width:100%;border-collapse:collapse;font-size:8.5pt}';
+  html += 'th{background:#111;color:#fff;text-align:left;padding:2mm 2.5mm;font-size:8pt;font-weight:700}';
+  html += 'td{padding:1.5mm 2.5mm;border-bottom:0.5px solid #ddd;vertical-align:top}';
+  html += 'tr:nth-child(even) td{background:#f7f7f7}';
+  html += '.diet-badge{display:inline-block;padding:0.5mm 2mm;border-radius:3px;font-size:7.5pt;font-weight:700;color:#fff}';
+  html += '.equip-list{display:flex;flex-wrap:wrap;gap:1.5mm 4mm;font-size:8.5pt;margin-bottom:3mm}';
+  html += '.equip-item{background:#f0f0f0;padding:1mm 2.5mm;border-radius:3px}';
+  html += '.sched-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm;margin-bottom:3mm}';
+  html += '.sched-box{background:#f5f5f5;border-left:3px solid #111;padding:2mm 3mm}';
+  html += '.sched-key{font-size:7pt;font-weight:700;color:#555;text-transform:uppercase}';
+  html += '.sched-val{font-size:9pt;font-weight:900}';
+  html += '.dish-header{background:#f0f4ff;padding:1.5mm 2.5mm;font-weight:700;font-size:8.5pt;color:#1e3a5f;border-left:3px solid #1e3a5f}';
+  html += '.portion-badge{float:right;font-size:7.5pt;font-weight:700;color:#666}';
+  html += '.section-gap{margin-top:4mm}';
+  html += '.footer{position:fixed;bottom:6mm;left:10mm;right:10mm;display:flex;justify-content:space-between;font-size:7pt;color:#999;border-top:0.5px solid #ccc;padding-top:1.5mm}';
+  html += '.no-break{page-break-inside:avoid}';
+  html += '.consolidated-hdr{background:#1e3a5f;color:#fff;text-align:left;padding:2mm 2.5mm;font-size:8pt;font-weight:700}';
+  html += '</style></head><body>';
+
+  // Format helpers
+  var dateFmt = ev.date || '';
+  var clientName = ev.client || '—';
+  var guestsFmt = (ev.guests||'?')+' guests';
+
+  /* ─── PAGE 1: BEO ─── */
+  html += '<div class="page">';
+
+  // Header
+  html += '<div class="hdr">';
+  html += '<div><div class="hdr-logo">&#127859; Bella &amp; Bona</div><div style="font-size:8pt;color:#666;margin-top:1mm">Professional Catering</div></div>';
+  html += '<div><div class="hdr-title">BANQUET EVENT ORDER</div><div class="hdr-sub">Generated: '+new Date().toLocaleDateString('de-DE')+'</div></div>';
+  html += '</div>';
+
+  // Event info grid
+  html += '<div class="info-grid">';
+  var infoLeft = [
+    {k:'Client', v: clientName},
+    {k:'Date', v: dateFmt},
+    {k:'Event Type', v: ev.event_type||'—'},
+    {k:'Location', v: ev.location||'—'}
+  ];
+  var schedObj = ev.schedule || {};
+  var infoRight = [
+    {k:'Guests', v: guestsFmt},
+    {k:'Food Ready', v: schedObj['Food ready by']||'—'},
+    {k:'Delivery', v: schedObj['Delivery']||'—'},
+    {k:'Event Start', v: schedObj['Event start']||'—'}
+  ];
+  for(var i=0;i<4;i++){
+    html += '<div class="info-row"><span class="info-label">'+infoLeft[i].k+':</span><span class="info-val">'+esc(infoLeft[i].v)+'</span></div>';
+    html += '<div class="info-row"><span class="info-label">'+infoRight[i].k+':</span><span class="info-val">'+esc(infoRight[i].v)+'</span></div>';
+  }
+  if(ev.contact && ev.contact!=='—'){
+    html += '<div class="info-row"><span class="info-label">Contact:</span><span class="info-val">'+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' &nbsp;·&nbsp; '+esc(ev.phone):'')+'</span></div>';
+    if(schedObj['Staffing']) html += '<div class="info-row"><span class="info-label">Staffing:</span><span class="info-val">'+esc(schedObj['Staffing'])+'</span></div>';
+  }
+  if(ev.notes) html += '<div class="info-row" style="grid-column:1/-1"><span class="info-label">Notes:</span><span class="info-val">'+esc(ev.notes)+'</span></div>';
+  html += '</div>';
+
+  // Menu
+  html += '<h2>Menu</h2>';
+  html += '<table class="no-break"><thead><tr><th style="width:45%">Dish</th><th style="width:12%">Diet</th><th style="width:10%">Portions</th><th style="width:13%">Packaging</th><th style="width:20%">Notes</th></tr></thead><tbody>';
+  (ev.menu||[]).forEach(function(m){
+    var masterItem = MASTER.find(function(x){ return x.name===m.name; });
+    var diet = (masterItem&&masterItem.diet) || (ev.recipes&&ev.recipes[m.name]&&ev.recipes[m.name].diet) || '';
+    var allergens = (masterItem&&masterItem.allergens) || (ev.recipes&&ev.recipes[m.name]&&ev.recipes[m.name].allergens) || '';
+    var dc = dietColors[diet]||'#888';
+    var dietBadge = diet ? '<span class="diet-badge" style="background:'+dc+'">'+diet+'</span>' : '—';
+    html += '<tr><td><strong>'+esc(m.name)+'</strong>'+(allergens?'<br><span style="font-size:7pt;color:#888">⚠ '+esc(allergens)+'</span>':'')+'</td><td>'+dietBadge+'</td><td style="text-align:center;font-weight:700">'+esc(String(m.portions||m.ppl||'—'))+'</td><td>'+esc(m.packaging||'—')+'</td><td style="font-size:7.5pt;color:#666">'+(m.notes||'')+'</td></tr>';
+  });
+  html += '</tbody></table>';
+
+  // Equipment
+  if(ev.equipment && ev.equipment.length){
+    html += '<h2 class="section-gap">Equipment</h2>';
+    html += '<div class="equip-list">';
+    ev.equipment.forEach(function(e){ html += '<div class="equip-item">'+esc(e)+'</div>'; });
+    html += '</div>';
+  }
+
+  // Schedule details
+  var schedKeys = Object.keys(schedObj).filter(function(k){ return ['Food ready by','Delivery','Event start','Staffing','Address','On-site contact'].indexOf(k)<0 || true; });
+  var schedImportant = ['Food ready by','Delivery','Event start'];
+  var schedOther = Object.keys(schedObj).filter(function(k){ return schedImportant.indexOf(k)<0 && schedObj[k]; });
+  if(schedOther.length){
+    html += '<h2 class="section-gap">Additional Schedule</h2>';
+    html += '<div class="info-grid">';
+    schedOther.forEach(function(k){
+      html += '<div class="info-row"><span class="info-label">'+esc(k)+':</span><span class="info-val">'+esc(schedObj[k])+'</span></div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="footer"><span>'+esc(clientName)+' · '+esc(dateFmt)+'</span><span>BEO · Page 1</span><span>Bella &amp; Bona Catering</span></div>';
+  html += '</div>'; // end page 1
+
+  /* ─── PAGE 2: BOM ─── */
+  html += '<div class="page">';
+  html += '<div class="hdr">';
+  html += '<div><div class="hdr-logo">&#129378; Bella &amp; Bona</div><div style="font-size:8pt;color:#666;margin-top:1mm">Professional Catering</div></div>';
+  html += '<div><div class="hdr-title">BILL OF MATERIALS</div><div class="hdr-sub">'+esc(clientName)+' &nbsp;·&nbsp; '+esc(dateFmt)+'</div></div>';
+  html += '</div>';
+
+  // Per-dish ingredient tables
+  var dishKeys = Object.keys(bomByDish);
+  if(dishKeys.length){
+    dishKeys.forEach(function(dishName){
+      var d = bomByDish[dishName];
+      html += '<div class="no-break">';
+      html += '<div class="dish-header">'+esc(dishName)+'<span class="portion-badge">'+d.portions+' portions</span></div>';
+      if(d.rows.length){
+        html += '<table><thead><tr><th style="width:55%">Ingredient</th><th style="width:15%">Qty/Portion</th><th style="width:15%">Total Qty</th><th style="width:15%">Unit</th></tr></thead><tbody>';
+        // Get per-portion qty from recipe
+        var recipeEntry = ev.recipes && ev.recipes[dishName];
+        var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
+                   || (window._recipeDb && window._recipeDb[dishName]) || [];
+        d.rows.forEach(function(row){
+          // Find per-portion qty
+          var ingMatch = ings.find(function(i){ return (i.name||i.product||'')=== row.product; });
+          var perPortion = ingMatch ? parseFloat(ingMatch.qty_per_portion||ingMatch.qty) : NaN;
+          var perPortionFmt = isNaN(perPortion) ? '—' : (perPortion<1 ? perPortion.toFixed(3) : perPortion.toFixed(2).replace(/\.?0+$/,''));
+          html += '<tr><td>'+esc(row.product)+'</td><td style="text-align:right">'+perPortionFmt+'</td><td style="text-align:right;font-weight:700">'+esc(row.qty)+'</td><td>'+esc(row.unit)+'</td></tr>';
+        });
+        html += '</tbody></table>';
+      } else {
+        html += '<div style="padding:2mm 2.5mm;font-size:8pt;color:#888;font-style:italic">No ingredient data available</div>';
+      }
+      html += '<div style="margin-bottom:3mm"></div>';
+      html += '</div>';
+    });
+
+    // Consolidated order summary
+    var consKeys = Object.keys(consolidated);
+    if(consKeys.length > 1){
+      html += '<div class="no-break section-gap">';
+      html += '<h2>Consolidated Order Summary</h2>';
+      html += '<table><thead><tr><th class="consolidated-hdr" style="width:55%">Product</th><th class="consolidated-hdr" style="width:20%;text-align:right">Total Qty</th><th class="consolidated-hdr" style="width:25%">Unit</th></tr></thead><tbody>';
+      consKeys.sort().forEach(function(k){
+        var c = consolidated[k];
+        var tot = c.qty < 1 ? c.qty.toFixed(3) : c.qty.toFixed(2).replace(/\.?0+$/,'');
+        html += '<tr><td><strong>'+esc(c.product)+'</strong></td><td style="text-align:right;font-weight:900">'+tot+'</td><td>'+esc(c.unit)+'</td></tr>';
+      });
+      html += '</tbody></table>';
+      html += '</div>';
+    }
+  } else {
+    html += '<div style="padding:8mm;text-align:center;color:#888;font-style:italic">No ingredient data found for this event.</div>';
+  }
+
+  html += '<div class="footer"><span>'+esc(clientName)+' · '+esc(dateFmt)+'</span><span>BOM · Page 2</span><span>Bella &amp; Bona Catering</span></div>';
+  html += '</div>'; // end page 2
+
+  html += '</body></html>';
+
+  var win = window.open('', '_blank', 'width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function(){ win.print(); }, 600);
+}
+
 </script>
 </body>
 </html>
