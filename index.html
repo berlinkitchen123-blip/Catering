@@ -2407,7 +2407,7 @@ function renderMenuRow(m, i){
     '</div>' +
     '<input class="form-input" style="max-width:55px" placeholder="Pax" value="' + esc(m.portions||'') + '" oninput="editingMenuRows[' + i + '].portions=this.value">' +
     '<input class="form-input" style="max-width:65px" placeholder="Diet" value="' + esc(m.diet||'') + '" oninput="editingMenuRows[' + i + '].diet=this.value">' +
-    '<select class="form-input" style="max-width:130px;font-size:12px" onchange="editingMenuRows['+i+'].packaging=this.value">'+[''+'',"GN 1/1","GN 1/2","GN 2/1","GN 3/1","Paper Bowl","Plastic Jar","Glass Jar","White Box","Brown Box","Plastic Tray","Baskets","Bamboo Boats","Paper Wrap","Round Bowls","Compartment Bowl","No Packaging"].map(function(o){return '<option value="'+o+'"'+(m.packaging===o?' selected':'')+'>'+(!o?'— pkg —':o)+'</option>';}).join('')+'</select>' +
+    '<select class="form-input" style="max-width:130px;font-size:12px" onchange="editingMenuRows['+i+'].packaging=this.value">'+[''+'',"GN 1/1","GN 1/2","GN 2/1","GN 3/1","Paper Bowl","Dressing Cup","Glass Jar","White Box","Brown Box","Plastic Tray","Baskets","Bamboo Boats","Paper Wrap","Round Bowls","Compartment Bowl","No Packaging"].map(function(o){return '<option value="'+o+'"'+(m.packaging===o?' selected':'')+'>'+(!o?'— pkg —':o)+'</option>';}).join('')+'</select>' +
     '<input class="form-input" type="number" step="0.01" placeholder="€/ptn" title="Price per portion" style="max-width:72px;font-size:12px" value="'+esc(String(m.price_per_portion||''))+'" oninput="editingMenuRows['+i+'].price_per_portion=this.value">' +
     '<button class="btn-remove" onclick="removeMenuRow(' + i + ')">✕</button>' +
     '</div>' +
