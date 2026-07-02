@@ -1640,6 +1640,14 @@ body {
         <input id="me-selling-price" type="number" step="0.01" placeholder="0.00" class="form-input" style="flex:1;background:none;border:none;color:#4eca82;font-size:14px;font-weight:700;padding:4px">
         <span style="font-size:11px;color:rgba(78,202,130,0.6)">/ portion</span>
       </div>
+      <div style="display:flex;align-items:center;gap:4px;background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:10px;padding:4px 10px">
+        <span style="font-size:12px;color:var(--orange);font-weight:700">🏷 VAT</span>
+        <select id="me-tax" class="form-input" style="background:none;border:none;color:var(--orange);font-weight:800;font-size:13px;padding:0 4px;width:70px">
+          <option value="">— %</option>
+          <option value="7">7%</option>
+          <option value="19">19%</option>
+        </select>
+      </div>
     </div>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128221; Notes</div>
     <textarea id="me-notes" class="form-input" placeholder="Dish notes..." rows="2" style="width:100%;margin-bottom:8px;resize:vertical;font-size:12px"></textarea>
@@ -1677,9 +1685,19 @@ body {
         <option value="qty">qty</option>
       </select>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <input type="checkbox" id="add-gf" style="width:16px;height:16px">
-      <label for="add-gf" style="font-size:13px;color:var(--text)">Gluten Free</label>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="add-gf" style="width:16px;height:16px">
+        <label for="add-gf" style="font-size:13px;color:var(--text)">Gluten Free</label>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:10px;padding:6px 12px">
+        <span style="font-size:12px;font-weight:700;color:var(--orange)">🏷 VAT</span>
+        <select id="add-tax" class="form-input" style="background:none;border:none;color:var(--orange);font-weight:800;font-size:13px;padding:0 4px;width:80px">
+          <option value="">— %</option>
+          <option value="7">7%</option>
+          <option value="19">19%</option>
+        </select>
+      </div>
     </div>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128221; Notes (optional)</div>
     <textarea id="add-notes" class="form-input" placeholder="e.g. always serve cold, allergen warning, storage info..." rows="2" style="width:100%;margin-bottom:8px;resize:vertical;font-size:12px"></textarea>
@@ -2826,6 +2844,7 @@ function loadMasterOverrides(){
           if(data.portion_unit !== undefined) MASTER[idx].portion_unit = data.portion_unit;
           if(data.notes !== undefined) MASTER[idx].notes = data.notes;
           if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
+          if(data.tax_rate !== undefined) MASTER[idx].tax_rate = data.tax_rate;
         } else if(data._added){
                     MASTER.push({name:doc.id, diet:data.diet||'', category:data.category||'',
                                   allergens:data.allergens||'', gluten_free:data.gluten_free||'',
@@ -2924,6 +2943,7 @@ function openEditEvent(idx){
   editingMenuRows = (ev.menu||[]).map(function(m){ return Object.assign({},m); });
   // Build editingIngredients from existing order_qtys
   editingIngredients = {};
+  editingAppliances = (ev.appliances||[]).map(function(a){ return Object.assign({},a); });
   if(ev.order_qtys && ev.order_qtys.length){
     ev.order_qtys.forEach(function(item){
       if(!editingIngredients[item.recipe]) editingIngredients[item.recipe] = [];
@@ -2939,10 +2959,55 @@ function openNewEventForm(){
   editingIdx = -1;
   editingMenuRows = [{name:'',portions:'',diet:'',packaging:'',ppl:'',ptn_size:'',ptn_unit:'KG',tot_qty:'',price_per_portion:'',cooking_notes:'',packaging_notes:''}];
   editingIngredients = {};
+  editingAppliances = [];
   document.getElementById('edit-modal-title').textContent = '+ New Event';
   renderEditForm(null);
   document.getElementById('edit-modal').classList.add('show');
 }
+
+
+/* ── APPLIANCE / EQUIPMENT MANAGEMENT ── */
+var editingAppliances = []; // [{name, qty, unit, rental_price, owned}]
+
+function renderApplianceRows(){
+  var container = document.getElementById('ef-appliance-rows');
+  if(!container) return;
+  if(!editingAppliances.length){
+    container.innerHTML = '<div style="color:var(--sub);font-size:12px;padding:4px 0 6px">No appliances added yet</div>';
+    return;
+  }
+  var applianceSuggestions = MASTER.filter(function(x){
+    var cat = (x.category||'').toLowerCase();
+    return cat.includes('equip') || cat.includes('appli') || cat.includes('rent') || cat.includes('gerät') || cat.includes('maschine');
+  });
+  container.innerHTML = editingAppliances.map(function(a, i){
+    return '<div class="menu-edit-row" style="margin-bottom:6px;flex-wrap:wrap;background:rgba(91,156,246,0.05);border:1px solid rgba(91,156,246,0.2);border-radius:10px;padding:8px">' +
+      '<div class="ac-wrap" style="flex:3;min-width:120px">' +
+        '<input class="form-input" placeholder="Appliance name" value="'+esc(a.name||'')+'" style="font-size:13px" oninput="editingAppliances['+i+'].name=this.value" />' +
+      '</div>' +
+      '<input class="form-input" type="number" min="1" step="1" placeholder="Qty" value="'+esc(a.qty||'1')+'" style="max-width:60px;font-size:13px" title="Quantity" oninput="editingAppliances['+i+'].qty=this.value" />' +
+      '<input class="form-input" placeholder="Unit" value="'+esc(a.unit||'pcs')+'" style="max-width:60px;font-size:13px" oninput="editingAppliances['+i+'].unit=this.value" />' +
+      '<div style="display:flex;align-items:center;gap:2px;background:rgba(78,202,130,0.07);border:1px solid rgba(78,202,130,0.25);border-radius:8px;padding:0 6px">' +
+        '<span style="font-size:11px;color:#4eca82;font-weight:700">€</span>' +
+        '<input class="form-input" type="number" step="0.01" placeholder="0.00" value="'+esc(a.rental_price||'')+'" style="width:60px;background:none;border:none;color:#4eca82;font-size:13px;padding:5px 2px" title="Rental/purchase price" oninput="editingAppliances['+i+'].rental_price=this.value" />' +
+      '</div>' +
+      '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--sub);flex-shrink:0">' +
+        '<input type="checkbox" '+(a.owned?'checked':'')+' onchange="editingAppliances['+i+'].owned=this.checked" />' +
+        'Owned' +
+      '</label>' +
+      '<button class="btn-remove" onclick="editingAppliances.splice('+i+',1);renderApplianceRows()">✕</button>' +
+    '</div>';
+  }).join('');
+  // Init autocomplete on appliance name inputs
+  document.querySelectorAll('#ef-appliance-rows .ac-wrap input').forEach(function(inp){ initAutocomplete(inp); });
+}
+
+function addApplianceRow(){
+  editingAppliances.push({name:'', qty:'1', unit:'pcs', rental_price:'', owned:false});
+  renderApplianceRows();
+}
+
+// Call renderApplianceRows after renderEditForm
 
 function renderEditForm(ev){
   const v = function(f){ return esc(ev ? (ev[f]||'') : ''); };
@@ -2977,6 +3042,15 @@ function renderEditForm(ev){
   editingMenuRows.forEach(function(m, i){ h += renderMenuRow(m, i); });
   h += '</div>';
   h += '<button class="btn-add-row" onclick="addMenuRow()">+ Add menu item</button>';
+  // ── Appliances / Equipment section ──
+  h += '<div class="form-section-title" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between">';
+  h += '<span>🔧 Appliances / Equipment</span>';
+  h += '<button onclick="addApplianceRow()" style="font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--sub);cursor:pointer">+ Add</button>';
+  h += '</div>';
+  h += '<div style="font-size:11px;color:var(--sub);margin-bottom:6px">Rented or owned equipment for this event</div>';
+  h += '<div id="ef-appliance-rows"></div>';
+  h += '<button class="btn-add-row" style="margin-bottom:4px" onclick="addApplianceRow()">+ Add appliance</button>';
+  // ──────────────────────────────────────────
   h += '<div class="form-section-title" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between">';
   h += '<span>Ingredient Quantities</span>';
   h += '<button onclick="refreshIngredientSection()" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);cursor:pointer;color:var(--sub)">⟳ Refresh</button>';
@@ -2989,6 +3063,7 @@ function renderEditForm(ev){
     initAutocomplete(inp);
   });
   refreshIngredientSection();
+  renderApplianceRows();
 }
 
 function renderMenuRow(m, i){
@@ -3174,6 +3249,7 @@ function saveEditForm(){
     phone: document.getElementById('ef-phone').value.trim() || '—',
     notes: document.getElementById('ef-notes').value.trim(),
     menu: editingMenuRows.filter(function(m){ return m.name; }),
+    appliances: editingAppliances.filter(function(a){ return a.name; }),
     equipment: [], schedule: {}, recipes: (editingIdx >= 0 && EVENTS[editingIdx] && EVENTS[editingIdx].recipes && Object.keys(EVENTS[editingIdx].recipes).length ? EVENTS[editingIdx].recipes : {}), bom_summary: [],
     order_qtys: (function(){
       var oq = [];
@@ -3355,6 +3431,7 @@ function renderMasterList(q, diet){
         '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px">'+esc(x.name)+'</div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
           (x.diet?'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;border:2px solid '+dietColor+';color:'+dietColor+';background:'+dietColor+'22">'+esc(x.diet)+'</span>':'')+
+          (x.tax_rate?'<span style="font-size:11px;font-weight:800;color:var(--orange);background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:12px;padding:3px 8px">'+esc(x.tax_rate)+'% VAT</span>':'')+
           (pp?'<span style="font-size:11px;font-weight:800;color:#4eca82;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:20px;padding:3px 10px">€'+pp.toFixed(2)+'/'+esc(x.portion_unit||'qty')+'</span>':'')+
           (x.gluten_free?'<span style="font-size:11px;font-weight:800;color:#818cf8;background:rgba(99,102,241,0.12);border:1.5px solid rgba(99,102,241,0.4);border-radius:20px;padding:3px 10px">GF</span>':'')+
           (x.allergens?'<span style="font-size:11px;font-weight:700;color:#fb923c;background:rgba(251,146,60,0.07);border:1.5px solid rgba(251,146,60,0.25);border-radius:20px;padding:3px 10px">⚠ '+esc(x.allergens)+'</span>':'')+
@@ -3424,6 +3501,8 @@ function openMasterEdit(idx){
   document.getElementById('me-instructions').value = x.instructions||'';
   var sp = document.getElementById('me-selling-price');
   if(sp) sp.value = x.price ? parseFloat(x.price).toFixed(2) : '';
+  var mt = document.getElementById('me-tax');
+  if(mt) mt.value = x.tax_rate||'';
   document.getElementById('master-edit-overlay').style.display='flex';
 }
 function renderMasterIngRows(){
@@ -3479,11 +3558,13 @@ function saveMasterEdit(){
   const notes = document.getElementById('me-notes').value.trim();
   const instructions = document.getElementById('me-instructions').value.trim();
   var sellingPrice = parseFloat((document.getElementById('me-selling-price')||{}).value)||0;
+  var taxRateEdit = (document.getElementById('me-tax')||{}).value||'';
   try {
-    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions, price: sellingPrice }, {merge:true});
+    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions, price: sellingPrice, tax_rate: taxRateEdit }, {merge:true});
     MASTER[idx].notes = notes;
     MASTER[idx].instructions = instructions;
     MASTER[idx].price = sellingPrice;
+    MASTER[idx].tax_rate = taxRateEdit;
   } catch(e){ console.warn('notes save error', e); }
   try {
     dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
@@ -3980,7 +4061,18 @@ function evOpenLabelPrint(html, title, pageSize) {
       '@media print{body{background:none}}'+
     '</style></head><body>'+html+
     '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},800)}<\/scr'+'ipt>'+
-    '</body></html>');
+    '
+<!-- BEO PREVIEW MODAL -->
+<div id="beo-preview-modal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.85);flex-direction:column">
+  <div style="background:var(--s1);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div style="font-size:14px;font-weight:800;color:var(--text);flex:1" id="beo-preview-title">BEO + BOM Preview</div>
+    <button onclick="beoPrintInWindow()" style="padding:9px 18px;border:none;background:linear-gradient(135deg,#f0c040,#f59e0b);color:#000;font-weight:900;border-radius:9px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">🖨 Print</button>
+    <button onclick="beoOpenNewTab()" style="padding:9px 18px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-weight:700;border-radius:9px;font-size:13px;cursor:pointer">↗ New Tab</button>
+    <button onclick="document.getElementById('beo-preview-modal').style.display='none'" style="width:36px;height:36px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <iframe id="beo-preview-frame" style="flex:1;width:100%;border:none;background:#fff"></iframe>
+</div>
+</body></html>');
   w.document.close();
 }
 
@@ -4377,16 +4469,54 @@ function generateEventPDF(evIdx){
     html += '<div style="padding:8mm;text-align:center;color:#888;font-style:italic">No ingredient data found for this event.</div>';
   }
 
+  // Appliances section in BOM page
+  if(ev.appliances && ev.appliances.length){
+    html += '<div class="no-break section-gap">';
+    html += '<h2>🔧 Appliances / Equipment</h2>';
+    html += '<table><thead><tr><th style="width:45%">Item</th><th style="width:10%;text-align:center">Qty</th><th style="width:10%;text-align:center">Unit</th><th style="width:15%;text-align:right">Price €</th><th style="width:20%;text-align:center">Status</th></tr></thead><tbody>';
+    var appTotal = 0;
+    ev.appliances.forEach(function(a){
+      var price = parseFloat(a.rental_price)||0;
+      var qty = parseFloat(a.qty)||1;
+      appTotal += price * qty;
+      html += '<tr><td><strong>'+esc(a.name)+'</strong></td>';
+      html += '<td style="text-align:center">'+esc(String(a.qty||1))+'</td>';
+      html += '<td style="text-align:center">'+esc(a.unit||'pcs')+'</td>';
+      html += '<td style="text-align:right">'+(price?'€'+price.toFixed(2):'—')+'</td>';
+      html += '<td style="text-align:center;color:'+(a.owned?'#16a34a':'#2563eb')+';font-weight:700">'+(a.owned?'✓ Owned':'⚙ Rented')+'</td></tr>';
+    });
+    if(appTotal > 0) html += '<tr style="background:#f0f4ff"><td colspan="3"><strong>Equipment Total</strong></td><td style="text-align:right;font-weight:900;color:#2563eb">€'+appTotal.toFixed(2)+'</td><td></td></tr>';
+    html += '</tbody></table></div>';
+  }
+
   html += '<div class="footer"><span>'+esc(clientName)+' · '+esc(dateFmt)+'</span><span>BOM · Page 2</span><span>Bella &amp; Bona Catering</span></div>';
   html += '</div>'; // end page 2
 
   html += '</body></html>';
 
-  var win = window.open('', '_blank', 'width=900,height=700');
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(function(){ win.print(); }, 600);
+  // Show in-app preview modal
+  window._beoHtml = html;
+  var modal = document.getElementById('beo-preview-modal');
+  var frame = document.getElementById('beo-preview-frame');
+  var title = document.getElementById('beo-preview-title');
+  if(modal && frame){
+    title.textContent = 'BEO + BOM — ' + (ev.client||'Event') + ' · ' + (ev.date||'');
+    modal.style.display = 'flex';
+    frame.srcdoc = html;
+  } else {
+    // fallback
+    var win = window.open('', '_blank', 'width=900,height=700');
+    if(win){ win.document.write(html); win.document.close(); }
+  }
+}
+function beoPrintInWindow(){
+  var frame = document.getElementById('beo-preview-frame');
+  if(frame && frame.contentWindow){ frame.contentWindow.print(); }
+}
+function beoOpenNewTab(){
+  if(!window._beoHtml) return;
+  var win = window.open('', '_blank', 'width=1000,height=800');
+  if(win){ win.document.write(window._beoHtml); win.document.close(); }
 }
 
 
@@ -4449,6 +4579,7 @@ function saveNewDish(){
   }
   var priceVal = parseFloat(document.getElementById('add-price').value)||0;
   var unitVal = document.getElementById('add-unit').value||'portion';
+  var taxVal = document.getElementById('add-tax') ? (document.getElementById('add-tax').value||'') : '';
   var newDish = {
     name: name,
     diet: document.getElementById('add-diet').value,
@@ -4457,6 +4588,7 @@ function saveNewDish(){
     gluten_free: document.getElementById('add-gf').checked ? 'Yes' : '',
     price: priceVal,
     portion_unit: unitVal,
+    tax_rate: taxVal,
         notes: document.getElementById('add-notes').value.trim(),
             instructions: document.getElementById('add-instructions').value.trim()
   };
@@ -4466,7 +4598,8 @@ function saveNewDish(){
     dbShared.collection('master_overrides').doc(name).set({
       diet: newDish.diet, allergens: newDish.allergens,
       gluten_free: newDish.gluten_free, price: priceVal,
-      portion_unit: unitVal, category: newDish.category, notes: newDish.notes, instructions: newDish.instructions, _added: true
+      portion_unit: unitVal, category: newDish.category, notes: newDish.notes, instructions: newDish.instructions,
+      tax_rate: taxVal, _added: true
     });
   } catch(e){ console.warn('add dish save error', e); }
   // Remove from deleted list if re-adding
