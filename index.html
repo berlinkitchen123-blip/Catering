@@ -1613,6 +1613,7 @@ function showScreen(id, animate){
   if(id==='bom'){ setTimeout(function(){ buildBomScreen(); }, 10); }
   if(id==='orders'){ setTimeout(function(){ buildOrdersScreen(); }, 10); }
   if(id==='ingredients'){ setTimeout(function(){ buildIngredientsScreen(); }, 10); }
+  if(id==='creator-editor' && creatorUnlocked){ setTimeout(function(){ buildCreatorEditor(); }, 10); }
   if(id==='event' && currentEvent){
     back.classList.add('show');
     bc.innerHTML='<span>'+esc(currentEvent.date.split(' ')[0])+'</span><span class="sep">&#8250;</span><span class="current">'+esc(currentEvent.client)+'</span>';
@@ -2437,10 +2438,45 @@ function loadCustomEvents(){
 }
 
 /* ── CREATOR EDITOR ── */
+var _creatorDay = -1;
 function buildCreatorEditor(){
   document.getElementById('creator-sub').textContent = WEEK;
-  let h = '';
-  EVENTS.forEach(function(ev, i){
+  // Build unique dates
+  var uniqueDates = [];
+  var seen = {};
+  EVENTS.forEach(function(ev){ if(ev.date && !seen[ev.date]){ seen[ev.date]=true; uniqueDates.push(ev.date); } });
+  if(_creatorDay < 0 && uniqueDates.length > 0) _creatorDay = 0;
+  // Day strip
+  var strip = '<div id="creator-day-strip" style="display:flex;gap:6px;overflow-x:auto;padding:0 0 12px 0;margin-bottom:14px;border-bottom:1px solid var(--border)">';
+  // "All" button
+  strip += '<div onclick="_creatorDay=-99;buildCreatorEditor()" style="cursor:pointer;flex-shrink:0;min-width:52px;padding:8px 10px;border-radius:10px;text-align:center;'+(_creatorDay===-99?'background:var(--accent);color:#000;font-weight:800':'background:var(--s2);color:var(--sub);border:1px solid var(--border)')+';">';
+  strip += '<div style="font-size:10px;font-weight:700;text-transform:uppercase">All</div>';
+  strip += '<div style="font-size:14px;font-weight:900;line-height:1.4">📋</div>';
+  strip += '</div>';
+  uniqueDates.forEach(function(date, i){
+    var parts = date.split(' ');
+    var dayName = (parts[0]||'').substring(0,3);
+    var dateNum = (parts[1]||'').split('/')[0];
+    var evCount = EVENTS.filter(function(ev){ return ev.date === date; }).length;
+    var isActive = (i === _creatorDay);
+    strip += '<div onclick="_creatorDay='+i+';buildCreatorEditor()" style="cursor:pointer;flex-shrink:0;min-width:52px;padding:8px 10px;border-radius:10px;text-align:center;'+(isActive?'background:var(--accent);color:#000;font-weight:800':'background:var(--s2);color:var(--sub);border:1px solid var(--border)')+';">';
+    strip += '<div style="font-size:10px;font-weight:700;text-transform:uppercase">'+dayName+'</div>';
+    strip += '<div style="font-size:18px;font-weight:900;line-height:1.2">'+dateNum+'</div>';
+    if(evCount > 0) strip += '<div style="font-size:9px;opacity:.7;margin-top:1px">'+evCount+' evt</div>';
+    strip += '</div>';
+  });
+  strip += '</div>';
+  // Filter events by day
+  var filteredEvents;
+  if(_creatorDay === -99){
+    filteredEvents = EVENTS.map(function(ev, i){ return {ev:ev, idx:i}; });
+  } else {
+    var targetDate = uniqueDates[_creatorDay];
+    filteredEvents = EVENTS.map(function(ev, i){ return {ev:ev, idx:i}; }).filter(function(x){ return x.ev.date === targetDate; });
+  }
+  let h = strip;
+  filteredEvents.forEach(function(item){
+    var ev = item.ev, i = item.idx;
     const isCustom = !!ev._custom;
     h += '<div class="creator-event-card">';
     h += '<div class="creator-event-header">';
@@ -2452,7 +2488,7 @@ function buildCreatorEditor(){
     h += '</div>';
     h += '</div>';
   });
-  if(!h) h = '<div class="empty"><div class="empty-icon">&#128197;</div><div class="empty-text">No events yet</div></div>';
+  if(filteredEvents.length === 0) h += strip + '<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No events on this day</div></div>';
   document.getElementById('creator-list').innerHTML = h;
 }
 
@@ -3081,7 +3117,16 @@ function showAC(input, dd){
   const q = input.value.trim().toLowerCase();
   acFocusIdx = -1;
   if(q.length < 1){ dd.classList.remove('show'); return; }
-  const matches = MASTER.filter(function(x){ return x.name.toLowerCase().includes(q); }).slice(0,12);
+  var allMatches = MASTER.filter(function(x){ return x.name.toLowerCase().includes(q); });
+  // Sort: exact match first, then starts-with, then contains
+  allMatches.sort(function(a, b){
+    var an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+    if(an === q) return -1; if(bn === q) return 1;
+    if(an.startsWith(q) && !bn.startsWith(q)) return -1;
+    if(!an.startsWith(q) && bn.startsWith(q)) return 1;
+    return an.localeCompare(bn);
+  });
+  const matches = allMatches.slice(0,20);
   if(!matches.length){
     dd.innerHTML = '<div class="ac-no-match">No match — will save as new item</div>';
   } else {
