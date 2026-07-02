@@ -25,6 +25,26 @@
   --r: 14px;
   --r2: 10px;
   --r3: 8px;
+  --card: #161a26;
+}
+[data-theme="light"] {
+  --bg: #f4f6fb;
+  --s1: #ffffff;
+  --s2: #f0f2f8;
+  --s3: #e4e8f4;
+  --border: #d0d5e8;
+  --border2: #b0b8d8;
+  --accent: #c8960a;
+  --accent2: #c8960a22;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --purple: #7c3aed;
+  --red: #dc2626;
+  --orange: #ea580c;
+  --text: #111827;
+  --sub: #4b5563;
+  --dim: #9ca3af;
+  --card: #ffffff;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -998,6 +1018,7 @@ body {
   <div class="topbar-breadcrumb" id="topbar-breadcrumb"></div>
   <div class="topbar-spacer"></div>
   <div class="cal-btn" id="cal-btn" onclick="toggleMiniCal()"><span class="cal-btn-icon">&#128197;</span><span id="cal-btn-label">Select date</span></div>
+  <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark mode" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--s3);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s" aria-label="Toggle theme">&#9728;&#65039;</button>
   <div class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
   </div>
@@ -1245,6 +1266,13 @@ body {
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">Ingredients / Recipe</div>
     <div id="me-ing-rows" style="margin-bottom:6px"></div>
     <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:12px">+ Add ingredient</button>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <div style="flex:1;display:flex;align-items:center;gap:4px;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:10px;padding:4px 10px">
+        <span style="font-size:12px;color:#4eca82;font-weight:700">€ Selling</span>
+        <input id="me-selling-price" type="number" step="0.01" placeholder="0.00" class="form-input" style="flex:1;background:none;border:none;color:#4eca82;font-size:14px;font-weight:700;padding:4px">
+        <span style="font-size:11px;color:rgba(78,202,130,0.6)">/ portion</span>
+      </div>
+    </div>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128221; Notes</div>
     <textarea id="me-notes" class="form-input" placeholder="Dish notes..." rows="2" style="width:100%;margin-bottom:8px;resize:vertical;font-size:12px"></textarea>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#127859; Cooking Instructions</div>
@@ -1346,6 +1374,25 @@ const FIREBASE_CONFIGS = {
 };
 let db = null;
 let dbShared = null; // always Berlin — shared recipe/master data
+
+/* ── THEME MANAGEMENT ── */
+(function(){
+  var saved = localStorage.getItem('bb_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  // Update button icon after DOM ready
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('theme-toggle-btn');
+    if(btn) btn.innerHTML = saved==='light' ? '&#127769;&#65039;' : '&#9728;&#65039;';
+  });
+})();
+function toggleTheme(){
+  var current = document.documentElement.getAttribute('data-theme') || 'dark';
+  var next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('bb_theme', next);
+  var btn = document.getElementById('theme-toggle-btn');
+  if(btn) btn.innerHTML = next === 'light' ? '&#127769;&#65039;' : '&#9728;&#65039;';
+}
 let selectedCity = null;
 </script>
 <script>
@@ -1563,6 +1610,9 @@ function showScreen(id, animate){
   // Topbar
   const back=document.getElementById('topbar-back');
   const bc=document.getElementById('topbar-breadcrumb');
+  if(id==='bom'){ setTimeout(function(){ buildBomScreen(); }, 10); }
+  if(id==='orders'){ setTimeout(function(){ buildOrdersScreen(); }, 10); }
+  if(id==='ingredients'){ setTimeout(function(){ buildIngredientsScreen(); }, 10); }
   if(id==='event' && currentEvent){
     back.classList.add('show');
     bc.innerHTML='<span>'+esc(currentEvent.date.split(' ')[0])+'</span><span class="sep">&#8250;</span><span class="current">'+esc(currentEvent.client)+'</span>';
@@ -2105,63 +2155,149 @@ function refreshHomeCards(){
 }
 
 /* ── BOM ── */
+var _bomDay = -1;
 function buildBomScreen(){
   document.getElementById('bom-sub').textContent = WEEK;
-  let h='';
-  EVENTS.forEach(function(ev){
-    if(!ev.bom_summary||!ev.bom_summary.length) return;
-    h+='<div class="bom-section"><div class="bom-section-header">';
-    h+='<div class="bom-section-title">'+esc(ev.client)+'</div>';
-    h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
-    h+='<span class="pill pill-blue">'+esc(ev.guests)+' guests</span></div>';
-    h+='<div class="bom-section-body"><table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Ingredient</th><th>Total</th><th>Unit</th></tr></thead><tbody>';
-    let lr='';
-    ev.bom_summary.forEach(function(item){
-      if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--accent);font-weight:700;font-size:12px;background:rgba(240,192,64,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
-      h+='<tr><td></td><td>'+esc(item.ingredient)+'</td><td class="highlight">'+esc(item.total)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
-    });
-    h+='</tbody></table></div></div>';
+  var uniqueDates = [];
+  var seen = {};
+  EVENTS.forEach(function(ev){ if(ev.date && !seen[ev.date]){ seen[ev.date]=true; uniqueDates.push(ev.date); } });
+  if(_bomDay < 0 && uniqueDates.length > 0) _bomDay = 0;
+  var strip = '<div id="bom-day-strip" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 6px;border-bottom:1px solid var(--border);background:var(--bg)">';
+  uniqueDates.forEach(function(date, i){
+    var parts = date.split(' ');
+    var dayName = (parts[0]||'').substring(0,3);
+    var dateNum = (parts[1]||'').split('/')[0];
+    var isActive = (i === _bomDay);
+    strip += '<div onclick="_bomDay='+i+';buildBomScreen()" style="cursor:pointer;flex-shrink:0;min-width:52px;padding:8px 10px;border-radius:10px;text-align:center;'+(isActive?'background:var(--accent);color:#000;font-weight:800':'background:var(--s2);color:var(--sub);border:1px solid var(--border)')+';">';
+    strip += '<div style="font-size:10px;font-weight:700;text-transform:uppercase">'+dayName+'</div>';
+    strip += '<div style="font-size:18px;font-weight:900;line-height:1.2">'+dateNum+'</div>';
+    strip += '</div>';
   });
-  if(!h) h='<div class="empty"><div class="empty-icon">&#128230;</div><div class="empty-text">No BOM data</div></div>';
-  document.getElementById('bom-body').innerHTML=h;
+  strip += '</div>';
+  var targetDate = uniqueDates[_bomDay];
+  var dayEvents = targetDate ? EVENTS.filter(function(ev){ return ev.date === targetDate; }) : [];
+  var h = '';
+  dayEvents.forEach(function(ev){
+    h += '<div class="bom-section" style="margin-top:12px">';
+    h += '<div class="bom-section-header"><div class="bom-section-title">'+esc(ev.client)+'</div>';
+    h += '<span class="pill pill-blue">'+esc(ev.guests||'0')+' guests</span>';
+    h += '<span class="pill pill-purple">'+esc(ev.event_type||'')+'</span></div>';
+    h += '<div class="bom-section-body">';
+    var bomRows = [];
+    if(ev.bom_summary && ev.bom_summary.length){
+      ev.bom_summary.forEach(function(item){ bomRows.push({recipe:item.recipe, ingredient:item.ingredient||item.product||'', total:item.total||item.qty||'', unit:item.unit||''}); });
+    } else if(ev.menu && ev.menu.length){
+      ev.menu.forEach(function(m){
+        var ings = (ev.recipes && ev.recipes[m.name] && ev.recipes[m.name].ingredients) || (window._recipeDb && window._recipeDb[m.name]);
+        var portions = parseFloat(m.portions)||parseFloat(m.ppl)||0;
+        if(ings && ings.length && portions){
+          ings.forEach(function(ing){
+            var qtyNum = parseFloat(ing.qty_per_portion||ing.qty);
+            if(isNaN(qtyNum)) return;
+            bomRows.push({recipe:m.name, ingredient:ing.name||ing.product||'', total:String(Math.round(qtyNum*portions*1000)/1000), unit:ing.unit||''});
+          });
+        } else { bomRows.push({recipe:m.name, ingredient:'(no ingredients listed)', total:String(portions||'—'), unit:''}); }
+      });
+    }
+    if(bomRows.length){
+      h += '<table class="dt" style="margin-top:8px"><thead><tr><th>Recipe</th><th>Ingredient</th><th>Total</th><th>Unit</th></tr></thead><tbody>';
+      var lr='';
+      bomRows.forEach(function(item){
+        if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:8px 10px 2px;color:var(--accent);font-weight:700;font-size:12px;background:rgba(240,192,64,0.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
+        h += '<tr><td></td><td>'+esc(item.ingredient)+'</td><td class="highlight">'+esc(item.total)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
+      });
+      h += '</tbody></table>';
+    } else { h += '<div style="padding:16px;text-align:center;color:var(--sub);font-size:13px">No ingredient data for this event</div>'; }
+    h += '</div></div>';
+  });
+  if(!h) h = '<div class="empty" style="margin-top:24px"><div class="empty-icon">&#128230;</div><div class="empty-text">No events on this day</div></div>';
+  document.getElementById('bom-body').innerHTML = strip + '<div style="padding:0 16px 100px">' + h + '</div>';
 }
 
 /* ── ORDERS ── */
+var _ordersDay = -1;
 function buildOrdersScreen(){
   document.getElementById('orders-sub').textContent = WEEK;
-  let h='';
-  EVENTS.forEach(function(ev, i){
-    h+='<div class="bom-section"><div class="bom-section-header">';
-    h+='<div class="bom-section-title" style="flex:1;min-width:0">'+esc(ev.client)+'</div>';
-    h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
-    h+='<span class="pill pill-blue">&#128101; '+esc(ev.guests)+'</span>';
-    h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span>';
-    h+='<button class="btn-edit" data-evidx="'+i+'" onclick="openEditEvent(+this.dataset.evidx)">Edit</button>';
-    h+='</div>';
-    h+='<div class="bom-section-body">';
-    if(ev.location&&ev.location!=='—') h+='<p style="margin:10px 0 4px;font-size:13px">&#128205; <strong>'+esc(ev.location)+'</strong></p>';
-    if(ev.contact&&ev.contact!=='—') h+='<p style="font-size:13px;color:var(--sub);margin-bottom:10px">&#128100; '+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' · '+esc(ev.phone):'')+'</p>';
-    if(ev.menu&&ev.menu.length){
-      h+='<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>Price/ptn</th><th>Total</th></tr></thead><tbody>';
-      ev.menu.forEach(function(m){ var pp=parseFloat(m.price_per_portion)||0; var ptn=parseFloat(m.portions)||0; var tot=pp&&ptn?'€'+(pp*ptn).toFixed(2):''; h+='<tr><td><strong>'+esc(m.name)+'</strong></td><td class="highlight">'+esc(m.portions||'—')+'</td><td><span class="diet '+dietClass(m.diet)+'">'+esc(m.diet||'—')+'</span></td><td class="sub">'+esc(m.packaging||'')+'</td><td class="sub">'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+tot+'</td></tr>'; });
-      h+='</tbody></table>';
-    }
-    h+='</div></div>';
+  var uniqueDates = [];
+  var seen = {};
+  EVENTS.forEach(function(ev){ if(ev.date && !seen[ev.date]){ seen[ev.date]=true; uniqueDates.push(ev.date); } });
+  if(_ordersDay < 0 && uniqueDates.length > 0) _ordersDay = 0;
+  var strip = '<div id="orders-day-strip" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 6px;border-bottom:1px solid var(--border);background:var(--bg)">';
+  uniqueDates.forEach(function(date, i){
+    var parts = date.split(' ');
+    var dayName = (parts[0]||'').substring(0,3);
+    var dateNum = (parts[1]||'').split('/')[0];
+    var isActive = (i === _ordersDay);
+    var evCount = EVENTS.filter(function(ev){ return ev.date === date; }).length;
+    strip += '<div onclick="_ordersDay='+i+';buildOrdersScreen()" style="cursor:pointer;flex-shrink:0;min-width:52px;padding:8px 10px;border-radius:10px;text-align:center;'+(isActive?'background:var(--accent);color:#000;font-weight:800':'background:var(--s2);color:var(--sub);border:1px solid var(--border)')+';">';
+    strip += '<div style="font-size:10px;font-weight:700;text-transform:uppercase">'+dayName+'</div>';
+    strip += '<div style="font-size:18px;font-weight:900;line-height:1.2">'+dateNum+'</div>';
+    if(evCount>0) strip += '<div style="font-size:9px;opacity:.7;margin-top:1px">'+evCount+' evt</div>';
+    strip += '</div>';
   });
-  document.getElementById('orders-body').innerHTML=h;
+  strip += '</div>';
+  var targetDate = uniqueDates[_ordersDay];
+  var dayEvents = targetDate ? EVENTS.filter(function(ev){ return ev.date === targetDate; }) : [];
+  var h = '';
+  dayEvents.forEach(function(ev, li){
+    var evIdx = EVENTS.indexOf(ev);
+    h += '<div class="bom-section" style="margin-top:12px">';
+    h += '<div class="bom-section-header"><div class="bom-section-title" style="flex:1;min-width:0">'+esc(ev.client)+'</div>';
+    h += '<span class="pill pill-blue">&#128101; '+esc(ev.guests||'0')+'</span>';
+    h += '<span class="pill pill-purple">'+esc(ev.event_type||'')+'</span>';
+    if(creatorUnlocked) h += '<button class="btn-edit" data-evidx="'+evIdx+'" onclick="openEditEvent(+this.dataset.evidx)">Edit</button>';
+    h += '</div><div class="bom-section-body">';
+    if(ev.event_time) h += '<p style="margin:8px 0 2px;font-size:13px">&#9200; <strong>'+esc(ev.event_time)+'</strong>'+(ev.food_ready_by?' &nbsp;|&nbsp; &#127859; Ready: '+esc(ev.food_ready_by):'')+'</p>';
+    if(ev.location&&ev.location!=='—') h += '<p style="margin:4px 0;font-size:13px">&#128205; <strong>'+esc(ev.location)+'</strong></p>';
+    if(ev.contact&&ev.contact!=='—') h += '<p style="font-size:12px;color:var(--sub);margin-bottom:8px">&#128100; '+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' · &#128222; '+esc(ev.phone):'')+'</p>';
+    if(ev.menu&&ev.menu.length){
+      h += '<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>€/ptn</th><th>Total €</th></tr></thead><tbody>';
+      var grandTotal = 0;
+      ev.menu.forEach(function(m){
+        var pp=parseFloat(m.price_per_portion)||0;
+        var ptn=parseFloat(m.portions)||0;
+        var tot=pp&&ptn?pp*ptn:0;
+        grandTotal+=tot;
+        // Lookup selling price from MASTER if not on menu item
+        if(!pp){ var mi = MASTER.find(function(x){ return x.name===m.name; }); if(mi&&mi.price) pp=parseFloat(mi.price)||0; }
+        h+='<tr><td>'+esc(m.name)+'</td><td class="highlight">'+esc(m.portions||'—')+'</td><td>'+esc(m.diet||'')+'</td><td>'+esc(m.packaging||'')+'</td><td>'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+(tot?'€'+tot.toFixed(2):'—')+'</td></tr>';
+      });
+      h += '</tbody></table>';
+      if(grandTotal>0) h += '<div style="text-align:right;padding:8px 4px 0;font-size:13px;font-weight:800;color:var(--accent)">Grand Total: €'+grandTotal.toFixed(2)+'</div>';
+    }
+    if(ev.notes) h += '<div style="margin-top:8px;font-size:12px;color:var(--sub);background:var(--s3);border-radius:8px;padding:8px 12px">&#128221; '+esc(ev.notes)+'</div>';
+    h += '</div></div>';
+  });
+  if(!h) h = '<div class="empty" style="margin-top:24px"><div class="empty-icon">&#128203;</div><div class="empty-text">No events on this day</div></div>';
+  document.getElementById('orders-body').innerHTML = strip + '<div style="padding:0 16px 100px">' + h + '</div>';
 }
-
 /* ── INGREDIENTS ── */
+var _ingredientsDay = -1;
 function buildIngredientsScreen(){
   document.getElementById('ingredients-sub').textContent = WEEK;
-  let h='';
-  EVENTS.forEach(function(ev){
-    if(!ev.menu || !ev.menu.length) return;
-    // Build live order quantities from recipe DB + current menu portions
+  var uniqueDates = [];
+  var seen = {};
+  EVENTS.forEach(function(ev){ if(ev.date && !seen[ev.date]){ seen[ev.date]=true; uniqueDates.push(ev.date); } });
+  if(_ingredientsDay < 0 && uniqueDates.length > 0) _ingredientsDay = 0;
+  var strip = '<div id="ing-day-strip" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 6px;border-bottom:1px solid var(--border);background:var(--bg)">';
+  uniqueDates.forEach(function(date, i){
+    var parts = date.split(' ');
+    var dayName = (parts[0]||'').substring(0,3);
+    var dateNum = (parts[1]||'').split('/')[0];
+    var isActive = (i === _ingredientsDay);
+    strip += '<div onclick="_ingredientsDay='+i+';buildIngredientsScreen()" style="cursor:pointer;flex-shrink:0;min-width:52px;padding:8px 10px;border-radius:10px;text-align:center;'+(isActive?'background:var(--accent);color:#000;font-weight:800':'background:var(--s2);color:var(--sub);border:1px solid var(--border)')+';">';
+    strip += '<div style="font-size:10px;font-weight:700;text-transform:uppercase">'+dayName+'</div>';
+    strip += '<div style="font-size:18px;font-weight:900;line-height:1.2">'+dateNum+'</div>';
+    strip += '</div>';
+  });
+  strip += '</div>';
+  var targetDate = uniqueDates[_ingredientsDay];
+  var dayEvents = targetDate ? EVENTS.filter(function(ev){ return ev.date === targetDate && ev.menu && ev.menu.length; }) : [];
+  var h = '';
+  dayEvents.forEach(function(ev){
     var rows = [];
     ev.menu.forEach(function(m){
       var portions = parseFloat(m.portions) || parseFloat(m.ppl) || parseFloat(m.tot_qty) || 0;
-      // Prefer ev.recipes (has qty_per_portion), fall back to _recipeDb
       var recipeEntry = ev.recipes && ev.recipes[m.name];
       var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
                  || (window._recipeDb && window._recipeDb[m.name]);
@@ -2169,39 +2305,32 @@ function buildIngredientsScreen(){
       if(ings && ings.length && portions){
         ings.forEach(function(ing){
           var qtyNum = parseFloat(ing.qty_per_portion||ing.qty);
-          if(isNaN(qtyNum) || ing.name==='Total'||ing.product==='Total') return; // skip total/note rows
+          if(isNaN(qtyNum) || ing.name==='Total'||ing.product==='Total') return;
           var ingForCalc = (ing.qty_per_portion ? ing : Object.assign({}, ing, {qty_per_portion: ing.qty}));
-          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ingForCalc, portions), unit: ing.unit||'kg'});
+          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ingForCalc, portions), unit: ing.unit||'kg', purchase_price: ing.purchase_price||''});
         });
       }
-      // If no ingredient rows were produced, fall back to order_qtys or show placeholder
       if(rows.length === beforeLen){
         var oqRows = ev.order_qtys ? ev.order_qtys.filter(function(r){ return r.recipe === m.name; }) : [];
-        if(oqRows.length){
-          oqRows.forEach(function(r){ rows.push(r); });
-        } else {
-          rows.push({recipe: m.name, product: '—', qty: String(portions||'—'), unit: ''});
-        }
+        if(oqRows.length){ oqRows.forEach(function(r){ rows.push(Object.assign({purchase_price:''}, r)); }); }
+        else { rows.push({recipe: m.name, product: '—', qty: String(portions||'—'), unit: '', purchase_price:''}); }
       }
     });
-    h+='<div class="bom-section"><div class="bom-section-header">';
-    h+='<div class="bom-section-title">'+esc(ev.client)+'</div>';
-    h+='<span class="pill pill-dim">'+esc(ev.date)+'</span>';
-    h+='<span class="pill pill-purple">'+esc(ev.event_type)+'</span></div>';
-    h+='<div class="bom-section-body">';
-    h+='<table class="dt" style="margin-top:12px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th></tr></thead><tbody>';
+    h += '<div class="bom-section" style="margin-top:12px"><div class="bom-section-header">';
+    h += '<div class="bom-section-title">'+esc(ev.client)+'</div>';
+    h += '<span class="pill pill-purple">'+esc(ev.event_type||'')+'</span></div>';
+    h += '<div class="bom-section-body">';
+    h += '<table class="dt" style="margin-top:8px"><thead><tr><th>Recipe</th><th>Product</th><th>Qty</th><th>Unit</th><th>Buy €</th></tr></thead><tbody>';
     var lr='';
     rows.forEach(function(item){
-      if(item.recipe!==lr){ h+='<tr><td colspan="4" style="padding:10px 10px 4px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
-      h+='<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td></tr>';
+      if(item.recipe!==lr){ h+='<tr><td colspan="5" style="padding:8px 10px 2px;color:var(--blue);font-weight:700;font-size:12px;background:rgba(91,156,246,0.06)">'+esc(item.recipe)+'</td></tr>'; lr=item.recipe; }
+      h += '<tr><td></td><td>'+esc(item.product)+'</td><td class="highlight">'+esc(item.qty)+'</td><td class="sub">'+esc(item.unit)+'</td><td style="color:#4eca82">'+(item.purchase_price?'€'+parseFloat(item.purchase_price).toFixed(2):'—')+'</td></tr>';
     });
-    h+='</tbody></table>';
-    h+='</div></div>';
+    h += '</tbody></table></div></div>';
   });
-  if(!h) h='<div class="empty"><div class="empty-icon">&#129378;</div><div class="empty-text">No order data</div></div>';
-  document.getElementById('ingredients-body').innerHTML=h;
+  if(!h) h = '<div class="empty" style="margin-top:24px"><div class="empty-icon">&#129378;</div><div class="empty-text">No events on this day</div></div>';
+  document.getElementById('ingredients-body').innerHTML = strip + '<div style="padding:0 16px 100px">' + h + '</div>';
 }
-
 
 /* ── FIREBASE CUSTOM EVENTS ── */
 function loadRecipeIngredients(){
@@ -2209,9 +2338,19 @@ function loadRecipeIngredients(){
     dbShared.collection('recipe_ingredients').get().then(function(snap){
       window._recipeDb = {};
       snap.forEach(function(doc){
-        window._recipeDb[doc.id] = (doc.data().ingredients || []);
+        var ings = (doc.data().ingredients || []).map(function(r){
+          return {
+            product: r.product||r.name||'',
+            qty: r.qty||r.qty_per_portion||'',
+            unit: r.unit||'',
+            purchase_price: r.purchase_price||''
+          };
+        });
+        window._recipeDb[doc.id] = ings;
       });
       console.log('Loaded recipe db:', Object.keys(window._recipeDb).length, 'dishes');
+      // Re-render master list if visible to show ingredient counts
+      if(typeof filterMaster === 'function') try{ filterMaster(); }catch(e){}
     });
   } catch(e){ console.warn('recipe_ingredients load error', e); }
 }
@@ -2826,6 +2965,8 @@ function openMasterEdit(idx){
   renderMasterIngRows();
   document.getElementById('me-notes').value = x.notes||'';
   document.getElementById('me-instructions').value = x.instructions||'';
+  var sp = document.getElementById('me-selling-price');
+  if(sp) sp.value = x.price ? parseFloat(x.price).toFixed(2) : '';
   document.getElementById('master-edit-overlay').style.display='flex';
 }
 function renderMasterIngRows(){
@@ -2836,8 +2977,8 @@ function renderMasterIngRows(){
     return;
   }
   container.innerHTML = masterEditIngredients.map(function(r, j){
-    return '<div class="menu-edit-row" style="margin-bottom:4px">' +
-      '<input class="form-input" style="flex:2" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="masterEditIngredients['+j+'].product=this.value">' +
+    return '<div class="menu-edit-row" style="margin-bottom:4px;flex-wrap:wrap">' +
+      '<input class="form-input" style="flex:2;min-width:100px" placeholder="Ingredient" value="'+esc(r.product||'')+'" oninput="masterEditIngredients['+j+'].product=this.value">' +
       '<input class="form-input" style="max-width:55px" placeholder="Qty" value="'+esc(r.qty||'')+'" oninput="masterEditIngredients['+j+'].qty=this.value">' +
       '<input class="form-input" style="max-width:65px" placeholder="Unit" value="'+esc(r.unit||'')+'" oninput="masterEditIngredients['+j+'].unit=this.value">' +
       '<button class="btn-remove" onclick="removeMasterIngRow('+j+')">✕</button>' +
@@ -2845,7 +2986,7 @@ function renderMasterIngRows(){
   }).join('');
 }
 function addMasterIngRow(){
-  masterEditIngredients.push({product:'',qty:'',unit:''});
+  masterEditIngredients.push({product:'',qty:'',unit:'',purchase_price:''});
   renderMasterIngRows();
   // Focus last ingredient input
   const rows = document.querySelectorAll('#me-ing-rows .form-input');
@@ -2871,13 +3012,17 @@ function saveMasterEdit(){
   const idx = parseInt(document.getElementById('me-idx').value);
   if(isNaN(idx)||idx<0||idx>=MASTER.length) return;
   const dishName = MASTER[idx].name;
-  const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); });
+  const ings = masterEditIngredients.filter(function(r){ return r.product && r.product.trim(); }).map(function(r){
+    return {product: r.product, qty: r.qty||'', unit: r.unit||'', purchase_price: r.purchase_price||''};
+  });
   const notes = document.getElementById('me-notes').value.trim();
   const instructions = document.getElementById('me-instructions').value.trim();
+  var sellingPrice = parseFloat((document.getElementById('me-selling-price')||{}).value)||0;
   try {
-    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions }, {merge:true});
+    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions, price: sellingPrice }, {merge:true});
     MASTER[idx].notes = notes;
     MASTER[idx].instructions = instructions;
+    MASTER[idx].price = sellingPrice;
   } catch(e){ console.warn('notes save error', e); }
   try {
     dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
@@ -3546,6 +3691,7 @@ function initApp() {
   showScreen('home');
   try{ loadCustomEvents(); }catch(e){ console.warn('CE load error',e); }
   loadMasterOverrides();
+  try{ loadRecipeIngredients(); }catch(e){ console.warn('recipeIngredients load error',e); }
 }
 
 /* ── PDF GENERATION ── */
@@ -3810,7 +3956,7 @@ function renderAddDishIngRows(){
   }).join('');
 }
 function addNewDishIngRow(){
-  _addDishIngredients.push({name:'', qty_per_portion:'', unit:'kg'});
+  _addDishIngredients.push({name:'', qty_per_portion:'', unit:'kg', purchase_price:''});
   renderAddDishIngRows();
 }
 function openAddDish(){
@@ -3857,7 +4003,7 @@ function saveNewDish(){
   try { dbShared.collection('master_deleted').doc(name).delete(); } catch(e){}
   // Save ingredients if provided
   var ings = _addDishIngredients.filter(function(r){ return r.name && r.name.trim(); }).map(function(r){
-    return {product: r.name, qty_per_portion: r.qty_per_portion, unit: r.unit||'kg'};
+    return {product: r.name, qty: r.qty_per_portion, unit: r.unit||'kg', purchase_price: r.purchase_price||''};
   });
   if(ings.length){
     try {
