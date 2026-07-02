@@ -1634,19 +1634,29 @@ body {
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">Ingredients / Recipe</div>
     <div id="me-ing-rows" style="margin-bottom:6px"></div>
     <button onclick="addMasterIngRow()" style="padding:4px 12px;font-size:12px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;cursor:pointer;color:var(--sub);margin-bottom:12px">+ Add ingredient</button>
-    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <div style="flex:1;display:flex;align-items:center;gap:4px;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:10px;padding:4px 10px">
-        <span style="font-size:12px;color:#4eca82;font-weight:700">€ Selling</span>
-        <input id="me-selling-price" type="number" step="0.01" placeholder="0.00" class="form-input" style="flex:1;background:none;border:none;color:#4eca82;font-size:14px;font-weight:700;padding:4px">
-        <span style="font-size:11px;color:rgba(78,202,130,0.6)">/ portion</span>
+    <!-- Cost price per dish -->
+    <div style="display:flex;align-items:center;gap:4px;background:rgba(248,113,113,0.08);border:1.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:6px 10px;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--red);font-weight:700">💰 Cost</span>
+      <input id="me-cost-price" type="number" step="0.01" placeholder="0.00" class="form-input" style="flex:1;background:none;border:none;color:var(--red);font-size:14px;font-weight:700;padding:4px">
+      <span style="font-size:11px;color:rgba(248,113,113,0.5)">/ dish (prep cost)</span>
+    </div>
+    <!-- Selling price + tax -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;flex-wrap:wrap">
+      <div style="flex:1;min-width:150px;display:flex;align-items:center;gap:4px;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:10px;padding:6px 10px">
+        <span style="font-size:12px;color:#4eca82;font-weight:700">💵 Sell</span>
+        <input id="me-selling-price" type="number" step="0.01" placeholder="0.00" class="form-input" style="flex:1;background:none;border:none;color:#4eca82;font-size:14px;font-weight:700;padding:4px" oninput="updateMeGross()">
+        <span style="font-size:11px;color:rgba(78,202,130,0.6)">/ portion (net)</span>
       </div>
-      <div style="display:flex;align-items:center;gap:4px;background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:10px;padding:4px 10px">
-        <span style="font-size:12px;color:var(--orange);font-weight:700">🏷 VAT</span>
-        <select id="me-tax" class="form-input" style="background:none;border:none;color:var(--orange);font-weight:800;font-size:13px;padding:0 4px;width:70px">
-          <option value="">— %</option>
-          <option value="7">7%</option>
-          <option value="19">19%</option>
-        </select>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center;background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:10px;padding:6px 10px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:12px;color:var(--orange);font-weight:700">🏷 VAT</span>
+          <select id="me-tax" class="form-input" style="background:none;border:none;color:var(--orange);font-weight:800;font-size:13px;padding:0 4px;width:70px" onchange="updateMeGross()">
+            <option value="">— %</option>
+            <option value="7">7%</option>
+            <option value="19">19%</option>
+          </select>
+        </div>
+        <div id="me-gross-display" style="font-size:11px;color:var(--sub);text-align:center"></div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px">&#128221; Notes</div>
@@ -1672,18 +1682,30 @@ body {
     </select>
     <input id="add-category" class="form-input" placeholder="Category (e.g. Main, Salad, Dessert)" style="width:100%;margin-bottom:8px">
     <input id="add-allergens" class="form-input" placeholder="Allergens (e.g. Gluten, Lactose)" style="width:100%;margin-bottom:8px">
-    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-      <div style="position:relative;flex:1">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:13px;pointer-events:none">€</span>
-        <input id="add-price" class="form-input" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;padding-left:24px">
+    <!-- Cost price per dish (preparation cost) -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">💰 Cost Price (preparation cost per dish)</div>
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(248,113,113,0.08);border:1.5px solid rgba(248,113,113,0.3);border-radius:10px;padding:6px 12px">
+        <span style="font-size:12px;color:var(--red);font-weight:700">€</span>
+        <input id="add-cost-price" class="form-input" type="number" step="0.01" min="0" placeholder="0.00" style="flex:1;background:none;border:none;color:var(--red);font-size:14px;font-weight:700;padding:4px">
+        <span style="font-size:11px;color:rgba(248,113,113,0.6)">/ dish</span>
       </div>
-      <span style="color:var(--sub);font-size:13px">per</span>
-      <select id="add-unit" class="form-input" style="width:90px">
-        <option value="portion">portion</option>
-        <option value="kg">kg</option>
-        <option value="g">g</option>
-        <option value="qty">qty</option>
-      </select>
+    </div>
+    <!-- Selling price per portion -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">💵 Selling Price (net per portion)</div>
+      <div style="display:flex;gap:8px;align-items:center;background:rgba(78,202,130,0.08);border:1.5px solid rgba(78,202,130,0.3);border-radius:10px;padding:6px 12px">
+        <span style="font-size:12px;color:#4eca82;font-weight:700">€</span>
+        <input id="add-price" class="form-input" type="number" step="0.01" min="0" placeholder="0.00" style="flex:1;background:none;border:none;color:#4eca82;font-size:14px;font-weight:700;padding:4px" oninput="updateAddPriceGross()">
+        <span style="font-size:11px;color:rgba(78,202,130,0.6)">per</span>
+        <select id="add-unit" class="form-input" style="background:none;border:none;color:#4eca82;font-weight:700;font-size:13px;padding:2px 4px;width:80px">
+          <option value="portion">portion</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="qty">qty</option>
+        </select>
+        <span id="add-gross-display" style="font-size:11px;color:var(--sub);white-space:nowrap"></span>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px">
@@ -2691,19 +2713,35 @@ function buildOrdersScreen(){
     if(ev.location&&ev.location!=='—') h += '<p style="margin:4px 0;font-size:13px">&#128205; <strong>'+esc(ev.location)+'</strong></p>';
     if(ev.contact&&ev.contact!=='—') h += '<p style="font-size:12px;color:var(--sub);margin-bottom:8px">&#128100; '+esc(ev.contact)+(ev.phone&&ev.phone!=='—'?' · &#128222; '+esc(ev.phone):'')+'</p>';
     if(ev.menu&&ev.menu.length){
-      h += '<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Packaging</th><th>€/ptn</th><th>Total €</th></tr></thead><tbody>';
-      var grandTotal = 0;
+      h += '<table class="dt"><thead><tr><th>Recipe</th><th>Portions</th><th>Diet</th><th>Net €/ptn</th><th>VAT</th><th>Gross €/ptn</th><th>Total Net</th><th>Total Gross</th></tr></thead><tbody>';
+      var grandNet = 0; var grandGross = 0;
       ev.menu.forEach(function(m){
         var pp=parseFloat(m.price_per_portion)||0;
         var ptn=parseFloat(m.portions)||0;
-        var tot=pp&&ptn?pp*ptn:0;
-        grandTotal+=tot;
-        // Lookup selling price from MASTER if not on menu item
-        if(!pp){ var mi = MASTER.find(function(x){ return x.name===m.name; }); if(mi&&mi.price) pp=parseFloat(mi.price)||0; }
-        h+='<tr><td>'+esc(m.name)+'</td><td class="highlight">'+esc(m.portions||'—')+'</td><td>'+esc(m.diet||'')+'</td><td>'+esc(m.packaging||'')+'</td><td>'+(pp?'€'+pp.toFixed(2):'—')+'</td><td class="highlight">'+(tot?'€'+tot.toFixed(2):'—')+'</td></tr>';
+        var mi = MASTER.find(function(x){ return x.name===m.name; });
+        if(!pp && mi && mi.price) pp=parseFloat(mi.price)||0;
+        var taxR = (mi && mi.tax_rate) ? parseFloat(mi.tax_rate) : 0;
+        var gross = pp && taxR ? pp*(1+taxR/100) : pp;
+        var totNet = pp&&ptn ? pp*ptn : 0;
+        var totGross = gross&&ptn ? gross*ptn : 0;
+        grandNet += totNet; grandGross += totGross;
+        h+='<tr><td>'+esc(m.name)+'</td>';
+        h+='<td class="highlight">'+esc(m.portions||'—')+'</td>';
+        h+='<td>'+esc(m.diet||'')+'</td>';
+        h+='<td>'+(pp?'€'+pp.toFixed(2):'—')+'</td>';
+        h+='<td style="color:var(--orange)">'+(taxR?taxR+'%':'—')+'</td>';
+        h+='<td style="color:#4eca82">'+(gross&&taxR?'€'+gross.toFixed(2):'—')+'</td>';
+        h+='<td>'+(totNet?'€'+totNet.toFixed(2):'—')+'</td>';
+        h+='<td class="highlight">'+(totGross?'€'+totGross.toFixed(2):(totNet?'€'+totNet.toFixed(2):'—'))+'</td>';
+        h+='</tr>';
       });
       h += '</tbody></table>';
-      if(grandTotal>0) h += '<div style="text-align:right;padding:10px 8px 4px;font-size:14px;font-weight:900;background:linear-gradient(135deg,rgba(240,192,64,0.08),transparent);border-radius:8px;margin-top:6px"><span style=\"color:var(--sub);font-weight:700;font-size:11px;margin-right:6px\">GRAND TOTAL</span><span style=\"color:var(--accent)\">€'+grandTotal.toFixed(2)+'</span></div>';
+      if(grandNet>0){
+        h += '<div style="display:flex;justify-content:flex-end;gap:16px;padding:10px 8px 4px;font-size:13px;font-weight:900;background:linear-gradient(135deg,rgba(240,192,64,0.08),transparent);border-radius:8px;margin-top:6px">';
+        h += '<span style="color:var(--sub);font-size:12px">Net: <strong style=\"color:var(--text)\">€'+grandNet.toFixed(2)+'</strong></span>';
+        if(grandGross>grandNet) h += '<span style="color:var(--sub);font-size:12px">Gross (incl. VAT): <strong style=\"color:var(--accent)\">€'+grandGross.toFixed(2)+'</strong></span>';
+        h += '</div>';
+      }
     }
     if(ev.notes) h += '<div style="margin-top:8px;font-size:12px;color:var(--sub);background:var(--s3);border-radius:8px;padding:8px 12px">&#128221; '+esc(ev.notes)+'</div>';
     h += '</div></div>';
@@ -2845,6 +2883,7 @@ function loadMasterOverrides(){
           if(data.notes !== undefined) MASTER[idx].notes = data.notes;
           if(data.instructions !== undefined) MASTER[idx].instructions = data.instructions;
           if(data.tax_rate !== undefined) MASTER[idx].tax_rate = data.tax_rate;
+          if(data.cost_price !== undefined) MASTER[idx].cost_price = data.cost_price;
         } else if(data._added){
                     MASTER.push({name:doc.id, diet:data.diet||'', category:data.category||'',
                                   allergens:data.allergens||'', gluten_free:data.gluten_free||'',
@@ -3378,6 +3417,26 @@ function updateDishOMS(input){
   }
 }
 
+
+/* ── GROSS PRICE HELPERS ── */
+function updateAddPriceGross(){
+  var net = parseFloat(document.getElementById('add-price').value)||0;
+  var tax = parseFloat((document.getElementById('add-tax')||{}).value)||0;
+  var el = document.getElementById('add-gross-display');
+  if(!el) return;
+  if(net && tax){ el.textContent = '→ gross €'+(net*(1+tax/100)).toFixed(2); el.style.color='#4eca82'; }
+  else el.textContent = '';
+}
+function updateMeGross(){
+  var net = parseFloat((document.getElementById('me-selling-price')||{}).value)||0;
+  var tax = parseFloat((document.getElementById('me-tax')||{}).value)||0;
+  var el = document.getElementById('me-gross-display');
+  if(!el) return;
+  if(net && tax){ el.textContent = 'Gross: €'+(net*(1+tax/100)).toFixed(2); el.style.color='#4eca82'; }
+  else if(net){ el.textContent = 'No VAT set'; el.style.color='var(--sub)'; }
+  else el.textContent = '';
+}
+
 /* ── MASTER DATA ── */
 let masterDietFilter = '';
 let masterPage = 1;
@@ -3417,6 +3476,9 @@ function renderMasterList(q, diet){
     var ingCount = (window._recipeDb && window._recipeDb[x.name]) ? window._recipeDb[x.name].length : null;
     var dc = dietClass(x.diet||'');
     var pp = x.price ? parseFloat(x.price) : null;
+    var cp = x.cost_price ? parseFloat(x.cost_price) : null;
+    var taxR = x.tax_rate ? parseFloat(x.tax_rate) : null;
+    var grossPrice = pp && taxR ? pp*(1+taxR/100) : null;
     var dietColor = {'Vegan':'#22c55e','Vegetarian':'#14b8a6','Meat':'#ef4444','Fish':'#3b82f6','Pescatarian':'#a855f7','Mixed':'#f59e0b'}[x.diet] || '#555';
     var dietOpts = ['','Vegan','Vegetarian','Meat','Fish','Pescatarian','Mixed'].map(function(d){
       return '<option value="'+d+'"'+(x.diet===d?' selected':'')+'>'+( d||'— Diet —')+'</option>';
@@ -3431,6 +3493,7 @@ function renderMasterList(q, diet){
         '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px">'+esc(x.name)+'</div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
           (x.diet?'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;border:2px solid '+dietColor+';color:'+dietColor+';background:'+dietColor+'22">'+esc(x.diet)+'</span>':'')+
+          (cp?'<span style="font-size:11px;font-weight:800;color:var(--red);background:rgba(248,113,113,0.08);border:1.5px solid rgba(248,113,113,0.25);border-radius:12px;padding:3px 8px">💰 Cost: €'+cp.toFixed(2)+'</span>':'')+
           (x.tax_rate?'<span style="font-size:11px;font-weight:800;color:var(--orange);background:rgba(251,146,60,0.1);border:1.5px solid rgba(251,146,60,0.3);border-radius:12px;padding:3px 8px">'+esc(x.tax_rate)+'% VAT</span>':'')+
           (pp?'<span style="font-size:11px;font-weight:800;color:#4eca82;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:20px;padding:3px 10px">€'+pp.toFixed(2)+'/'+esc(x.portion_unit||'qty')+'</span>':'')+
           (x.gluten_free?'<span style="font-size:11px;font-weight:800;color:#818cf8;background:rgba(99,102,241,0.12);border:1.5px solid rgba(99,102,241,0.4);border-radius:20px;padding:3px 10px">GF</span>':'')+
@@ -3452,12 +3515,24 @@ function renderMasterList(q, diet){
       // Row 2: diet pill + price + unit + GF + allergens
       '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
         '<select onchange="saveMasterField('+idx+',\'diet\',this.value)" style="padding:4px 8px;border-radius:20px;border:2px solid '+dietColor+';background:'+dietColor+'22;color:'+dietColor+';font-size:11px;font-weight:800;cursor:pointer;outline:none">'+dietOpts+'</select>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">' +
+        // Cost price (red)
+        (cp ? '<div style="display:flex;align-items:center;gap:2px;background:rgba(248,113,113,0.08);border:1.5px solid rgba(248,113,113,0.25);border-radius:12px;padding:3px 8px">' +
+          '<span style="font-size:10px;color:var(--red);font-weight:700">💰</span>' +
+          '<span style="font-size:11px;color:var(--red);font-weight:700">€'+((x.cost_price||0).toFixed(2))+'</span>' +
+          '<span style="font-size:9px;color:rgba(248,113,113,0.5)">/dish</span>' +
+        '</div>' : '') +
+        // Sell net price (green) - editable
         '<div style="display:flex;align-items:center;gap:3px;background:rgba(78,202,130,0.1);border:1.5px solid rgba(78,202,130,0.3);border-radius:20px;padding:3px 10px">' +
-          '<span style="font-size:11px;color:#4eca82;font-weight:700">€</span>' +
+          '<div style="display:flex;flex-direction:column;gap:0px">' +
+            '<span style="font-size:9px;color:rgba(78,202,130,0.7);font-weight:700;line-height:1">NET</span>' +
+            (grossPrice ? '<span style="font-size:9px;color:rgba(78,202,130,0.5);line-height:1">→€'+grossPrice.toFixed(2)+'</span>' : '') +
+          '</div>' +
           '<input type="number" step="0.01" placeholder="0.00" value="'+(pp?pp.toFixed(2):'')+'" style="width:52px;background:none;border:none;color:#4eca82;font-size:13px;font-weight:800;outline:none" onchange="saveMasterField('+idx+',\'price\',parseFloat(this.value)||0)">' +
           '<span style="font-size:11px;color:rgba(78,202,130,0.6)">/</span>' +
           '<select onchange="saveMasterField('+idx+',\'portion_unit\',this.value)" style="background:none;border:none;color:rgba(78,202,130,0.8);font-size:11px;font-weight:700;outline:none;cursor:pointer">'+unitOpts+'</select>' +
         '</div>' +
+      '</div>' +
         '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 10px;border-radius:20px;border:1.5px solid '+(x.gluten_free?'rgba(99,102,241,0.5)':'var(--border2)')+';background:'+(x.gluten_free?'rgba(99,102,241,0.12)':'transparent')+'">' +
           '<input type="checkbox" '+(x.gluten_free?'checked':'')+' onchange="saveMasterField('+idx+',\'gluten_free\',this.checked?\'Yes\':\'\'" style="width:13px;height:13px;accent-color:#6366f1">' +
           '<span style="font-size:11px;font-weight:800;color:'+(x.gluten_free?'#818cf8':'var(--sub)')+'">GF</span>' +
@@ -3503,7 +3578,10 @@ function openMasterEdit(idx){
   if(sp) sp.value = x.price ? parseFloat(x.price).toFixed(2) : '';
   var mt = document.getElementById('me-tax');
   if(mt) mt.value = x.tax_rate||'';
+  var cp = document.getElementById('me-cost-price');
+  if(cp) cp.value = x.cost_price ? parseFloat(x.cost_price).toFixed(2) : '';
   document.getElementById('master-edit-overlay').style.display='flex';
+  setTimeout(updateMeGross, 50);
 }
 function renderMasterIngRows(){
   const container = document.getElementById('me-ing-rows');
@@ -3559,12 +3637,14 @@ function saveMasterEdit(){
   const instructions = document.getElementById('me-instructions').value.trim();
   var sellingPrice = parseFloat((document.getElementById('me-selling-price')||{}).value)||0;
   var taxRateEdit = (document.getElementById('me-tax')||{}).value||'';
+  var costPriceEdit = parseFloat((document.getElementById('me-cost-price')||{}).value)||0;
   try {
-    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions, price: sellingPrice, tax_rate: taxRateEdit }, {merge:true});
+    dbShared.collection('master_overrides').doc(dishName).set({ notes: notes, instructions: instructions, price: sellingPrice, tax_rate: taxRateEdit, cost_price: costPriceEdit }, {merge:true});
     MASTER[idx].notes = notes;
     MASTER[idx].instructions = instructions;
     MASTER[idx].price = sellingPrice;
     MASTER[idx].tax_rate = taxRateEdit;
+    MASTER[idx].cost_price = costPriceEdit;
   } catch(e){ console.warn('notes save error', e); }
   try {
     dbShared.collection('recipe_ingredients').doc(dishName).set({ ingredients: ings });
@@ -4569,6 +4649,7 @@ function saveNewDish(){
   var priceVal = parseFloat(document.getElementById('add-price').value)||0;
   var unitVal = document.getElementById('add-unit').value||'portion';
   var taxVal = document.getElementById('add-tax') ? (document.getElementById('add-tax').value||'') : '';
+  var costPriceVal = parseFloat((document.getElementById('add-cost-price')||{}).value)||0;
   var newDish = {
     name: name,
     diet: document.getElementById('add-diet').value,
@@ -4576,6 +4657,7 @@ function saveNewDish(){
     allergens: document.getElementById('add-allergens').value.trim(),
     gluten_free: document.getElementById('add-gf').checked ? 'Yes' : '',
     price: priceVal,
+    cost_price: costPriceVal,
     portion_unit: unitVal,
     tax_rate: taxVal,
         notes: document.getElementById('add-notes').value.trim(),
@@ -4588,7 +4670,7 @@ function saveNewDish(){
       diet: newDish.diet, allergens: newDish.allergens,
       gluten_free: newDish.gluten_free, price: priceVal,
       portion_unit: unitVal, category: newDish.category, notes: newDish.notes, instructions: newDish.instructions,
-      tax_rate: taxVal, _added: true
+      tax_rate: taxVal, cost_price: costPriceVal, _added: true
     });
   } catch(e){ console.warn('add dish save error', e); }
   // Remove from deleted list if re-adding
