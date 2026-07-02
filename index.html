@@ -2410,7 +2410,8 @@ function openEvent(idx){
     var hasIngs = (window._recipeDb && window._recipeDb[item.name] && window._recipeDb[item.name].length > 0)
                   || (ev.recipes && ev.recipes[item.name] && ev.recipes[item.name].ingredients && ev.recipes[item.name].ingredients.length > 0);
     panels+='<div style="margin-top:6px">';
-    panels+='<button onclick="toggleMenuIngredients(this,'+JSON.stringify(item.name)+',''+eid+'')" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--sub);background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;transition:all .15s;width:100%;justify-content:space-between">'+
+    var safeItemId = 'ing-'+safeId(eid+'-'+item.name);
+    panels+='<button onclick="toggleMenuIngredients(this)" data-dish="'+esc(item.name)+'" data-eid="'+eid+'" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--sub);background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;transition:all .15s;width:100%;justify-content:space-between">'+
       '<span>&#9660; Ingredients'+(hasIngs?'':' (none saved)')+'</span>'+
       '<span style="font-size:10px;opacity:.6">tap to expand</span>'+
     '</button>';
@@ -2564,7 +2565,9 @@ function openEvent(idx){
 
 
 /* ── MENU ITEM INGREDIENT EXPAND/COLLAPSE ── */
-function toggleMenuIngredients(btn, dishName, eid){
+function toggleMenuIngredients(btn){
+  var dishName = btn.dataset.dish || '';
+  var eid = btn.dataset.eid || '';
   var box = btn.parentElement.querySelector('.menu-ing-box');
   if(!box) return;
   var isOpen = box.classList.contains('open');
