@@ -1892,6 +1892,56 @@ function formatPortionsDisplay(s, omsBase){
 function eventHasOMS(ev){
   return (ev.menu||[]).some(function(m){ return /OMS/i.test(m.portions||''); });
 }
+
+/* ── BOM QUANTITY HELPER ──────────────────────────────────────────────────
+   Calculates the correct total quantity for a menu item's ingredient in BOM.
+   
+   Priority rules:
+   1. Self-referential ingredient (ingredient name ≈ dish name):
+      → use m.tot_qty directly (what the user explicitly set in the event form)
+   2. Raw sub-ingredient (flour, butter, etc.):
+      → use ppl × ing.qty_per_portion (recipe calculation)
+   3. No ingredients in DB:
+      → use m.tot_qty or (ppl × ptn_size)
+   ──────────────────────────────────────────────────────────────────────── */
+function _bomCalcIngTotal(m, ing){
+  var ppl       = parseFloat(m.ppl) || parseFloat(m.portions) || 0;
+  var ptnSize   = parseFloat(m.ptn_size) || 1;
+  var totQty    = parseFloat(m.tot_qty);
+  var ptnUnit   = (m.ptn_unit||'').toLowerCase();
+  var dishLc    = (m.name||'').toLowerCase().trim();
+  var ingLc     = ((ing.name||ing.product)||'').toLowerCase().trim();
+  var qtyNum    = parseFloat(ing.qty_per_portion||ing.qty);
+
+  // Self-referential check: ingredient name is the same as (or very similar to) the dish
+  var isSelf = (ingLc === dishLc)
+    || (ingLc.length > 3 && dishLc.includes(ingLc))
+    || (dishLc.length > 3 && ingLc.includes(dishLc));
+
+  if(isSelf){
+    // Trust what the user set in the event form
+    if(!isNaN(totQty) && totQty > 0) return {qty: String(totQty), unit: m.ptn_unit||ing.unit||''};
+    return {qty: String(Math.round(ppl * ptnSize * 1000)/1000), unit: m.ptn_unit||ing.unit||''};
+  }
+
+  // Raw sub-ingredient: ppl × qty_per_portion
+  if(!isNaN(qtyNum) && ppl > 0){
+    var raw = qtyNum * ppl;
+    return {qty: String(Math.round(raw * 1000)/1000), unit: ing.unit||''};
+  }
+
+  return null; // skip if we can't calculate
+}
+
+/* When no recipe ingredients in DB, build a fallback BOM row from m.tot_qty */
+function _bomFallbackRow(m){
+  var ppl     = parseFloat(m.ppl) || parseFloat(m.portions) || 0;
+  var ptnSize = parseFloat(m.ptn_size) || 1;
+  var totQty  = parseFloat(m.tot_qty);
+  var qty     = (!isNaN(totQty) && totQty > 0) ? totQty : Math.round(ppl * ptnSize * 1000)/1000;
+  return {recipe: m.name, ingredient: m.name, qty: String(qty||'—'), unit: m.ptn_unit||''};
+}
+
 function calcIngTotal(ing, newPortions){
   var qty=parseFloat(ing.qty_per_portion);
   if(!isNaN(qty) && newPortions){
@@ -2559,14 +2609,16 @@ function buildBomScreen(){
     } else if(ev.menu && ev.menu.length){
       ev.menu.forEach(function(m){
         var ings = (ev.recipes && ev.recipes[m.name] && ev.recipes[m.name].ingredients) || (window._recipeDb && window._recipeDb[m.name]);
-        var portions = parseFloat(m.portions)||parseFloat(m.ppl)||0;
-        if(ings && ings.length && portions){
+        if(ings && ings.length){
           ings.forEach(function(ing){
-            var qtyNum = parseFloat(ing.qty_per_portion||ing.qty);
-            if(isNaN(qtyNum)) return;
-            bomRows.push({recipe:m.name, ingredient:ing.name||ing.product||'', total:String(Math.round(qtyNum*portions*1000)/1000), unit:ing.unit||''});
+            var result = _bomCalcIngTotal(m, ing);
+            if(result) bomRows.push({recipe:m.name, ingredient:ing.name||ing.product||'', total:result.qty, unit:result.unit});
           });
-        } else { bomRows.push({recipe:m.name, ingredient:'(no ingredients listed)', total:String(portions||'—'), unit:''}); }
+        } else {
+          // No sub-ingredients: use tot_qty from event form directly
+          var fb = _bomFallbackRow(m);
+          bomRows.push({recipe:m.name, ingredient:fb.ingredient, total:fb.qty, unit:fb.unit});
+        }
       });
     }
     if(bomRows.length){
@@ -2672,12 +2724,11 @@ function buildIngredientsScreen(){
       var ings = (recipeEntry && recipeEntry.ingredients && recipeEntry.ingredients.length ? recipeEntry.ingredients : null)
                  || (window._recipeDb && window._recipeDb[m.name]);
       var beforeLen = rows.length;
-      if(ings && ings.length && portions){
+      if(ings && ings.length){
         ings.forEach(function(ing){
-          var qtyNum = parseFloat(ing.qty_per_portion||ing.qty);
-          if(isNaN(qtyNum) || ing.name==='Total'||ing.product==='Total') return;
-          var ingForCalc = (ing.qty_per_portion ? ing : Object.assign({}, ing, {qty_per_portion: ing.qty}));
-          rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: calcIngTotal(ingForCalc, portions), unit: ing.unit||'kg', purchase_price: ing.purchase_price||''});
+          if(ing.name==='Total'||ing.product==='Total') return;
+          var result = _bomCalcIngTotal(m, ing);
+          if(result) rows.push({recipe: m.name, product: ing.name||ing.product||'', qty: result.qty, unit: result.unit, purchase_price: ing.purchase_price||''});
         });
       }
       if(rows.length === beforeLen){
