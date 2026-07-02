@@ -1357,6 +1357,10 @@ body {
 [data-theme="light"] .mini-cal-day.today .mcd-num { color: #2563eb; }
 [data-theme="light"] .mini-cal-day:hover:not(.empty) { background: #f0f4ff; }
 [data-theme="light"] .mini-cal-day.selected { box-shadow: 0 4px 12px rgba(200,150,10,0.35) !important; }
+
+/* ── MENU INGREDIENT EXPAND BOX ── */
+.menu-ing-box { background: var(--s2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; }
+.menu-ing-box.open { border-color: rgba(240,192,64,0.25); }
 </style>
 </head>
 <body>
@@ -2402,6 +2406,16 @@ function openEvent(idx){
       panels+='</div>';
     }
     panels+='</div>';
+    // Ingredient expand button + box
+    var hasIngs = (window._recipeDb && window._recipeDb[item.name] && window._recipeDb[item.name].length > 0)
+                  || (ev.recipes && ev.recipes[item.name] && ev.recipes[item.name].ingredients && ev.recipes[item.name].ingredients.length > 0);
+    panels+='<div style="margin-top:6px">';
+    panels+='<button onclick="toggleMenuIngredients(this,'+JSON.stringify(item.name)+',''+eid+'')" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--sub);background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;transition:all .15s;width:100%;justify-content:space-between">'+
+      '<span>&#9660; Ingredients'+(hasIngs?'':' (none saved)')+'</span>'+
+      '<span style="font-size:10px;opacity:.6">tap to expand</span>'+
+    '</button>';
+    panels+='<div class="menu-ing-box" style="max-height:0;overflow:hidden;transition:max-height .3s ease;border-radius:0 0 8px 8px"></div>';
+    panels+='</div>';
     // Show cooking/packaging notes if present
     if(item.cooking_notes||item.packaging_notes){
       panels+='<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">';
@@ -2546,6 +2560,57 @@ function openEvent(idx){
   loadChecklists([ev]);
   updateEquipProgress(ev);
   if(creatorUnlocked) loadFinance(eid);
+}
+
+
+/* ── MENU ITEM INGREDIENT EXPAND/COLLAPSE ── */
+function toggleMenuIngredients(btn, dishName, eid){
+  var box = btn.parentElement.querySelector('.menu-ing-box');
+  if(!box) return;
+  var isOpen = box.classList.contains('open');
+  if(isOpen){
+    box.classList.remove('open');
+    box.style.maxHeight = '0';
+    btn.innerHTML = '&#9660; Ingredients';
+    btn.style.color = 'var(--sub)';
+  } else {
+    // Build ingredients if not yet populated
+    if(!box.dataset.loaded){
+      var ings = (window._recipeDb && window._recipeDb[dishName]) || [];
+      var ev = currentEvent;
+      if(ev && ev.recipes && ev.recipes[dishName] && ev.recipes[dishName].ingredients && ev.recipes[dishName].ingredients.length){
+        ings = ev.recipes[dishName].ingredients;
+      }
+      var portions = 0;
+      if(ev){ var mi = (ev.menu||[]).find(function(m){ return m.name===dishName; }); if(mi) portions = parseFloat(mi.ppl)||parseFloat(mi.portions)||0; }
+      if(ings.length){
+        var html = '<div style="display:flex;flex-direction:column;gap:3px;padding:6px 0">';
+        ings.forEach(function(ing){
+          var product = ing.name||ing.product||'';
+          var qty = ing.qty||ing.qty_per_portion||'';
+          var unit = ing.unit||'';
+          var pp = ing.purchase_price ? '€'+parseFloat(ing.purchase_price).toFixed(2) : '';
+          var totalQty = '';
+          if(qty && portions){ var t=Math.round(parseFloat(qty)*portions*1000)/1000; totalQty = ' = '+t+' '+unit+' total'; }
+          html += '<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:7px;border:1px solid var(--border)">';
+          html += '<span style="flex:1;font-size:12px;font-weight:700;color:var(--text)">'+esc(product)+'</span>';
+          html += '<span style="font-size:11px;color:var(--accent);font-weight:800">'+qty+(unit?' '+unit:'')+'</span>';
+          if(totalQty) html += '<span style="font-size:10px;color:var(--sub)">'+totalQty+'</span>';
+          if(pp) html += '<span style="font-size:11px;color:#4eca82;font-weight:700">'+pp+'</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+        box.innerHTML = html;
+      } else {
+        box.innerHTML = '<div style="padding:8px;font-size:12px;color:var(--sub);text-align:center">No ingredients saved for this dish</div>';
+      }
+      box.dataset.loaded = '1';
+    }
+    box.classList.add('open');
+    box.style.maxHeight = box.scrollHeight + 'px';
+    btn.innerHTML = '&#9650; Ingredients';
+    btn.style.color = 'var(--accent)';
+  }
 }
 
 function switchSubTab(tab){
